@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Burgherr V17 - Survival</title>
+    <title>Burgherr V18 - Fair Start</title>
     <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=MedievalSharp&display=swap" rel="stylesheet">
     
     <style>
@@ -48,16 +48,15 @@
         .res-label { font-size: 0.6rem; text-transform: uppercase; color: #888; border-bottom: 1px solid #444; margin-bottom: 2px; }
         .res-values { display: flex; gap: 10px; justify-content: center; font-weight: bold; font-size: 0.9rem; color: #eee; position: relative; }
         
-        /* Rate Indicators */
-        .res-item { position: relative; display: inline-block; }
-        .rate-ind { font-size: 0.65rem; position: relative; top: -5px; margin-left: 2px; opacity: 0.8; }
+        .res-item { position: relative; display: inline-block; min-width: 30px; text-align: center; }
+        .rate-ind { font-size: 0.65rem; position: absolute; top: -8px; right: -5px; opacity: 0.9; font-weight: 900; text-shadow: 1px 1px 0 #000; }
         .rate-pos { color: #66bb6a; }
         .rate-neg { color: #ef5350; }
 
         /* Floating Text */
         .float-txt {
             position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
-            font-size: 0.9rem; font-weight: bold; pointer-events: none;
+            font-size: 1rem; font-weight: 900; pointer-events: none;
             animation: floatUp 1.5s forwards; text-shadow: 1px 1px 0 #000; z-index: 3000;
         }
         .click-pop {
@@ -82,12 +81,11 @@
 
         #map-area { 
             flex: 1; position: relative; overflow: hidden; padding: 10px;
-            /* Hintergrund */
             background-color: #0d1b0e;
             display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 8px;
         }
         
-        /* ZONES - ORGANIC LOOK */
+        /* ZONES */
         .zone { 
             position: relative; border-radius: 8px; overflow: hidden; 
             box-shadow: inset 0 0 20px rgba(0,0,0,0.6);
@@ -96,9 +94,8 @@
         .zone:active { transform: scale(0.99); }
         .zone:hover { border-color: rgba(255,255,255,0.2); }
 
-        /* Zone Specific Styles */
         #z-forest { background: radial-gradient(circle at center, #2e7d32, #1b5e20); }
-        #z-mountain { background: linear-gradient(135deg, #5d4037, #3e2723); } /* Braun/Grau */
+        #z-mountain { background: linear-gradient(135deg, #5d4037, #3e2723); } 
         #z-town { background: radial-gradient(#d7ccc8, #8d6e63); border: 2px solid #5d4037; }
         #z-farm { background: radial-gradient(#8bc34a, #558b2f); }
 
@@ -111,14 +108,14 @@
 
         /* SCATTERED BUILDINGS */
         .map-b { 
-            position: absolute; /* Freie Positionierung! */
+            position: absolute; 
             font-size: 1.6rem; 
             filter: drop-shadow(2px 2px 1px rgba(0,0,0,0.5));
-            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+            animation: popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
             cursor: help;
         }
-        .map-b:hover { transform: scale(1.2); z-index: 20; }
-        @keyframes popIn { from { transform: scale(0) translateY(10px); } to { transform: scale(1) translateY(0); } }
+        .map-b:hover { transform: scale(1.3) translateY(-5px); z-index: 20; filter: drop-shadow(0 5px 5px rgba(0,0,0,0.5)); }
+        @keyframes popIn { from { transform: scale(0) translateY(20px); opacity:0; } to { transform: scale(1) translateY(0); opacity:1; } }
 
         /* SIDEBAR */
         aside { 
@@ -218,7 +215,7 @@
 
 <header>
     <div class="header-info">
-        <div class="game-title">Burgherr V17</div>
+        <div class="game-title">Burgherr V18</div>
         <div class="objective" id="obj-disp">Lade...</div>
     </div>
 
@@ -351,11 +348,22 @@ const T = {
 const SafeT = (k) => T[k] || k; // Fallback
 
 const Levels = [
-    {id:1, t:"Gründung", msg:"Klicke auf Wald und Felder für Rohstoffe. Lass deine Bürger nicht verhungern!", goal:{wood:50, pop:10}, start:{gold:50, wood:0, food:15}},
-    {id:2, t:"Stein & Brot", msg:"Baut Steinbrüche & Brotproduktion. Klicke auf Berge für Stein.", goal:{stone:20, bread:30}, start:{gold:100, wood:50, food:30}},
-    {id:3, t:"Waffen", msg:"Stellt Bögen und Speere her.", goal:{bow:5, spear:5}, start:{gold:200, wood:100, stone:50, food:50}},
-    {id:4, t:"Armee", msg:"Bildet 10 Soldaten aus.", goal:{soldier:10}, start:{gold:300, wood:100, stone:100, iron:20, food:100}},
-    {id:5, t:"Kathedrale", msg:"Das Meisterwerk.", goal:{cath:1}, start:{gold:1000, wood:500, stone:500, iron:100, food:200}}
+    {
+        id:1, 
+        t:"Gründung", 
+        msg:"Sorge für Nahrung und Unterkünfte. Klicke auf die Karte für erste Rohstoffe!", 
+        goal:{wood:50, pop:10}, 
+        start:{
+            gold: 100, 
+            wood: 60, 
+            bread: 50,
+            apple: 20
+        }
+    },
+    {id:2, t:"Stein & Brot", msg:"Baut Steinbrüche & Brotproduktion. Klicke auf Berge für Stein.", goal:{stone:20, bread:30}, start:{gold:150, wood:50, bread:50}},
+    {id:3, t:"Waffen", msg:"Stellt Bögen und Speere her.", goal:{bow:5, spear:5}, start:{gold:200, wood:100, stone:50, bread:100, meat:20}},
+    {id:4, t:"Armee", msg:"Bildet 10 Soldaten aus.", goal:{soldier:10}, start:{gold:300, wood:100, stone:100, iron:20, bread:100, meat:50}},
+    {id:5, t:"Kathedrale", msg:"Das Meisterwerk.", goal:{cath:1}, start:{gold:1000, wood:500, stone:500, iron:100, bread:200, wine:50}}
 ];
 
 const Units = {
@@ -421,9 +429,9 @@ let lastTickTime = 0;
 
 const Game = {
     init: function() {
-        if(localStorage.getItem('sh_v17')) {
+        if(localStorage.getItem('sh_v18')) {
             try {
-                S = JSON.parse(localStorage.getItem('sh_v17'));
+                S = JSON.parse(localStorage.getItem('sh_v18'));
                 if(!S.b.gran && S.b.granary) { S.b.gran = S.b.granary; delete S.b.granary; }
                 UI.init();
                 UI.showModal("Willkommen zurück", "Dein Lehen erwartet dich.", "Weiter");
@@ -571,11 +579,11 @@ const Game = {
         
         // --- GAME OVER CHECK ---
         if(S.pop.curr <= 0) {
-            S.pop.curr = 0; // Prevent negative
+            S.pop.curr = 0; 
             S.paused = true;
             UI.update();
             UI.showModal("GAME OVER", "Das Dorf ist ausgestorben. Dein Lehen ist gefallen.", "Neustart", Game.reset);
-            return; // Stop Tick
+            return; 
         }
 
         S.pop.max = (S.b.hovel*5) + (S.b.house*10) + 5;
@@ -690,8 +698,8 @@ const Game = {
         S.paused = !S.paused; 
         if(!S.paused) lastTickTime = Date.now();
     },
-    save: function() { localStorage.setItem('sh_v17', JSON.stringify(S)); UI.log("Gespeichert", "prod"); },
-    reset: function() { localStorage.removeItem('sh_v17'); location.reload(); }
+    save: function() { localStorage.setItem('sh_v18', JSON.stringify(S)); UI.log("Gespeichert", "prod"); },
+    reset: function() { localStorage.removeItem('sh_v18'); location.reload(); }
 };
 
 const UI = {
@@ -889,7 +897,6 @@ const UI = {
             d.title = b.n;
             
             // RANDOM POSITION (Scatter Placement)
-            // Range 10% to 80% to keep inside box
             d.style.left = (10 + Math.random() * 70) + '%';
             d.style.top = (10 + Math.random() * 70) + '%';
             
