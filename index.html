@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Burgherr V24 - Fixed</title>
+    <title>Burgherr V2.5 - Transparency</title>
     <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=MedievalSharp&display=swap" rel="stylesheet">
     
     <style>
@@ -34,15 +34,12 @@
 
         /* --- HEADER --- */
         header { 
-            background: #1a1a1a; height: 90px; flex-shrink: 0; border-bottom: 3px solid var(--border);
+            background: #1a1a1a; height: 100px; flex-shrink: 0; border-bottom: 3px solid var(--border);
             display: flex; align-items: center; justify-content: space-between; padding: 0 10px; z-index: 100; position: relative;
         }
 
-        .header-info { width: 140px; flex-shrink: 0; display:flex; flex-direction:column; justify-content:center; }
-        .game-title { font-family: 'MedievalSharp'; font-size: 1.4rem; color: var(--highlight); margin: 0; line-height: 1; text-shadow: 2px 2px 0 #000; }
-        .objective { font-size: 0.65rem; background: rgba(255,255,255,0.05); padding: 3px; border-left: 3px solid var(--highlight); margin-top: 3px; color: #bbb; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        
-        /* NEU: Militär Stats im Header */
+        .header-info { width: 130px; flex-shrink: 0; display:flex; flex-direction:column; justify-content:center; }
+        .game-title { font-family: 'MedievalSharp'; font-size: 1.3rem; color: var(--highlight); margin: 0; line-height: 1; text-shadow: 2px 2px 0 #000; }
         .mil-stats { font-size: 0.75rem; color: #ef5350; margin-top: 4px; font-weight: bold; }
 
         /* Scrollable Resources */
@@ -56,12 +53,18 @@
         }
         
         .res-label { font-size: 0.55rem; text-transform: uppercase; color: #888; border-bottom: 1px solid #444; margin-bottom: 2px; }
-        .res-values { display: flex; gap: 10px; justify-content: center; font-weight: bold; font-size: 0.85rem; color: #eee; position: relative; }
+        .res-values { display: flex; gap: 8px; justify-content: center; font-weight: bold; font-size: 0.85rem; color: #eee; position: relative; }
         
-        .res-item { position: relative; display: inline-block; min-width: 20px; text-align: center; }
+        .res-item { position: relative; display: inline-block; min-width: 15px; text-align: center; }
         .rate-ind { font-size: 0.65rem; position: absolute; top: -10px; right: -8px; opacity: 0.9; font-weight: 900; text-shadow: 1px 1px 0 #000; }
         .rate-pos { color: #66bb6a; }
         .rate-neg { color: #ef5350; }
+
+        /* Trend Indicator for Happiness */
+        .trend-val { font-size: 0.7rem; margin-left: 4px; }
+        .trend-up { color: var(--success); }
+        .trend-down { color: var(--danger); }
+        .trend-neutral { color: #888; }
 
         /* Floating Text */
         .float-txt {
@@ -75,10 +78,6 @@
         }
         @keyframes floatUp { 0% { opacity: 1; top: -20px; transform: translateX(-50%); } 100% { opacity: 0; top: -50px; transform: translateX(-50%); } }
         @keyframes floatUpMap { 0% { opacity: 1; transform: translateY(0) scale(1); } 100% { opacity: 0; transform: translateY(-50px) scale(1.5); } }
-
-        .tt-row { display: flex; justify-content: space-between; font-size: 0.8rem; border-bottom: 1px dashed #ccc; padding: 2px 0; }
-        .pop-val { display:flex; gap:5px; align-items:center; }
-        .idle-val { color: var(--highlight); margin-left: 8px; }
 
         /* --- MAIN MAP --- */
         main { display: flex; flex: 1; overflow: hidden; position: relative; }
@@ -151,7 +150,7 @@
 
         /* --- FOOTER (BUILDING) --- */
         footer { 
-            height: 150px; background: #d7ccc8; border-top: 5px solid var(--border); flex-shrink: 0;
+            height: 160px; background: #d7ccc8; border-top: 5px solid var(--border); flex-shrink: 0;
             display: flex; padding: 0 5px; align-items: center; 
             background-image: url('https://www.transparenttextures.com/patterns/aged-paper.png');
             z-index: 60;
@@ -163,15 +162,21 @@
 
         .build-bar { flex: 1; display: flex; gap: 8px; overflow-x: auto; padding: 5px; height: 100%; align-items: center; -webkit-overflow-scrolling: touch; }
         .b-card { 
-            min-width: 75px; height: 100px; background: rgba(0,0,0,0.05); border-radius: 6px; 
+            min-width: 80px; height: 110px; background: rgba(0,0,0,0.05); border-radius: 6px; 
             display: flex; flex-direction: column; align-items: center; justify-content: center; 
             cursor: pointer; position: relative; border: 2px solid transparent; transition: 0.1s; flex-shrink: 0;
         }
         .b-card:active { transform: scale(0.95); }
         .b-card.can-build { background: var(--can-build); border-color: var(--can-build-border); box-shadow: 0 2px 4px rgba(46, 125, 50, 0.2); }
         .b-count { position: absolute; top: -5px; right: -5px; background: var(--accent); color: #fff; font-size: 0.7rem; padding: 2px 6px; border-radius: 10px; font-weight: bold; box-shadow: 1px 1px 2px rgba(0,0,0,0.5); }
-        /* NEU: Worker Indicator auf der Karte */
-        .b-worker { position: absolute; bottom: 2px; left: 2px; color: #2e7d32; font-size: 0.65rem; font-weight: bold; background: rgba(255,255,255,0.7); padding: 0 3px; border-radius: 3px; }
+        
+        /* NEU: Bessere Arbeiter Indikatoren auf der Karte */
+        .b-worker-info { 
+            width: 100%; border-top: 1px solid rgba(0,0,0,0.1); margin-top: 4px; padding-top: 2px;
+            font-size: 0.65rem; text-align: center; color: #555; font-weight: bold;
+        }
+        .w-empty { color: var(--danger); }
+        .w-full { color: var(--success); }
 
         /* MODALS */
         .modal-mask { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 5000; justify-content: center; align-items: center; backdrop-filter: blur(4px); }
@@ -273,9 +278,8 @@
             <div class="res-values">
                 <span class="res-item" title="Holz">🌲<span id="r-wood">0</span><span id="d-wood" class="rate-ind"></span></span>
                 <span class="res-item" title="Stein">🧱<span id="r-stone">0</span><span id="d-stone" class="rate-ind"></span></span>
-                <span class="res-item" title="Eisen">⛓️<span id="r-iron">0</span><span id="d-iron" class="rate-ind"></span></span>
                 <span class="res-item" title="Weizen">🌾<span id="r-wheat">0</span><span id="d-wheat" class="rate-ind"></span></span>
-                <span class="res-item" title="Mehl">🥡<span id="r-flour">0</span><span id="d-flour" class="rate-ind"></span></span>
+                <span class="res-item" title="Hopfen">🌿<span id="r-hops">0</span><span id="d-hops" class="rate-ind"></span></span>
             </div>
         </div>
 
@@ -283,17 +287,16 @@
             <span class="res-label">Nahrung</span>
             <div class="res-values">
                 <span class="res-item" title="Brot">🍞<span id="r-bread">0</span><span id="d-bread" class="rate-ind"></span></span>
-                <span class="res-item" title="Fleisch">🥩<span id="r-meat">0</span><span id="d-meat" class="rate-ind"></span></span>
                 <span class="res-item" title="Äpfel">🍎<span id="r-apple">0</span><span id="d-apple" class="rate-ind"></span></span>
-                <span class="res-item" title="Käse">🧀<span id="r-cheese">0</span><span id="d-cheese" class="rate-ind"></span></span>
+                <span class="res-item" title="Bier">🍺<span id="r-beer">0</span><span id="d-beer" class="rate-ind"></span></span>
             </div>
         </div>
 
         <div class="res-group" onclick="UI.showHappy()" style="cursor:pointer; border-color:#8d6e63;">
-            <span class="res-label">Volk (Info)</span>
+            <span class="res-label">Volk (Trend)</span>
             <div class="res-values pop-val">
                 <span title="Bürger">👨‍🌾 <span id="r-pop">0</span></span>
-                <span title="Beliebtheit">❤️ <span id="r-hap">0</span></span>
+                <span title="Beliebtheit">❤️ <span id="r-hap">0</span><span id="hap-trend" class="trend-val"></span></span>
                 <span title="Untätig" class="idle-val">💤 <span id="r-idle">0</span></span>
             </div>
         </div>
@@ -449,12 +452,13 @@ const Config = {
 /* LOGIC */
 let S = {}; 
 let lastTickTime = 0;
+let rateHistory = {}; // Für Trends
 
 const Game = {
     init: function() {
-        if(localStorage.getItem('sh_v24_fix')) {
+        if(localStorage.getItem('sh_v25_trans')) {
             try {
-                let load = JSON.parse(localStorage.getItem('sh_v24_fix'));
+                let load = JSON.parse(localStorage.getItem('sh_v25_trans'));
                 if(load) S = load;
                 else this.startLevel(1);
                 Game.recalcStats(); 
@@ -479,7 +483,7 @@ const Game = {
             units: { archer:0, pikeman:0, swordsman:0, merc:0 },
             pop: { curr:5, max:0, hap:100 },
             b: {}, w: {}, tax: 0,
-            factors: { food:0, tax:0 },
+            factors: { food:0, tax:0, change:0 },
             rates: {} 
         };
         for(let k in l.start) S.res[k] = l.start[k];
@@ -506,8 +510,8 @@ const Game = {
         if(S.paused) return;
         let maxS = (S.b.stock || 1) * 50;
         let maxF = (S.b.gran || 1) * 50;
-        let curS = 0; ['wood','stone','iron','wheat','flour'].forEach(k=>curS+=S.res[k]);
-        let curF = 0; ['bread','meat','apple','cheese'].forEach(k=>curF+=S.res[k]);
+        let curS = 0; ['wood','stone','iron','wheat','flour','hops'].forEach(k=>curS+=S.res[k]);
+        let curF = 0; ['bread','meat','apple','cheese','beer'].forEach(k=>curF+=S.res[k]);
 
         if(type === 'wood' || type === 'stone') {
             if(curS >= maxS) { UI.showFloatingText(type, "Lager Voll!", "neg"); return; }
@@ -583,7 +587,7 @@ const Game = {
             if(Math.random() < 0.2) {
                 S.pop.curr--;
                 UI.log("Ein Bürger verhungert.", "death");
-                Game.unassignWorker(true); // True: Priorisiere Überleben (Feuere Luxusarbeiter zuerst)
+                Game.unassignWorker(true);
             }
         } else { hChg += 1; S.factors.food = 1; }
 
@@ -592,52 +596,47 @@ const Game = {
         dRes.gold = (dRes.gold||0) + (S.pop.curr * tx.g);
         S.factors.tax = tx.h;
 
+        // FIXED BEER LOGIC
         let availBeer = (S.res.beer||0) + (dRes.beer||0);
-        if(availBeer >= S.pop.curr && S.pop.curr > 0) {
-            dRes.beer -= S.pop.curr;
-            hChg += 5;
+        let drinkers = Math.min(availBeer, S.pop.curr);
+        if(drinkers > 0) {
+            dRes.beer -= drinkers;
+            // Wenn 100% der Leute trinken = +5 Laune. Wenn 50% = +2.5
+            let beerBonus = (drinkers / S.pop.curr) * 5;
+            hChg += beerBonus;
         }
 
         hChg += ((S.b.church||0) * 5);
+        
         let diffHapp = Math.max(-5, Math.min(5, hChg));
         S.pop.hap = Math.max(0, Math.min(100, S.pop.hap + diffHapp));
+        S.factors.change = diffHapp; // Store for UI
 
         for(let k in dRes) {
             S.res[k] = (S.res[k]||0) + dRes[k];
             if(S.res[k] < 0) S.res[k] = 0;
         }
 
-        // --- BUG FIX: LAGERLOGIK ---
-        let curS = 0; ['wood','stone','iron','wheat','flour'].forEach(k=>curS+=S.res[k]);
-        let curF = 0; ['bread','meat','apple','cheese'].forEach(k=>curF+=S.res[k]);
+        // FIXED LAGERLOGIK (Include Hops & Beer)
+        let curS = 0; ['wood','stone','iron','wheat','flour','hops'].forEach(k=>curS+=S.res[k]);
+        let curF = 0; ['bread','meat','apple','cheese','beer'].forEach(k=>curF+=S.res[k]);
 
         if(curS > maxS) {
-            let types = ['wood','stone','iron','wheat','flour'];
+            let types = ['wood','stone','iron','wheat','flour','hops'];
             let over = curS - maxS;
-            // Lösche gerecht: Wer am meisten da ist, fliegt raus (oder einfach Reihe um, aber nur wenn > 0)
             while(over > 0) {
-                let deletedSomething = false;
-                for(let t of types) { 
-                    if(S.res[t] > 0 && over > 0) { 
-                        S.res[t]--; over--; 
-                        deletedSomething = true;
-                    } 
-                }
-                if(!deletedSomething) break; // Should not happen if calcs are correct
+                let del = false;
+                for(let t of types) { if(S.res[t] > 0 && over > 0) { S.res[t]--; over--; del=true; } }
+                if(!del) break;
             }
         }
         if(curF > maxF) {
-            let types = ['apple','bread','meat','cheese']; // Billiges zuerst
+            let types = ['apple','bread','meat','cheese','beer'];
             let over = curF - maxF;
             while(over > 0) {
-                let deletedSomething = false;
-                for(let t of types) { 
-                    if(S.res[t] > 0 && over > 0) { 
-                        S.res[t]--; over--; 
-                        deletedSomething = true;
-                    } 
-                }
-                if(!deletedSomething) break;
+                let del = false;
+                for(let t of types) { if(S.res[t] > 0 && over > 0) { S.res[t]--; over--; del=true; } }
+                if(!del) break;
             }
         }
 
@@ -707,21 +706,13 @@ const Game = {
         }
     },
 
-    // --- BUG FIX: WORKER FIRING PRIORITY ---
     unassignWorker: function(protectFood) {
-        // Liste von Jobs, die man zuerst feuern sollte (Luxus, Waffen, Grundstoffe)
-        // Lebensmittel am Ende
         const fireOrder = ['merc','smith','armor','fletch','pole','iron','gold','quarry','wood','brew','mill','bake','dairy','hunter','apple','wheat','hops'];
-        
         for(let key of fireOrder) {
-            if(S.w[key] > 0) {
-                S.w[key]--;
-                return true; // Erfolgreich gefeuert
-            }
+            if(S.w[key] > 0) { S.w[key]--; return true; }
         }
-        // Fallback falls Job nicht in Liste
         for(let k in S.w) { if(S.w[k] > 0) { S.w[k]--; return true; } }
-        return false; // Niemand zum Feuern da
+        return false;
     },
 
     build: function(key) {
@@ -747,12 +738,10 @@ const Game = {
             if(S.res.gold >= 50) { S.res.gold-=50; S.units.merc++; UI.log("Söldner angeheuert", "prod"); }
         } else {
             if((S.b.barrack||0) < 1) return;
-            // --- BUG FIX: PHANTOM SOLDATEN ---
             if(idle < 1) { 
-                // Versuch jemanden zu feuern
                 let fired = Game.unassignWorker(true);
-                if(!fired) return; // Abbruch! Keine Leute mehr da (weder Idle noch Arbeiter)
-                work--; idle++; // Stats korrigieren
+                if(!fired) return; 
+                work--; idle++; 
             }
             if(idle < 1) return; 
 
@@ -815,8 +804,8 @@ const Game = {
         UI.update(); UI.renderMarket();
     },
 
-    save: function() { localStorage.setItem('sh_v24_fix', JSON.stringify(S)); UI.log("Gespeichert", "prod"); },
-    reset: function() { localStorage.removeItem('sh_v24_fix'); location.reload(); }
+    save: function() { localStorage.setItem('sh_v25_trans', JSON.stringify(S)); UI.log("Gespeichert", "prod"); },
+    reset: function() { localStorage.removeItem('sh_v25_trans'); location.reload(); }
 };
 
 const UI = {
@@ -838,7 +827,7 @@ const UI = {
     },
     
     update: function() {
-        ['gold','wood','stone','iron','wheat','flour','bread','meat','apple','cheese','bow','spear','sword','merc'].forEach(k => {
+        ['gold','wood','stone','iron','wheat','flour','hops','bread','meat','apple','cheese','beer','bow','spear','sword','merc'].forEach(k => {
             let el = document.getElementById('r-'+k);
             if(el) {
                 let val = S.res[k] !== undefined ? S.res[k] : (S.units[k] !== undefined ? S.units[k] : 0);
@@ -857,7 +846,6 @@ const UI = {
         let sold = 0; for(let k in S.units) sold += S.units[k];
         let idle = S.pop.curr - sold - work;
 
-        // NEU: Update Militär Stats
         let weps = (S.res.bow||0) + (S.res.spear||0) + (S.res.sword||0) + (S.res.armor||0);
         document.getElementById('s-sold').innerText = sold;
         document.getElementById('s-wep').innerText = weps;
@@ -868,6 +856,15 @@ const UI = {
         document.getElementById('day-disp').innerText = S.day;
         document.getElementById('lvl-disp').innerText = S.lvl;
         
+        // TREND DISPLAY
+        let trEl = document.getElementById('hap-trend');
+        let change = S.factors.change || 0;
+        if(trEl) {
+            let sym = change > 0 ? '↗' : (change < 0 ? '↘' : '→');
+            trEl.innerText = `${sym} (${change > 0 ? '+' : ''}${Math.round(change*10)/10})`;
+            trEl.className = 'trend-val ' + (change > 0 ? 'trend-up' : (change < 0 ? 'trend-down' : 'trend-neutral'));
+        }
+
         let tIdx = Config.taxes[S.tax];
         document.getElementById('tax-name').innerText = tIdx.n;
         
@@ -880,10 +877,10 @@ const UI = {
         }
         
         let maxS = (S.b.stock||1)*50;
-        let curS = 0; ['wood','stone','iron','wheat','flour'].forEach(k=>curS+=(S.res[k]||0));
+        let curS = 0; ['wood','stone','iron','wheat','flour','hops'].forEach(k=>curS+=(S.res[k]||0));
         
         let maxF = (S.b.gran||1)*50;
-        let curF = 0; ['bread','meat','apple','cheese'].forEach(k=>curF+=(S.res[k]||0));
+        let curF = 0; ['bread','meat','apple','cheese','beer'].forEach(k=>curF+=(S.res[k]||0));
 
         let l = Levels.find(x => x.id == S.lvl);
         if(l) {
@@ -909,14 +906,19 @@ const UI = {
         let tax = S.factors.tax;
         let food = S.factors.food;
         let church = (S.b.church||0) * 5;
-        let total = tax + food + church;
+        // Calc beer impact from last tick approximation
+        let beerImpact = Math.max(0, (S.factors.change - tax - food - church)); 
+        let total = S.factors.change;
         
         const c = (v) => v > 0 ? '#2e7d32' : (v < 0 ? '#b71c1c' : '#000');
         
         let html = `
             <div style="text-align:left; margin:10px 20px;">
                 <div style="display:flex;justify-content:space-between; border-bottom:1px solid #ccc; padding:5px 0;">
-                    <span>Nahrungsvielfalt:</span> <span style="font-weight:bold; color:${c(food)}">${food>0?'+':''}${food}</span>
+                    <span>Essen:</span> <span style="font-weight:bold; color:${c(food)}">${food>0?'+':''}${food}</span>
+                </div>
+                <div style="display:flex;justify-content:space-between; border-bottom:1px solid #ccc; padding:5px 0;">
+                    <span>Bier:</span> <span style="font-weight:bold; color:${c(beerImpact)}">+${Math.round(beerImpact*10)/10}</span>
                 </div>
                 <div style="display:flex;justify-content:space-between; border-bottom:1px solid #ccc; padding:5px 0;">
                     <span>Steuern:</span> <span style="font-weight:bold; color:${c(tax)}">${tax}</span>
@@ -925,10 +927,9 @@ const UI = {
                     <span>Religion:</span> <span style="font-weight:bold; color:${c(church)}">+${church}</span>
                 </div>
                 <div style="display:flex;justify-content:space-between; margin-top:10px; font-weight:900; font-size:1.2rem;">
-                    <span>Änderung:</span> <span style="color:${c(total)}">${total>0?'+':''}${total}</span>
+                    <span>Gesamt:</span> <span style="color:${c(total)}">${total>0?'+':''}${Math.round(total*10)/10} / Tick</span>
                 </div>
             </div>
-            <p style="font-size:0.8rem; color:#666; margin-top:10px;">(Die Beliebtheit nähert sich diesem Wert an)</p>
         `;
         UI.showModal("Volkslaune", "", "Schließen");
         document.getElementById('m-body').innerHTML = html;
@@ -936,13 +937,13 @@ const UI = {
 
     showStorage: function() {
         let maxS = (S.b.stock||1)*50;
-        let curS = 0; ['wood','stone','iron','wheat','flour'].forEach(k=>curS+=(S.res[k]||0));
+        let curS = 0; ['wood','stone','iron','wheat','flour','hops'].forEach(k=>curS+=(S.res[k]||0));
         UI.showModal("Lager", `Belegung: ${Math.floor(curS)} / ${maxS}\nBaue 'Vorratslager', um das Limit zu erhöhen.`, "Schließen");
     },
     
     showFood: function() {
         let maxF = (S.b.gran||1)*50;
-        let curF = 0; ['bread','meat','apple','cheese'].forEach(k=>curF+=(S.res[k]||0));
+        let curF = 0; ['bread','meat','apple','cheese','beer'].forEach(k=>curF+=(S.res[k]||0));
         UI.showModal("Kornspeicher", `Nahrung: ${Math.floor(curF)} / ${maxF}\nBaue 'Kornspeicher', um das Limit zu erhöhen.`, "Schließen");
     },
 
@@ -967,8 +968,8 @@ const UI = {
 
     showFloatingText: function(key, text, type) {
         let targetId = "";
-        if(['wood','stone','iron','wheat','flour'].includes(key)) targetId = 'rg-store';
-        else if(['bread','meat','apple','cheese'].includes(key)) targetId = 'rg-food';
+        if(['wood','stone','iron','wheat','flour','hops'].includes(key)) targetId = 'rg-store';
+        else if(['bread','meat','apple','cheese','beer'].includes(key)) targetId = 'rg-food';
         else if(key === 'gold') targetId = 'rg-gold';
         else return; 
         
@@ -1024,8 +1025,14 @@ const UI = {
             el.setAttribute('data-key', k);
             el.onclick = () => Game.build(k);
             
-            // NEU: Anzeige der Arbeiter auf der Karte
-            let workerHtml = (S.w[k] > 0) ? `<div class="b-worker">👤${S.w[k]}</div>` : '';
+            // TRANSPARENCY: Zeige Arbeiter an (Rot wenn leer)
+            let workerHtml = "";
+            if(S.b[k] > 0) {
+                let w = S.w[k];
+                let max = S.b[k]; // Annahme 1 Worker pro Gebäude
+                let wClass = w < max ? 'w-empty' : 'w-full';
+                workerHtml = `<div class="b-worker-info ${wClass}">Arbeiter: ${w} / ${max}</div>`;
+            }
 
             el.innerHTML = `
                 ${S.b[k]>0 ? `<div class="b-count">${S.b[k]}</div>`:''}
