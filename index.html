@@ -3,250 +3,399 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Der Text-Burgherr</title>
-    <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap" rel="stylesheet">
+    <title>Burgherr WebApp</title>
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=MedievalSharp&display=swap" rel="stylesheet">
     
     <style>
         :root {
-            --bg-color: #2c241b; /* Dunkler Hintergrund außen */
-            --parchment: #f4e4bc; /* Pergament-Farbe */
-            --wood: #5c4033; /* Holz-Farbe für Ränder */
-            --text-color: #3e2723; /* Dunkelbraune Schrift */
-            --accent-red: #8a0303; /* Für Warnungen/Angriffe */
-            --gold: #d4af37; /* Goldfarbe */
+            /* Moderne Farbpalette: Gedämpft, aber sauber */
+            --bg-body: #2b2b2b;       /* Dunkelgrau statt braun */
+            --bg-panel: #fdf6e3;      /* Helles Creme (Solarized Light Stil) */
+            --primary: #8b5e3c;       /* Leder-Braun */
+            --primary-dark: #5d4037;
+            --accent: #d32f2f;        /* Rot für Wichtiges */
+            --text-main: #333333;     /* Dunkles Grau für Text */
+            --text-light: #fdf6e3;
+            --border-radius: 8px;
+            --shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
+
+        * { box-sizing: border-box; }
 
         body {
-            font-family: 'MedievalSharp', cursive;
-            background-color: var(--bg-color);
-            color: var(--text-color);
+            font-family: 'Lato', sans-serif; /* Standard: Gut lesbar */
+            background-color: var(--bg-body);
+            color: var(--text-main);
             margin: 0;
             padding: 20px;
+            height: 100vh;
             display: flex;
             justify-content: center;
-            height: 100vh;
-            box-sizing: border-box;
         }
 
-        /* Der Hauptcontainer (Das "Blatt Papier") */
-        #game-container {
-            background-color: var(--parchment);
+        #app {
+            background-color: var(--bg-panel);
             width: 100%;
             max-width: 1200px;
-            border: 8px solid var(--wood);
-            border-radius: 10px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.8);
+            border-radius: var(--border-radius);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
             display: flex;
             flex-direction: column;
             overflow: hidden;
         }
 
-        /* --- KOPFZEILE (RESSOURCEN) --- */
+        /* --- HEADER --- */
         header {
-            background-color: var(--wood);
-            color: var(--parchment);
-            padding: 15px;
+            background-color: var(--primary);
+            color: var(--text-light);
+            padding: 15px 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 4px solid #3e2723;
+            box-shadow: var(--shadow);
+            z-index: 10;
         }
 
-        h1 { margin: 0; font-size: 1.5rem; text-shadow: 2px 2px 0 #000; }
+        h1 {
+            font-family: 'MedievalSharp', cursive; /* Flair bleibt im Titel */
+            margin: 0;
+            font-size: 1.8rem;
+            letter-spacing: 1px;
+        }
 
         .resource-bar {
             display: flex;
-            gap: 20px;
+            gap: 25px;
+            font-weight: 700;
             font-size: 1.1rem;
         }
 
-        .res-item { display: flex; align-items: center; gap: 5px; }
+        .res span { margin-left: 5px; }
 
-        /* --- HAUPTBEREICH (3 SPALTEN) --- */
+        /* --- MAIN LAYOUT --- */
         main {
             display: flex;
             flex: 1;
-            overflow: hidden; /* Damit nur das Log scrollt */
+            overflow: hidden;
         }
 
-        /* Spalte 1: Aktionen */
-        #controls {
-            width: 250px;
-            background-color: rgba(0,0,0,0.05);
+        /* Sidebar Links & Rechts */
+        aside {
+            width: 260px;
+            background-color: #f4ecd8;
             padding: 20px;
-            border-right: 2px solid var(--wood);
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
+            overflow-y: auto;
+            border-right: 1px solid #dccbb1;
         }
 
-        .category-title {
-            font-weight: bold;
-            margin-top: 15px;
-            border-bottom: 1px solid var(--text-color);
-            padding-bottom: 5px;
+        aside.right {
+            border-right: none;
+            border-left: 1px solid #dccbb1;
         }
+
+        h2 {
+            font-family: 'MedievalSharp', cursive;
+            color: var(--primary-dark);
+            margin-top: 0;
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 5px;
+            font-size: 1.4rem;
+        }
+
+        /* Buttons */
+        .btn-group { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
 
         button {
-            background-color: var(--wood);
-            color: var(--parchment);
-            border: 2px solid #3e2723;
-            padding: 10px;
-            font-family: 'MedievalSharp', cursive;
-            font-size: 1rem;
+            background-color: #fff;
+            border: 1px solid var(--primary);
+            color: var(--primary-dark);
+            padding: 12px;
+            border-radius: var(--border-radius);
+            font-family: 'Lato', sans-serif;
+            font-weight: bold;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.2s ease;
             text-align: left;
+            display: flex;
+            justify-content: space-between;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
 
         button:hover {
-            background-color: var(--accent-red);
-            transform: translateX(5px);
+            background-color: var(--primary);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
         }
 
-        /* Spalte 2: Das Logbuch (Mitte) */
+        .cost { font-size: 0.85rem; opacity: 0.8; }
+
+        /* Log Area */
         #log-area {
             flex: 1;
             padding: 20px;
-            overflow-y: auto; /* Scrollbar wenn voll */
-            background-image: radial-gradient(#f4e4bc 20%, #e0d0a0 80%);
+            overflow-y: auto;
+            background-color: #fff;
             display: flex;
             flex-direction: column;
-            justify-content: flex-end; /* Text startet unten */
+            gap: 8px;
         }
 
         .log-entry {
-            margin-bottom: 10px;
-            padding-bottom: 10px;
-            border-bottom: 1px dashed rgba(62, 39, 35, 0.3);
-            line-height: 1.4;
+            padding: 8px 12px;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+            border-left: 4px solid #ddd;
+            animation: fadeIn 0.3s ease;
+            font-size: 1rem;
+            line-height: 1.5;
         }
 
-        .log-entry.important { color: var(--accent-red); font-weight: bold; }
-        .log-entry.speech { font-style: italic; color: #555; }
-
-        /* Spalte 3: Status (Rechts) */
-        #status-panel {
-            width: 250px;
-            background-color: rgba(0,0,0,0.05);
-            padding: 20px;
-            border-left: 2px solid var(--wood);
+        .log-entry.info { border-left-color: var(--primary); }
+        .log-entry.success { border-left-color: #2e7d32; background-color: #e8f5e9; }
+        .log-entry.warning { border-left-color: var(--accent); background-color: #ffebee; }
+        .log-entry.speech { 
+            font-style: italic; 
+            border-left-color: #f57f17; 
+            background-color: #fffde7;
         }
 
-        .status-box {
-            background: rgba(255,255,255,0.3);
-            border: 1px solid var(--wood);
-            padding: 10px;
-            margin-bottom: 15px;
-        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Scrollbar Styling (für Webkit Browser) */
-        ::-webkit-scrollbar { width: 10px; }
-        ::-webkit-scrollbar-track { background: var(--parchment); }
-        ::-webkit-scrollbar-thumb { background: var(--wood); }
+        /* Status Boxen */
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .stat-row:last-child { border-bottom: none; }
 
     </style>
 </head>
 <body>
 
-<div id="game-container">
+<div id="app">
     <header>
         <h1>🏰 Der Text-Burgherr</h1>
         <div class="resource-bar">
-            <div class="res-item">💰 <span id="res-gold">100</span></div>
-            <div class="res-item">🌲 <span id="res-wood">50</span></div>
-            <div class="res-item">🧱 <span id="res-stone">0</span></div>
-            <div class="res-item">🍎 <span id="res-food">20</span></div>
-            <div class="res-item">😊 <span id="res-pop">100</span></div>
+            <div class="res">💰 <span id="ui-gold">0</span></div>
+            <div class="res">🌲 <span id="ui-wood">0</span></div>
+            <div class="res">🧱 <span id="ui-stone">0</span></div>
+            <div class="res">🍎 <span id="ui-food">0</span></div>
+            <div class="res">❤️ <span id="ui-pop">0</span></div>
         </div>
     </header>
 
     <main>
-        <section id="controls">
-            <div class="category-title">Wirtschaft</div>
-            <button onclick="gameAction('wood')">Holzfäller bauen (10 💰)</button>
-            <button onclick="gameAction('farm')">Apfelgarten bauen (20 💰)</button>
-            
-            <div class="category-title">Verwaltung</div>
-            <button onclick="gameAction('tax')">Steuern erhöhen</button>
-            <button onclick="gameAction('rations')">Rationen ändern</button>
-
-            <div class="category-title">Militär</div>
-            <button onclick="gameAction('recruit')">Bogenmacher bauen (50 💰)</button>
-        </section>
-
-        <section id="log-area" id="game-log">
-            <div class="log-entry speech">"Willkommen, Sire! Eure Burg wartet auf Befehle."</div>
-            <div class="log-entry">Die Vorräte sind gefüllt. Das Volk ist zufrieden.</div>
-        </section>
-
-        <section id="status-panel">
-            <h3>Statusbericht</h3>
-            <div class="status-box">
-                <strong>Bevölkerung:</strong><br>
-                8/10 Bauern<br>
-                0 Soldaten
+        <aside>
+            <h2>Bauwesen</h2>
+            <div class="btn-group">
+                <button onclick="Game.build('woodcutter')">
+                    <span>Holzfäller</span>
+                    <span class="cost">15💰</span>
+                </button>
+                <button onclick="Game.build('quarry')">
+                    <span>Steinbruch</span>
+                    <span class="cost">50💰</span>
+                </button>
+                <button onclick="Game.build('farm')">
+                    <span>Apfelplantage</span>
+                    <span class="cost">30💰</span>
+                </button>
+                <button onclick="Game.build('house')">
+                    <span>Hütte</span>
+                    <span class="cost">10🌲</span>
+                </button>
             </div>
-            <div class="status-box">
-                <strong>Gebäude:</strong><br>
-                1x Bergfried<br>
-                0x Holzfäller
+
+            <h2>Schatzkammer</h2>
+            <div class="btn-group">
+                <button onclick="Game.changeTax(1)">Steuern erhöhen</button>
+                <button onclick="Game.changeTax(-1)">Steuern senken</button>
             </div>
-            <div class="status-box">
-                <strong>Nachrichten:</strong><br>
-                Keine Feinde in Sicht.
-            </div>
-        </section>
+        </aside>
+
+        <section id="log-area"></section>
+
+        <aside class="right">
+            <h2>Status</h2>
+            <div class="stat-row"><strong>Tag:</strong> <span id="ui-day">1</span></div>
+            <div class="stat-row"><strong>Bewohner:</strong> <span id="ui-pop-count">0/0</span></div>
+            <div class="stat-row"><strong>Steuersatz:</strong> <span id="ui-tax">0</span></div>
+            <br>
+            <h2>Gebäude</h2>
+            <div class="stat-row">Holzfäller: <span id="count-woodcutter">0</span></div>
+            <div class="stat-row">Steinbrüche: <span id="count-quarry">0</span></div>
+            <div class="stat-row">Farmen: <span id="count-farm">0</span></div>
+            <div class="stat-row">Hütten: <span id="count-house">0</span></div>
+        </aside>
     </main>
 </div>
 
 <script>
-    // Kleines Dummy-Skript, damit was passiert
-    const logArea = document.getElementById('log-area');
+    // --- KONFIGURATION (Balancing) ---
+    const Config = {
+        tickRate: 2000, // Alle 2 Sekunden ein "Tag"
+        buildings: {
+            woodcutter: { costGold: 15, costWood: 0, prodWood: 2, name: "Holzfäller" },
+            quarry:     { costGold: 50, costWood: 20, prodStone: 1, name: "Steinbruch" },
+            farm:       { costGold: 30, costWood: 10, prodFood: 4, name: "Apfelplantage" },
+            house:      { costGold: 0, costWood: 10, capacity: 5, name: "Hütte" }
+        }
+    };
 
-    function addToLog(text, type = 'normal') {
-        const div = document.createElement('div');
-        div.className = 'log-entry ' + type;
+    // --- SPIEL ZUSTAND (State) ---
+    const State = {
+        day: 1,
+        gold: 100,
+        wood: 50,
+        stone: 0,
+        food: 50,
+        popularity: 100,
+        population: 5,
+        maxPopulation: 10, // Startkapazität (durch Burg)
+        taxLevel: 0,
         
-        // Fügt Zeitstempel hinzu (nur simuliert)
-        div.innerHTML = `> ${text}`;
-        
-        logArea.appendChild(div);
-        
-        // Automatisch nach unten scrollen
-        logArea.scrollTop = logArea.scrollHeight;
-    }
+        buildings: {
+            woodcutter: 0,
+            quarry: 0,
+            farm: 0,
+            house: 0
+        }
+    };
 
-    function gameAction(action) {
-        // Hier kommt später die echte Logik rein.
-        // Jetzt simulieren wir nur die Antworten.
-        
-        if(action === 'wood') {
-            addToLog("Ihr platziert eine Holzfällerhütte am Waldrand.");
-            // Simulierter Abzug von Gold (nur optisch)
-            updateRes('res-gold', -10);
-        }
-        else if(action === 'farm') {
-            addToLog("Ein Apfelgarten wurde angelegt. Die Bauern freuen sich.");
-            updateRes('res-gold', -20);
-        }
-        else if(action === 'tax') {
-            addToLog("Das Volk murrt! 'Wir schuften uns schon zu Tode, Mylord!'", "speech");
-            updateRes('res-pop', -5);
-        }
-        else if(action === 'recruit') {
-            addToLog("Wir benötigen mehr Holz für den Bogenmacher, Sire!", "important");
-        }
-        else {
-            addToLog("Dafür fehlen euch die Mittel, Euer Gnaden.");
-        }
-    }
+    // --- GAME ENGINE ---
+    const Game = {
+        init: function() {
+            this.log("Willkommen, Sire! Eure Ländereien warten auf Bewirtschaftung.", "speech");
+            this.updateUI();
+            // Startet den Loop
+            setInterval(this.tick.bind(this), Config.tickRate);
+        },
 
-    function updateRes(id, amount) {
-        const el = document.getElementById(id);
-        let current = parseInt(el.innerText);
-        el.innerText = current + amount;
-    }
+        // Der "Herzschlag" des Spiels (passiert alle X Sekunden)
+        tick: function() {
+            State.day++;
+
+            // 1. Produktion
+            const woodProd = State.buildings.woodcutter * Config.buildings.woodcutter.prodWood;
+            const stoneProd = State.buildings.quarry * Config.buildings.quarry.prodStone;
+            const foodProd = State.buildings.farm * Config.buildings.farm.prodFood;
+
+            State.wood += woodProd;
+            State.stone += stoneProd;
+            State.food += foodProd;
+
+            // 2. Konsum (Nahrung)
+            const foodConsumption = State.population; 
+            if (State.food >= foodConsumption) {
+                State.food -= foodConsumption;
+            } else {
+                State.food = 0;
+                this.log("Sire! Das Volk hungert!", "warning");
+                State.popularity -= 5;
+            }
+
+            // 3. Steuern
+            if (State.taxLevel > 0) {
+                const taxIncome = State.population * State.taxLevel;
+                State.gold += taxIncome;
+                State.popularity -= (State.taxLevel * 2); // Steuern machen unbeliebt
+            }
+
+            // 4. Bevölkerungswachstum (einfach)
+            if (State.popularity > 80 && State.population < State.maxPopulation && State.food > 10) {
+                State.population++;
+                this.log("Ein neuer Siedler hat die Burg erreicht.", "success");
+            }
+
+            // Zufällige Events (kleine Chance)
+            if (Math.random() < 0.1) this.randomEvent();
+
+            this.updateUI();
+        },
+
+        // Gebäude bauen
+        build: function(type) {
+            const building = Config.buildings[type];
+            
+            // Kosten prüfen
+            if (State.gold >= building.costGold && State.wood >= (building.costWood || 0)) {
+                // Bezahlen
+                State.gold -= building.costGold;
+                State.wood -= (building.costWood || 0);
+                
+                // Bauen
+                State.buildings[type]++;
+                
+                // Spezialeffekte
+                if (type === 'house') State.maxPopulation += building.capacity;
+
+                this.log(`${building.name} errichtet.`, "success");
+                this.updateUI();
+            } else {
+                this.log("Nicht genügend Ressourcen, Mylord.", "warning");
+            }
+        },
+
+        changeTax: function(amount) {
+            State.taxLevel += amount;
+            if (State.taxLevel < 0) State.taxLevel = 0;
+            this.log(`Steuersatz auf ${State.taxLevel} gesetzt.`, "info");
+            this.updateUI();
+        },
+
+        randomEvent: function() {
+            const events = [
+                "Ein Bär wurde im Wald gesichtet!",
+                "Der Narr hat einen Witz gemacht, das Volk lacht.",
+                "Ein Gewitter zieht auf."
+            ];
+            const text = events[Math.floor(Math.random() * events.length)];
+            this.log(text, "speech");
+        },
+
+        // UI Aktualisierung
+        updateUI: function() {
+            // Ressourcen
+            document.getElementById('ui-gold').innerText = Math.floor(State.gold);
+            document.getElementById('ui-wood').innerText = Math.floor(State.wood);
+            document.getElementById('ui-stone').innerText = Math.floor(State.stone);
+            document.getElementById('ui-food').innerText = Math.floor(State.food);
+            document.getElementById('ui-pop').innerText = Math.floor(State.popularity);
+            
+            // Status Panel
+            document.getElementById('ui-day').innerText = State.day;
+            document.getElementById('ui-pop-count').innerText = `${State.population} / ${State.maxPopulation}`;
+            document.getElementById('ui-tax').innerText = State.taxLevel;
+
+            // Gebäude Counts
+            document.getElementById('count-woodcutter').innerText = State.buildings.woodcutter;
+            document.getElementById('count-quarry').innerText = State.buildings.quarry;
+            document.getElementById('count-farm').innerText = State.buildings.farm;
+            document.getElementById('count-house').innerText = State.buildings.house;
+        },
+
+        // Log-System
+        log: function(text, type = 'info') {
+            const logEl = document.getElementById('log-area');
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.innerHTML = `<strong>Tag ${State.day}:</strong> ${text}`;
+            logEl.appendChild(entry);
+            logEl.scrollTop = logEl.scrollHeight;
+        }
+    };
+
+    // Spiel starten
+    Game.init();
 </script>
 
 </body>
