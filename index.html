@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Burgherr WebApp - V2.6 Detail View</title>
+    <title>Burgherr WebApp - V3.0 Campaign</title>
     <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=MedievalSharp&display=swap" rel="stylesheet">
     
     <style>
@@ -18,9 +18,14 @@
         #app { background: var(--bg-panel); width: 100%; max-width: 1650px; border-radius: var(--border-radius); box-shadow: 0 10px 30px rgba(0,0,0,0.6); display: flex; flex-direction: column; overflow: hidden; position: relative; }
 
         /* HEADER */
-        header { background: var(--secondary); color: var(--text-light); padding: 5px 15px; display: flex; align-items: center; justify-content: space-between; border-bottom: 4px solid var(--primary); height: 120px; }
-        .header-left h1 { font-family: 'MedievalSharp', cursive; margin: 0; font-size: 1.4rem; color: var(--highlight); text-shadow: 2px 2px 0 #000; }
+        header { background: var(--secondary); color: var(--text-light); padding: 5px 15px; display: flex; align-items: center; justify-content: space-between; border-bottom: 4px solid var(--primary); height: 130px; }
+        .header-left { display:flex; flex-direction:column; justify-content:center; }
+        .header-left h1 { font-family: 'MedievalSharp', cursive; margin: 0; font-size: 1.6rem; color: var(--highlight); text-shadow: 2px 2px 0 #000; }
         
+        /* LEVEL ZIEL BOX */
+        .objective-box { background: rgba(0,0,0,0.3); padding: 5px 10px; border-radius: 4px; font-size: 0.85rem; margin-top: 5px; border-left: 3px solid var(--highlight); }
+        .objective-title { font-weight: bold; color: var(--highlight); text-transform: uppercase; font-size: 0.7rem; }
+
         .res-container { display: flex; gap: 6px; flex: 1; justify-content: flex-end; }
         .res-group { background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 4px 6px; display: flex; flex-direction: column; min-width: 85px; position: relative; cursor: default; }
         .res-group:hover { background: rgba(255,255,255,0.1); }
@@ -61,33 +66,26 @@
         .worker-pill.empty { background: #ffcdd2; color: #b71c1c; }
         .def-pill { background: #cfd8dc; color: #37474f; font-weight:bold; font-size:0.75rem; padding: 2px 6px; border-radius:4px; border: 1px solid #b0bec5; }
 
-        /* MARKET MODAL STYLE */
-        .trade-row-simple { display: flex; justify-content: space-between; align-items: center; background: #fff; padding: 8px; border-bottom: 1px solid #ddd; }
-        .trade-row-simple:last-child { border-bottom: none; }
-        .trade-label { font-weight: bold; width: 100px; text-align: left; display: flex; align-items: center; gap: 5px; }
-        .trade-actions { display: flex; gap: 10px; }
-        .trade-btn { border: 1px solid #999; background: #eee; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; font-weight: bold; min-width: 80px; }
-        .trade-btn:hover { background: var(--highlight); border-color: #f57f17; }
-
-        /* NEW LOG DESIGN */
+        /* LOG */
         .log-card { background: #fff; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border-left: 5px solid #ccc; font-size: 0.9rem; overflow: hidden; margin-bottom: 5px; }
         .log-header { background: #f5f5f5; padding: 4px 10px; font-weight: bold; color: #555; font-size: 0.75rem; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; }
         .log-content { padding: 8px 10px; line-height: 1.4; }
-        
-        .log-card.report { border-left-color: #8d6e63; } 
-        .log-card.report .log-header { background: #efebe9; color: #5d4037; }
-        .log-card.error { border-left-color: #d32f2f; background: #ffebee; color: #b71c1c; }
-        .log-card.error .log-header { background: #ffcdd2; color: #b71c1c; }
-        .log-card.success { border-left-color: #2e7d32; background: #e8f5e9; }
-        .log-card.success .log-header { background: #c8e6c9; color: #1b5e20; }
-        .log-card.combat { border-left-color: #333; background: #eceff1; }
-        .log-card.combat .log-header { background: #cfd8dc; color: #263238; }
+        .log-card.report { border-left-color: #8d6e63; } .log-card.report .log-header { background: #efebe9; color: #5d4037; }
+        .log-card.error { border-left-color: #d32f2f; background: #ffebee; color: #b71c1c; } .log-card.error .log-header { background: #ffcdd2; color: #b71c1c; }
+        .log-card.success { border-left-color: #2e7d32; background: #e8f5e9; } .log-card.success .log-header { background: #c8e6c9; color: #1b5e20; }
+        .log-card.combat { border-left-color: #333; background: #eceff1; } .log-card.combat .log-header { background: #cfd8dc; color: #263238; }
         .log-card.beer { border-left-color: #f57f17; background-color: #fff8e1; color: #bf360c; }
-
         .rep-row { display: flex; margin-bottom: 2px; align-items: baseline; }
         .rep-label { width: 80px; font-weight: bold; font-size: 0.8rem; text-transform: uppercase; color: #777; }
         .rep-val { font-weight: bold; }
         .rep-val.plus { color: #2e7d32; } .rep-val.minus { color: #c62828; }
+
+        /* MARKET MODAL */
+        .trade-row-simple { display: flex; justify-content: space-between; align-items: center; background: #fff; padding: 8px; border-bottom: 1px solid #ddd; }
+        .trade-label { font-weight: bold; width: 100px; text-align: left; display: flex; align-items: center; gap: 5px; }
+        .trade-actions { display: flex; gap: 10px; }
+        .trade-btn { border: 1px solid #999; background: #eee; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; font-weight: bold; min-width: 80px; }
+        .trade-btn:hover { background: var(--highlight); border-color: #f57f17; }
 
         /* UI MISC */
         .preview-panel { background: #fff3e0; border: 1px solid #ffb74d; padding: 8px; border-radius: 6px; font-size: 0.85rem; }
@@ -108,6 +106,11 @@
         .big-btn:hover { background: #7a4e30; }
         .big-btn.secondary { background: #fff; color: #333; border: 2px solid var(--primary); box-shadow: 0 4px 0 #ccc; }
         
+        /* System Bar Bottom Right */
+        .system-bar { margin-top: 20px; display: flex; gap: 5px; border-top: 1px solid #ccc; padding-top: 10px; }
+        .sys-btn { font-size: 0.8rem; padding: 5px; background: #90a4ae; border:none; border-radius: 3px; cursor: pointer; color: white; flex:1; }
+        .sys-btn:hover { background: #607d8b; }
+
         button:disabled { opacity: 0.5; cursor: not-allowed; filter: grayscale(1); }
     </style>
 </head>
@@ -116,10 +119,12 @@
 <div id="particles"></div>
 
 <div id="modal-info" class="modal-overlay">
-    <div class="modal-box" style="width:400px">
+    <div class="modal-box" style="width:450px">
         <div id="info-title" class="modal-title">Nachricht</div>
-        <div id="info-text">Text</div>
-        <button onclick="UI.closeInfo()" class="big-btn" style="margin-top:20px;">Verstanden</button>
+        <div id="info-text" style="font-size:1.1rem; line-height:1.5;">Text</div>
+        <div id="info-actions" style="margin-top:20px;">
+            <button onclick="UI.closeInfo()" class="big-btn">Verstanden</button>
+        </div>
     </div>
 </div>
 
@@ -135,6 +140,10 @@
     <header>
         <div class="header-left">
             <h1>🏰 Der Burgherr</h1>
+            <div class="objective-box">
+                <div class="objective-title">Aktuelles Missionsziel</div>
+                <div id="objective-text">Lade...</div>
+            </div>
         </div>
         <div class="res-container">
             <div class="res-group">
@@ -146,7 +155,6 @@
                     <div class="res-item" title="Eisen"><span class="res-icon">⛓️</span><span class="res-val" id="res-iron">0</span></div>
                 </div>
             </div>
-            
             <div class="res-group">
                 <div class="res-group-label">Ernte & Mehl</div>
                 <div class="res-items">
@@ -155,7 +163,6 @@
                     <div class="res-item" title="Hopfen"><span class="res-icon">🌿</span><span class="res-val" id="res-hops">0</span></div>
                 </div>
             </div>
-
             <div class="res-group">
                 <div class="res-group-label">Speisekammer</div>
                 <div class="res-items">
@@ -165,7 +172,6 @@
                     <div class="res-item" title="Bier"><span class="res-icon">🍺</span><span class="res-val" id="res-beer">0</span></div>
                 </div>
             </div>
-
             <div class="res-group">
                 <div class="res-group-label">Militär</div>
                 <div class="res-items">
@@ -174,7 +180,6 @@
                     <div class="res-item" title="Söldner"><span class="res-icon">🗡️</span><span class="res-val" id="res-mercs">0</span></div>
                 </div>
             </div>
-
             <div class="res-group" id="pop-group">
                 <div class="res-group-label">Das Reich</div>
                 <div class="res-items">
@@ -202,33 +207,21 @@
             <br><br>
             <div class="preview-panel" id="production-preview"></div>
             <div class="bar-container" style="margin-top:5px;"><div class="bar-fill" id="day-bar"></div></div>
-            <div style="margin-top:5px; font-size:0.9rem; text-align:right;">Tag: <span id="stat-day">1</span></div>
+            <div style="margin-top:5px; font-size:0.9rem; text-align:right;">Tag: <span id="stat-day">1</span> (Level <span id="stat-level">1</span>)</div>
 
             <hr style="border:0; border-top:1px solid #ccc; margin: 15px 0;">
             
             <h2>⚔️ Strategie</h2>
-            
             <div class="build-card" id="btn-recruit" onclick="Game.recruit('regular')">
-                <div class="build-info">
-                    <span class="build-name">Soldat ausbilden</span>
-                    <span class="build-cost">10💰, 1⚔️, 1👨‍🌾 (Braucht Kaserne)</span>
-                </div>
+                <div class="build-info"><span class="build-name">Soldat</span><span class="build-cost">10💰, 1⚔️, 1👨‍🌾 (Kaserne)</span></div>
                 <div style="font-weight:bold;">🛡️</div>
             </div>
-            
             <div class="build-card" id="btn-merc" onclick="Game.recruit('mercenary')" style="background:#fff3e0; margin-top:5px;">
-                <div class="build-info">
-                    <span class="build-name">Söldner anheuern</span>
-                    <span class="build-cost">50💰 (Braucht Söldnerlager)</span>
-                </div>
+                <div class="build-info"><span class="build-name">Söldner</span><span class="build-cost">50💰 (Söldnerlager)</span></div>
                 <div style="font-weight:bold;">🗡️</div>
             </div>
-            
             <div class="build-card" onclick="Game.startRaid()" style="background:#eceff1; border-left:4px solid #333; margin-top:5px;">
-                <div class="build-info">
-                    <span class="build-name">Raubzug (3 Tage)</span>
-                    <span class="build-cost">Hohes Risiko!</span>
-                </div>
+                <div class="build-info"><span class="build-name">Raubzug (3 Tage)</span><span class="build-cost">Hohes Risiko!</span></div>
                 <div>⚔️</div>
             </div>
 
@@ -238,21 +231,53 @@
                 <button onclick="Game.setTax(-1)" class="trade-btn" style="flex:1;">Weniger</button>
                 <button onclick="Game.setTax(1)" class="trade-btn" style="flex:1;">Mehr</button>
             </div>
+
+            <div class="system-bar">
+                <button class="sys-btn" onclick="Game.save()">💾 Speichern</button>
+                <button class="sys-btn" onclick="Game.load()">📂 Laden</button>
+                <button class="sys-btn" onclick="Game.reset()" style="background:#d32f2f;">❌ Reset</button>
+            </div>
         </aside>
     </main>
 </div>
 
 <script>
+// --- LEVEL CONFIG ---
+const Levels = [
+    {
+        id: 1, title: "Die Gründung", intro: "Euer Volk sucht eine neue Heimat. Baut Hütten und sammelt Holz für den Winter.",
+        goal: { wood: 50, pop: 10 },
+        startRes: { gold: 100, wood: 20, food: 10 }
+    },
+    {
+        id: 2, title: "Das erste Brot", intro: "Wir wachsen! Sorgt für eine stabile Nahrungskette durch Brot und baut Steinbrüche.",
+        goal: { bread: 20, stone: 20, pop: 15 },
+        startRes: { gold: 150, wood: 50, food: 20 }
+    },
+    {
+        id: 3, title: "Der Handel", intro: "Gold regiert die Welt. Nutzt den Markt, um Reichtum anzuhäufen.",
+        goal: { gold: 500, pop: 20 },
+        startRes: { gold: 50, wood: 100, stone: 20, food: 50 }
+    },
+    {
+        id: 4, title: "Zu den Waffen", intro: "Banditen bedrohen uns. Bildet eine Armee aus und baut Wachtürme.",
+        goal: { soldiers: 10, tower: 1 },
+        startRes: { gold: 300, wood: 100, stone: 100, iron: 20, food: 100 }
+    },
+    {
+        id: 5, title: "Die Kathedrale", intro: "Errichtet das ultimative Monument zu Ehren Gottes und des Königs.",
+        goal: { cathedral: 1 },
+        startRes: { gold: 1000, wood: 500, stone: 500, iron: 100, food: 200 }
+    }
+];
+
 const Config = {
     tickRate: 5000, 
-    combatStartDay: 80, // LÄNGERER FRIEDEN!
+    combatStartDay: 80,
     buildings: {
-        // RESSOURCEN
         woodcutter: { name: "Holzfäller", costG: 15, costW: 0, costS: 0, output: "wood", amount: 2, cat: "Ressourcen" },
         quarry:     { name: "Steinbruch", costG: 50, costW: 20, costS: 0, output: "stone", amount: 1, cat: "Ressourcen" },
         ironmine:   { name: "Eisenmine",  costG: 100, costW: 50, costS: 0, output: "iron", amount: 1, cat: "Ressourcen" },
-        
-        // NAHRUNG
         farm_apple: { name: "Apfelgarten", costG: 30, costW: 10, costS: 0, output: "apple", amount: 3, cat: "Nahrung" },
         hunter:     { name: "Jägerstand", costG: 20, costW: 5, costS: 0, output: "meat", amount: 2, cat: "Nahrung" },
         farm_wheat: { name: "Getreidefarm", costG: 40, costW: 10, costS: 0, output: "wheat", amount: 2, cat: "Nahrung" }, 
@@ -260,20 +285,14 @@ const Config = {
         bakery:     { name: "Bäckerei", costG: 60, costW: 20, costS: 0, process: "flour", product: "bread", throughput: 1, ratio: 4, cat: "Nahrung" },
         farm_hops:  { name: "Hopfenfarm", costG: 40, costW: 15, costS: 0, output: "hops", amount: 2, cat: "Nahrung" },
         brewery:    { name: "Brauerei", costG: 100, costW: 20, costS: 20, process: "hops", product: "beer", throughput: 2, ratio: 2, cat: "Nahrung" },
-        
-        // WOHNRAUM
         house:      { name: "Hütte", costG: 0, costW: 10, costS: 0, capacity: 5, cat: "Wohnraum" },
         house_lg:   { name: "Haus", costG: 50, costW: 40, costS: 10, capacity: 10, cat: "Wohnraum" },
-
-        // VERTEIDIGUNG
         weaponsmith:{ name: "Waffenschmiede", costG: 100, costW: 0, costS: 20, process: "iron", product: "weapons", throughput: 1, ratio: 1, cat: "Verteidigung" },
         barracks:   { name: "Kaserne", costG: 150, costW: 0, costS: 50, cat: "Verteidigung" },
         merc_post:  { name: "Söldnerlager", costG: 500, costW: 50, costS: 0, cat: "Verteidigung" },
         wall_wood:  { name: "Holzpalisade", costG: 20, costW: 50, costS: 0, defense: 10, cat: "Verteidigung" },
         wall_stone: { name: "Steinmauer", costG: 100, costW: 0, costS: 50, defense: 50, cat: "Verteidigung" },
         tower:      { name: "Wachturm", costG: 200, costW: 20, costS: 100, defense: 150, cat: "Verteidigung" },
-
-        // KUNST
         church:     { name: "Kirche", costG: 500, costW: 0, costS: 200, capacity: 0, religion: 15, cat: "Kunst" },
         cathedral:  { name: "KATHEDRALE", costG: 5000, costW: 2000, costS: 3000, capacity: 0, cat: "Kunst" } 
     },
@@ -286,25 +305,99 @@ const Config = {
     ]
 };
 
-const State = {
-    day: 1, paused: false, lastTick: Date.now(),
-    res: { gold: 200, wood: 50, stone: 0, iron: 0, wheat: 0, flour: 0, bread: 0, meat: 5, apple: 5, hops: 0, beer: 0, weapons: 0 },
-    pop: { current: 5, max: 10, happiness: 100, soldiers: 0, mercs: 0 },
-    b: {}, w: {}, taxIndex: 1, 
-    factors: { food: 0, tax: 0, events: 0, beer: 0, religion: 0 },
-    raid: { active: false, timer: 0 }
-};
-
-for(let k in Config.buildings) { State.b[k] = 0; State.w[k] = 0; }
+let State = {}; // Wird beim Start initialisiert
 
 const Game = {
     init: function() {
+        if(localStorage.getItem('burgherr_save')) {
+            this.load();
+        } else {
+            this.startLevel(1);
+        }
         UI.renderBuildMenu();
         UI.update();
         setInterval(() => { if(!State.paused) this.tick(); }, Config.tickRate);
         setInterval(() => { if(!State.paused) UI.updateBar(); }, 100);
-        UI.log("Sire! Wir haben Frieden bis Tag 80. Nutzt die Zeit!", "report");
-        this.autoAssign();
+        // Auto Save Loop
+        setInterval(() => { Game.save(); }, 30000); 
+    },
+
+    startLevel: function(lvlId) {
+        const lvl = Levels.find(l => l.id === lvlId);
+        if(!lvl) return; // End of game
+
+        // Reset State for Level
+        State = {
+            level: lvlId,
+            day: 1, paused: true, lastTick: Date.now(),
+            res: { gold: lvl.startRes.gold, wood: lvl.startRes.wood, stone: 0, iron: 0, wheat: 0, flour: 0, bread: lvl.startRes.food, meat: 0, apple: 0, hops: 0, beer: 0, weapons: 0 },
+            pop: { current: 5, max: 10, happiness: 100, soldiers: 0, mercs: 0 },
+            b: {}, w: {}, taxIndex: 1, 
+            factors: { food: 0, tax: 0, events: 0, beer: 0, religion: 0 },
+            raid: { active: false, timer: 0 }
+        };
+        for(let k in Config.buildings) { State.b[k] = 0; State.w[k] = 0; }
+        
+        UI.renderBuildMenu();
+        UI.showModal(`Level ${lvl.id}: ${lvl.title}`, lvl.intro);
+        UI.update();
+    },
+
+    checkVictory: function() {
+        const lvl = Levels.find(l => l.id === State.level);
+        if(!lvl) return;
+        const g = lvl.goal;
+        
+        let win = true;
+        if(g.wood && State.res.wood < g.wood) win = false;
+        if(g.stone && State.res.stone < g.stone) win = false;
+        if(g.gold && State.res.gold < g.gold) win = false;
+        if(g.bread && State.res.bread < g.bread) win = false;
+        if(g.pop && State.pop.current < g.pop) win = false;
+        if(g.soldiers && State.pop.soldiers < g.soldiers) win = false;
+        if(g.tower && (State.b.tower||0) < g.tower) win = false;
+        if(g.cathedral && (State.b.cathedral||0) < g.cathedral) win = false;
+
+        if(win) {
+            State.paused = true;
+            document.getElementById('modal-overlay').style.display = 'none'; // Close others
+            
+            let nextLvl = Levels.find(l => l.id === State.level + 1);
+            if(nextLvl) {
+                // Custom Modal handling for level up
+                document.getElementById('info-title').innerText = "SIEG!";
+                document.getElementById('info-text').innerText = "Ihr habt die Ziele erreicht! Das Volk jubelt.";
+                document.getElementById('info-actions').innerHTML = `<button onclick="Game.startLevel(${nextLvl.id}); document.getElementById('modal-info').style.display='none';" class="big-btn">Nächstes Level</button>`;
+                document.getElementById('modal-info').style.display = 'flex';
+            } else {
+                UI.showModal("SPIEL DURCHGESPIELT!", "Ihr seid der mächtigste Burgherr aller Zeiten!");
+            }
+        }
+    },
+
+    save: function() {
+        localStorage.setItem('burgherr_save', JSON.stringify(State));
+        UI.log("Spielstand gespeichert.", "report");
+    },
+
+    load: function() {
+        const data = localStorage.getItem('burgherr_save');
+        if(data) {
+            State = JSON.parse(data);
+            State.paused = true;
+            UI.renderBuildMenu(); // Wichtig falls Gebäude-Status geladen wurde
+            UI.update();
+            UI.log("Spielstand geladen.", "success");
+        } else {
+            UI.log("Kein Spielstand gefunden.", "error");
+        }
+    },
+
+    reset: function() {
+        if(confirm("Wirklich alles löschen?")) {
+            localStorage.removeItem('burgherr_save');
+            location.reload();
+        }
     },
 
     tick: function() {
@@ -366,9 +459,9 @@ const Game = {
         this.handleMigration();
         this.checkCombat();
         this.handleRaid();
+        this.checkVictory(); // WIN CHECK
 
-        // LOG
-        let html = `<div class="log-header"><span>Tagesabschluss (Tag ${State.day})</span><span>Beliebtheit: ${State.pop.happiness}</span></div><div class="log-content">`;
+        let html = `<div class="log-header"><span>Tag ${State.day} (Level ${State.level})</span><span>Beliebtheit: ${State.pop.happiness}</span></div><div class="log-content">`;
         if(report.produced.length) html += `<div class="rep-row"><span class="rep-label">Prod</span><span class="rep-val plus">${report.produced.join(', ')}</span></div>`;
         if(report.eaten.length) html += `<div class="rep-row"><span class="rep-label">Essen</span><span class="rep-val minus">${report.eaten.join(', ')}</span></div>`;
         html += `</div>`;
@@ -451,7 +544,6 @@ const Game = {
             State.res.gold -= c.costG; State.res.wood -= c.costW; State.res.stone -= c.costS;
             State.b[type]++;
             if(c.capacity) State.pop.max += c.capacity;
-            if(type === 'cathedral') { State.paused = true; UI.showInfo("SIEG!", "Die Kathedrale steht! Ihr habt gewonnen!"); UI.log("SPIEL GEWONNEN!", "win"); }
             this.autoAssign();
             UI.update();
         } else UI.log("Zu wenig Ressourcen!", "error");
@@ -614,8 +706,17 @@ const UI = {
         document.getElementById('pop-details').innerHTML = tt || "Neutral";
 
         set('stat-day', s.day);
+        set('stat-level', s.level);
         document.getElementById('tax-display').innerText = Config.taxes[s.taxIndex].name;
         
+        // Update Objective
+        const lvl = Levels.find(l => l.id === s.level);
+        if(lvl) {
+            let txt = [];
+            for(let k in lvl.goal) txt.push(`${k}: ${Math.floor(State.res[k] || State.b[k] || State.pop[k] || 0)}/${lvl.goal[k]}`);
+            document.getElementById('objective-text').innerText = txt.join(', ');
+        }
+
         const btnReg = document.getElementById('btn-recruit');
         const btnMerc = document.getElementById('btn-merc');
         if(State.b.barracks>0) { btnReg.style.opacity=1; btnReg.style.cursor='pointer'; } else { btnReg.style.opacity=0.5; btnReg.style.cursor='not-allowed'; }
@@ -663,11 +764,37 @@ const UI = {
         }
         box.prepend(div);
     },
-    showInfo: function(t, txt) {
+    showModal: function(t, txt) {
         document.getElementById('info-title').innerText=t; document.getElementById('info-text').innerText=txt;
         document.getElementById('modal-info').style.display='flex';
+        // Reset action button to standard close
+        document.getElementById('info-actions').innerHTML = `<button onclick="UI.closeInfo()" class="big-btn">Verstanden</button>`;
     },
-    closeInfo: function() { document.getElementById('modal-info').style.display='none'; State.paused=false; State.lastTick=Date.now(); }
+    closeInfo: function() { document.getElementById('modal-info').style.display='none'; State.paused=false; State.lastTick=Date.now(); },
+    toggleMarket: function(show) {
+        document.getElementById('modal-market').style.display = show ? 'flex' : 'none';
+        if(show) { State.paused = true; this.renderMarket(); }
+        else { State.paused = false; State.lastTick = Date.now(); }
+    },
+    renderMarket: function() {
+        const list = document.getElementById('market-list'); list.innerHTML = "";
+        const items = [
+            {id:'wood', n:'Holz', i:'🌲'}, {id:'stone', n:'Stein', i:'🧱'}, {id:'iron', n:'Eisen', i:'⛓️'},
+            {id:'wheat', n:'Weizen', i:'🌾'}, {id:'flour', n:'Mehl', i:'🥡'}, {id:'bread', n:'Brot', i:'🍞'},
+            {id:'meat', n:'Fleisch', i:'🥩'}, {id:'apple', n:'Apfel', i:'🍎'}, {id:'hops', n:'Hopfen', i:'🌿'},
+            {id:'beer', n:'Bier', i:'🍺'}, {id:'weapons', n:'Waffen', i:'⚔️'}
+        ];
+        items.forEach(it => {
+            let div = document.createElement('div'); div.className = "trade-row-simple";
+            div.innerHTML = `
+                <div class="trade-label">${it.i} ${it.n} <span style="font-weight:normal;color:#666">(${Math.floor(State.res[it.id])})</span></div>
+                <div class="trade-actions">
+                    <button class="trade-btn" onclick="Game.trade('buy', '${it.id}', 10)">Kauf 10</button>
+                    <button class="trade-btn" onclick="Game.trade('sell', '${it.id}', 10)">Verk. 10</button>
+                </div>`;
+            list.appendChild(div);
+        });
+    }
 };
 
 Game.init();
