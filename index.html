@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Burgherr V2.5 - Transparency</title>
+    <title>Burgherr V3.0 - Deep Systems</title>
     <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=MedievalSharp&display=swap" rel="stylesheet">
     
     <style>
@@ -170,7 +170,6 @@
         .b-card.can-build { background: var(--can-build); border-color: var(--can-build-border); box-shadow: 0 2px 4px rgba(46, 125, 50, 0.2); }
         .b-count { position: absolute; top: -5px; right: -5px; background: var(--accent); color: #fff; font-size: 0.7rem; padding: 2px 6px; border-radius: 10px; font-weight: bold; box-shadow: 1px 1px 2px rgba(0,0,0,0.5); }
         
-        /* NEU: Bessere Arbeiter Indikatoren auf der Karte */
         .b-worker-info { 
             width: 100%; border-top: 1px solid rgba(0,0,0,0.1); margin-top: 4px; padding-top: 2px;
             font-size: 0.65rem; text-align: center; color: #555; font-weight: bold;
@@ -371,6 +370,12 @@ const T = {
 };
 const SafeT = (k) => T[k] || k; 
 
+// Rules zur Zentralisierung der Typen
+const Rules = {
+    storeTypes: ['wood','stone','iron','wheat','flour','hops'],
+    foodTypes:  ['bread','meat','apple','cheese','beer'] // Bier zählt zum Speicherplatz
+};
+
 const Levels = [
     {
         id:1, 
@@ -415,7 +420,7 @@ const Config = {
         barrack:{n:"Kaserne",c:"burg",i:"⛺",z:"z-town",cost:{g:150,s:20},desc:"Armee"},
         merc:{n:"Söldnerlager",c:"burg",i:"🎪",z:"z-town",cost:{g:500,w:100},desc:"Söldner"},
         
-        // WERK
+        // WERK (type: mat = Produktionsgebäude)
         wood:{n:"Holzfäller",c:"werk",i:"🪓",z:"z-forest",cost:{g:10},prod:"wood",amt:3, type:"mat"},
         stock:{n:"Vorratslager",c:"werk",i:"📦",z:"z-town",cost:{w:20},desc:"Lager"},
         ox:{n:"Ochsenjoch",c:"werk",i:"🐂",z:"z-mountain",cost:{g:20,w:20}},
@@ -452,13 +457,12 @@ const Config = {
 /* LOGIC */
 let S = {}; 
 let lastTickTime = 0;
-let rateHistory = {}; // Für Trends
 
 const Game = {
     init: function() {
-        if(localStorage.getItem('sh_v25_trans')) {
+        if(localStorage.getItem('sh_v30_sys')) {
             try {
-                let load = JSON.parse(localStorage.getItem('sh_v25_trans'));
+                let load = JSON.parse(localStorage.getItem('sh_v30_sys'));
                 if(load) S = load;
                 else this.startLevel(1);
                 Game.recalcStats(); 
@@ -483,7 +487,7 @@ const Game = {
             units: { archer:0, pikeman:0, swordsman:0, merc:0 },
             pop: { curr:5, max:0, hap:100 },
             b: {}, w: {}, tax: 0,
-            factors: { food:0, tax:0, change:0 },
+            factors: { hunger:0, variety:0, tax:0, beer:0, religion:0, overcrowd:0, idle:0, total:0 },
             rates: {} 
         };
         for(let k in l.start) S.res[k] = l.start[k];
@@ -506,13 +510,27 @@ const Game = {
         return s;
     },
 
+    // Helfer für Bau-Logik
+    countWorkers: function() {
+        let work = 0; for (let k in S.w) work += S.w[k];
+        let sold = 0; for (let k in S.units) sold += S.units[k];
+        let available = S.pop.curr - sold;
+        let idle = available - work;
+        return { work, sold, available, idle };
+    },
+    
+    isProductionBuilding: function(b) {
+        return !!(b.prod || b.proc || b.use);
+    },
+
     clickGather: function(type, e) {
         if(S.paused) return;
         let maxS = (S.b.stock || 1) * 50;
         let maxF = (S.b.gran || 1) * 50;
-        let curS = 0; ['wood','stone','iron','wheat','flour','hops'].forEach(k=>curS+=S.res[k]);
-        let curF = 0; ['bread','meat','apple','cheese','beer'].forEach(k=>curF+=S.res[k]);
+        let curS = 0; Rules.storeTypes.forEach(k=>curS+=S.res[k]);
+        let curF = 0; Rules.foodTypes.forEach(k=>curF+=S.res[k]);
 
+        // Primitiver Check für Klick (nur Holz/Stein/Apfel)
         if(type === 'wood' || type === 'stone') {
             if(curS >= maxS) { UI.showFloatingText(type, "Lager Voll!", "neg"); return; }
         }
@@ -537,6 +555,7 @@ const Game = {
         let maxS = (S.b.stock || 1) * 50;
         let maxF = (S.b.gran || 1) * 50; 
         
+        // 1. Produktion
         for(let k in Config.b) {
             let b = Config.b[k];
             let n = S.w[k];
@@ -565,6 +584,7 @@ const Game = {
             }
         }
 
+        // 2. Konsum (Essen)
         let eat = S.pop.curr;
         let foods = ['bread','meat','cheese','apple'];
         let ateTypes = 0;
@@ -580,49 +600,76 @@ const Game = {
             }
         }
 
-        let hChg = 0;
+        // 3. HAPPINESS SYSTEM (Deep)
+        let h = { hunger:0, variety:0, tax:0, beer:0, religion:0, overcrowd:0, idle:0, total:0 };
+
+        // Hunger
         if(eat > 0) { 
             UI.log(`${eat} hungern!`, 'warn'); 
-            hChg -= 5; S.factors.food = -5; 
+            h.hunger = -8; 
             if(Math.random() < 0.2) {
                 S.pop.curr--;
                 UI.log("Ein Bürger verhungert.", "death");
-                Game.unassignWorker(true);
+                Game.unassignWorker(true); 
             }
-        } else { hChg += 1; S.factors.food = 1; }
+        } else { h.hunger = +2; }
 
+        // Variety
+        h.variety = (ateTypes >= 3) ? +2 : (ateTypes === 2 ? +1 : 0);
+
+        // Tax
         let tx = Config.taxes[S.tax];
-        hChg += tx.h;
+        h.tax = tx.h;
         dRes.gold = (dRes.gold||0) + (S.pop.curr * tx.g);
-        S.factors.tax = tx.h;
 
-        // FIXED BEER LOGIC
+        // Bier (Proportional)
         let availBeer = (S.res.beer||0) + (dRes.beer||0);
-        let drinkers = Math.min(availBeer, S.pop.curr);
-        if(drinkers > 0) {
-            dRes.beer -= drinkers;
-            // Wenn 100% der Leute trinken = +5 Laune. Wenn 50% = +2.5
-            let beerBonus = (drinkers / S.pop.curr) * 5;
-            hChg += beerBonus;
+        if(S.pop.curr > 0) {
+            if(availBeer >= S.pop.curr) {
+                dRes.beer -= S.pop.curr;
+                h.beer = +3;
+            } else if(availBeer > 0) {
+                let ratio = availBeer / S.pop.curr;
+                dRes.beer -= availBeer;
+                h.beer = (ratio >= 0.5) ? +1 : 0;
+            }
         }
 
-        hChg += ((S.b.church||0) * 5);
-        
-        let diffHapp = Math.max(-5, Math.min(5, hChg));
-        S.pop.hap = Math.max(0, Math.min(100, S.pop.hap + diffHapp));
-        S.factors.change = diffHapp; // Store for UI
+        // Religion
+        h.religion = (S.b.church||0) * 3;
 
+        // Overcrowding
+        if(S.pop.max > 0) {
+            let fill = S.pop.curr / S.pop.max;
+            if(fill > 0.95) h.overcrowd = -2;
+            if(fill > 1.00) h.overcrowd = -6; 
+        }
+
+        // Idle
+        let cw = Game.countWorkers();
+        if(cw.available > 0) {
+            let idleRatio = cw.idle / cw.available;
+            if(idleRatio > 0.4) h.idle = -1;
+        }
+
+        h.total = h.hunger + h.variety + h.tax + h.beer + h.religion + h.overcrowd + h.idle;
+        let delta = Math.max(-6, Math.min(6, h.total));
+        S.pop.hap = Math.max(0, Math.min(100, S.pop.hap + delta));
+        
+        // Save for UI
+        S.factors = { ...h, total: delta };
+
+        // 4. Apply & Limits
         for(let k in dRes) {
             S.res[k] = (S.res[k]||0) + dRes[k];
             if(S.res[k] < 0) S.res[k] = 0;
         }
 
-        // FIXED LAGERLOGIK (Include Hops & Beer)
-        let curS = 0; ['wood','stone','iron','wheat','flour','hops'].forEach(k=>curS+=S.res[k]);
-        let curF = 0; ['bread','meat','apple','cheese','beer'].forEach(k=>curF+=S.res[k]);
+        let curS = 0; Rules.storeTypes.forEach(k=>curS+=S.res[k]);
+        let curF = 0; Rules.foodTypes.forEach(k=>curF+=S.res[k]);
 
         if(curS > maxS) {
-            let types = ['wood','stone','iron','wheat','flour','hops'];
+            let types = Rules.storeTypes;
             let over = curS - maxS;
             while(over > 0) {
                 let del = false;
@@ -631,7 +678,7 @@ const Game = {
             }
         }
         if(curF > maxF) {
-            let types = ['apple','bread','meat','cheese','beer'];
+            let types = Rules.foodTypes;
             let over = curF - maxF;
             while(over > 0) {
                 let del = false;
@@ -679,11 +726,8 @@ const Game = {
     },
 
     autoAssign: function() {
-        let work = 0; for(let k in S.w) work += S.w[k];
-        let sold = 0; for(let k in S.units) sold += S.units[k];
-        let available = S.pop.curr - sold;
-        let idle = available - work;
-        if(idle <= 0) return;
+        let cw = Game.countWorkers();
+        if(cw.idle <= 0) return;
 
         let priority = [];
         let curF = 0; ['bread','meat','apple','cheese'].forEach(k=>curF+=S.res[k]);
@@ -691,7 +735,7 @@ const Game = {
 
         for(let k in Config.b) {
             let b = Config.b[k];
-            if(!b.prod && !b.proc && !b.use) continue;
+            if(!Game.isProductionBuilding(b)) continue;
             let p = 2; 
             if(lowFood && (b.type === 'food' || b.out === 'bread')) p = 1; 
             if(b.prod === 'wood') p = 1.5;
@@ -700,9 +744,9 @@ const Game = {
         priority.sort((a,b) => a.p - b.p);
 
         for(let item of priority) {
-            if(idle <= 0) break;
+            if(cw.idle <= 0) break;
             let k = item.k;
-            if(S.b[k] > S.w[k]) { S.w[k]++; idle--; }
+            if(S.b[k] > S.w[k]) { S.w[k]++; cw.idle--; }
         }
     },
 
@@ -717,20 +761,37 @@ const Game = {
 
     build: function(key) {
         let b = Config.b[key];
-        if(S.res.gold >= (b.cost.g||0) && S.res.wood >= (b.cost.w||0) && S.res.stone >= (b.cost.s||0)) {
-            S.res.gold -= (b.cost.g||0); S.res.wood -= (b.cost.w||0); S.res.stone -= (b.cost.s||0);
-            S.b[key] = (S.b[key]||0) + 1;
-            Game.recalcStats(); Game.autoAssign(); 
-            UI.addMapIcon(key);
-            UI.renderBuild();
-            UI.update();
+        // Cost Check
+        if(!(S.res.gold >= (b.cost.g||0) && S.res.wood >= (b.cost.w||0) && S.res.stone >= (b.cost.s||0))) return;
+
+        // Worker Check: Nur für Produktionsgebäude
+        if(Game.isProductionBuilding(b)) {
+            let cw = Game.countWorkers();
+            if(cw.idle < 1) {
+                let freed = Game.unassignWorker(true);
+                if(!freed) {
+                    UI.showModal("Keine Arbeiter", "Kein freier Bürger verfügbar. Baue mehr Häuser oder feuere jemanden.", "OK");
+                    return;
+                }
+            }
         }
+
+        S.res.gold -= (b.cost.g||0); S.res.wood -= (b.cost.w||0); S.res.stone -= (b.cost.s||0);
+        S.b[key] = (S.b[key]||0) + 1;
+        
+        // Auto-assign direkt beim Bau
+        if(Game.isProductionBuilding(b)) {
+            if(S.w[key] < S.b[key]) S.w[key] = (S.w[key]||0) + 1;
+        }
+
+        Game.recalcStats(); 
+        UI.addMapIcon(key);
+        UI.renderBuild();
+        UI.update();
     },
 
     recruit: function(key) {
-        let work = 0; for(let k in S.w) work += S.w[k];
-        let sold = 0; for(let k in S.units) sold += S.units[k];
-        let idle = S.pop.curr - sold - work;
+        let cw = Game.countWorkers();
         let u = Units[key];
 
         if(key === 'merc') {
@@ -738,12 +799,13 @@ const Game = {
             if(S.res.gold >= 50) { S.res.gold-=50; S.units.merc++; UI.log("Söldner angeheuert", "prod"); }
         } else {
             if((S.b.barrack||0) < 1) return;
-            if(idle < 1) { 
+            if(cw.idle < 1) { 
                 let fired = Game.unassignWorker(true);
-                if(!fired) return; 
-                work--; idle++; 
+                if(!fired) {
+                    UI.showModal("Rekrutierung fehlgeschlagen", "Keine Bürger für die Armee verfügbar.", "OK");
+                    return; 
+                }
             }
-            if(idle < 1) return; 
 
             if(S.res.gold >= u.cost && S.res[u.res] >= 1) {
                 if(u.arm && S.res[u.arm] < 1) return;
@@ -804,8 +866,8 @@ const Game = {
         UI.update(); UI.renderMarket();
     },
 
-    save: function() { localStorage.setItem('sh_v25_trans', JSON.stringify(S)); UI.log("Gespeichert", "prod"); },
-    reset: function() { localStorage.removeItem('sh_v25_trans'); location.reload(); }
+    save: function() { localStorage.setItem('sh_v30_sys', JSON.stringify(S)); UI.log("Gespeichert", "prod"); },
+    reset: function() { localStorage.removeItem('sh_v30_sys'); location.reload(); }
 };
 
 const UI = {
@@ -827,7 +889,7 @@ const UI = {
     },
     
     update: function() {
-        ['gold','wood','stone','iron','wheat','flour','hops','bread','meat','apple','cheese','beer','bow','spear','sword','merc'].forEach(k => {
+        ['gold','wood','stone','iron','wheat','flour','hops','bread','meat','apple','cheese','beer','bow','spear','sword','armor','merc'].forEach(k => {
             let el = document.getElementById('r-'+k);
             if(el) {
                 let val = S.res[k] !== undefined ? S.res[k] : (S.units[k] !== undefined ? S.units[k] : 0);
@@ -842,23 +904,20 @@ const UI = {
             }
         });
 
-        let work = 0; for(let k in S.w) work += S.w[k];
-        let sold = 0; for(let k in S.units) sold += S.units[k];
-        let idle = S.pop.curr - sold - work;
-
+        let cw = Game.countWorkers();
         let weps = (S.res.bow||0) + (S.res.spear||0) + (S.res.sword||0) + (S.res.armor||0);
-        document.getElementById('s-sold').innerText = sold;
+        document.getElementById('s-sold').innerText = cw.sold;
         document.getElementById('s-wep').innerText = weps;
 
         document.getElementById('r-pop').innerText = S.pop.curr + "/" + S.pop.max;
-        document.getElementById('r-idle').innerText = idle;
+        document.getElementById('r-idle').innerText = cw.idle;
         document.getElementById('r-hap').innerText = Math.floor(S.pop.hap);
         document.getElementById('day-disp').innerText = S.day;
         document.getElementById('lvl-disp').innerText = S.lvl;
         
         // TREND DISPLAY
         let trEl = document.getElementById('hap-trend');
-        let change = S.factors.change || 0;
+        let change = S.factors.total || 0;
         if(trEl) {
             let sym = change > 0 ? '↗' : (change < 0 ? '↘' : '→');
             trEl.innerText = `${sym} (${change > 0 ? '+' : ''}${Math.round(change*10)/10})`;
@@ -876,19 +935,13 @@ const UI = {
             impactEl.style.color = taxHap < 0 ? '#b71c1c' : '#2e7d32';
         }
         
-        let maxS = (S.b.stock||1)*50;
-        let curS = 0; ['wood','stone','iron','wheat','flour','hops'].forEach(k=>curS+=(S.res[k]||0));
-        
-        let maxF = (S.b.gran||1)*50;
-        let curF = 0; ['bread','meat','apple','cheese','beer'].forEach(k=>curF+=(S.res[k]||0));
-
         let l = Levels.find(x => x.id == S.lvl);
         if(l) {
             let h = "";
             for(let k in l.goal) {
                 let v = 0;
                 if(k=='pop') v = S.pop.curr;
-                else if(k=='soldier') v = sold;
+                else if(k=='soldier') v = cw.sold;
                 else v = S.res[k] || S.b[k] || 0;
                 let c = v >= l.goal[k] ? 'color:#4caf50' : '';
                 h += `<span style="${c}">${SafeT(k)}: ${Math.floor(v)}/${l.goal[k]}</span> `;
@@ -903,47 +956,52 @@ const UI = {
     },
 
     showHappy: function() {
-        let tax = S.factors.tax;
-        let food = S.factors.food;
-        let church = (S.b.church||0) * 5;
-        // Calc beer impact from last tick approximation
-        let beerImpact = Math.max(0, (S.factors.change - tax - food - church)); 
-        let total = S.factors.change;
-        
+        const f = S.factors || {};
+        const rows = [
+            ["Hunger/Versorgung", f.hunger],
+            ["Vielfalt", f.variety],
+            ["Steuern", f.tax],
+            ["Bier", f.beer],
+            ["Religion", f.religion],
+            ["Überbelegung", f.overcrowd],
+            ["Untätigkeit", f.idle],
+        ];
+
         const c = (v) => v > 0 ? '#2e7d32' : (v < 0 ? '#b71c1c' : '#000');
-        
-        let html = `
-            <div style="text-align:left; margin:10px 20px;">
+        let html = `<div style="text-align:left; margin:10px 20px;">`;
+
+        for(let [name,val] of rows) {
+            if(val === 0) continue; // Nur relevante anzeigen
+            html += `
                 <div style="display:flex;justify-content:space-between; border-bottom:1px solid #ccc; padding:5px 0;">
-                    <span>Essen:</span> <span style="font-weight:bold; color:${c(food)}">${food>0?'+':''}${food}</span>
-                </div>
-                <div style="display:flex;justify-content:space-between; border-bottom:1px solid #ccc; padding:5px 0;">
-                    <span>Bier:</span> <span style="font-weight:bold; color:${c(beerImpact)}">+${Math.round(beerImpact*10)/10}</span>
-                </div>
-                <div style="display:flex;justify-content:space-between; border-bottom:1px solid #ccc; padding:5px 0;">
-                    <span>Steuern:</span> <span style="font-weight:bold; color:${c(tax)}">${tax}</span>
-                </div>
-                <div style="display:flex;justify-content:space-between; border-bottom:1px solid #ccc; padding:5px 0;">
-                    <span>Religion:</span> <span style="font-weight:bold; color:${c(church)}">+${church}</span>
-                </div>
-                <div style="display:flex;justify-content:space-between; margin-top:10px; font-weight:900; font-size:1.2rem;">
-                    <span>Gesamt:</span> <span style="color:${c(total)}">${total>0?'+':''}${Math.round(total*10)/10} / Tick</span>
-                </div>
+                    <span>${name}:</span>
+                    <span style="font-weight:bold; color:${c(val)}">${val>0?'+':''}${val}</span>
+                </div>`;
+        }
+
+        html += `
+            <div style="display:flex;justify-content:space-between; margin-top:10px; font-weight:900; font-size:1.2rem;">
+                <span>Δ pro Tick:</span>
+                <span style="color:${c(f.total)}">${(f.total)>0?'+':''}${Math.round(f.total*10)/10}</span>
             </div>
-        `;
-        UI.showModal("Volkslaune", "", "Schließen");
+        </div>
+        <p style="font-size:0.8rem; color:#666; margin-top:10px; text-align:center">
+            (Das ist die Veränderung beim letzten Tick)
+        </p>`;
+
+        UI.showModal("Volkslaune (Details)", "", "Schließen");
         document.getElementById('m-body').innerHTML = html;
     },
 
     showStorage: function() {
         let maxS = (S.b.stock||1)*50;
-        let curS = 0; ['wood','stone','iron','wheat','flour','hops'].forEach(k=>curS+=(S.res[k]||0));
+        let curS = 0; Rules.storeTypes.forEach(k=>curS+=(S.res[k]||0));
         UI.showModal("Lager", `Belegung: ${Math.floor(curS)} / ${maxS}\nBaue 'Vorratslager', um das Limit zu erhöhen.`, "Schließen");
     },
     
     showFood: function() {
         let maxF = (S.b.gran||1)*50;
-        let curF = 0; ['bread','meat','apple','cheese','beer'].forEach(k=>curF+=(S.res[k]||0));
+        let curF = 0; Rules.foodTypes.forEach(k=>curF+=(S.res[k]||0));
         UI.showModal("Kornspeicher", `Nahrung: ${Math.floor(curF)} / ${maxF}\nBaue 'Kornspeicher', um das Limit zu erhöhen.`, "Schließen");
     },
 
@@ -968,8 +1026,8 @@ const UI = {
 
     showFloatingText: function(key, text, type) {
         let targetId = "";
-        if(['wood','stone','iron','wheat','flour','hops'].includes(key)) targetId = 'rg-store';
-        else if(['bread','meat','apple','cheese','beer'].includes(key)) targetId = 'rg-food';
+        if(Rules.storeTypes.includes(key)) targetId = 'rg-store';
+        else if(Rules.foodTypes.includes(key)) targetId = 'rg-food';
         else if(key === 'gold') targetId = 'rg-gold';
         else return; 
         
@@ -1025,11 +1083,11 @@ const UI = {
             el.setAttribute('data-key', k);
             el.onclick = () => Game.build(k);
             
-            // TRANSPARENCY: Zeige Arbeiter an (Rot wenn leer)
+            // Worker Visualizer
             let workerHtml = "";
-            if(S.b[k] > 0) {
+            if(S.b[k] > 0 && Game.isProductionBuilding(b)) {
                 let w = S.w[k];
-                let max = S.b[k]; // Annahme 1 Worker pro Gebäude
+                let max = S.b[k]; 
                 let wClass = w < max ? 'w-empty' : 'w-full';
                 workerHtml = `<div class="b-worker-info ${wClass}">Arbeiter: ${w} / ${max}</div>`;
             }
@@ -1133,7 +1191,7 @@ const UI = {
     closeMarket: function() { document.getElementById('market-mask').style.display='none'; },
     renderMarket: function() {
         let l = document.getElementById('market-list'); l.innerHTML="";
-        ['wood','stone','iron','wheat','flour','bread','meat','cheese','apple','bow','spear','sword'].forEach(k => {
+        ['wood','stone','iron','wheat','flour','hops','bread','meat','cheese','apple','beer','bow','spear','sword','armor'].forEach(k => {
             let row = document.createElement('div'); row.className='list-item';
             row.innerHTML = `<span>${SafeT(k)}: ${Math.floor(S.res[k]||0)}</span><div><button onclick="Game.trade('${k}',1)">Kauf (5g)</button> <button onclick="Game.trade('${k}',0)">Verk (3g)</button></div>`;
             l.appendChild(row);
