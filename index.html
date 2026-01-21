@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Burgherr V15 - Tax Update</title>
+    <title>Burgherr V16 - Handarbeit</title>
     <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=MedievalSharp&display=swap" rel="stylesheet">
     
     <style>
@@ -20,7 +20,7 @@
             --can-build-border: #2e7d32;
         }
 
-        * { box-sizing: border-box; user-select: none; }
+        * { box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
         body { font-family: 'Lato', sans-serif; background: var(--bg-body); color: #ccc; margin: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
 
         /* --- TICK BAR --- */
@@ -61,15 +61,26 @@
         .rate-pos { color: #66bb6a; }
         .rate-neg { color: #ef5350; }
 
-        /* FLOATING TEXT ANIMATION */
+        /* FLOATING TEXT ANIMATION (HEADER) */
         .float-txt {
             position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
             font-size: 0.9rem; font-weight: bold; pointer-events: none;
             animation: floatUp 1.5s forwards; text-shadow: 1px 1px 0 #000; z-index: 3000;
         }
+        
+        /* CLICK POPUP (MAP) */
+        .click-pop {
+            position: absolute; font-size: 1.5rem; font-weight: bold; color: #fff; pointer-events: none; z-index: 4000;
+            text-shadow: 0 0 5px #000; animation: floatUpMap 1s forwards;
+        }
+
         @keyframes floatUp {
             0% { opacity: 1; top: -10px; transform: translateX(-50%) scale(1); }
             100% { opacity: 0; top: -40px; transform: translateX(-50%) scale(1.2); }
+        }
+        @keyframes floatUpMap {
+            0% { opacity: 1; transform: translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateY(-50px) scale(1.5); }
         }
 
         /* TOOLTIP */
@@ -93,16 +104,25 @@
         #map-area { 
             flex: 1; position: relative; overflow: hidden; padding: 20px;
             background: radial-gradient(#558b2f, #1b5e20); 
-            display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 2px;
+            display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 4px;
         }
-        .zone { position: relative; border: 1px dashed rgba(255,255,255,0.1); display: flex; align-content: flex-start; flex-wrap: wrap; padding: 10px; overflow: hidden; transition: background 0.5s; }
-        .zone-label { position: absolute; bottom: 5px; right: 5px; font-family: 'MedievalSharp'; font-size: 2rem; color: rgba(255,255,255,0.2); pointer-events: none; }
+        /* Zones now interactive */
+        .zone { 
+            position: relative; border: 2px dashed rgba(255,255,255,0.1); 
+            display: flex; align-content: flex-start; flex-wrap: wrap; padding: 10px; overflow: hidden; 
+            transition: background 0.2s, transform 0.1s; cursor: pointer;
+        }
+        .zone:hover { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.3); }
+        .zone:active { transform: scale(0.98); background: rgba(255,255,255,0.1); }
+
+        .zone-label { position: absolute; bottom: 5px; right: 5px; font-family: 'MedievalSharp'; font-size: 1.5rem; color: rgba(255,255,255,0.3); pointer-events: none; user-select: none; }
+        .zone-hint { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: rgba(255,255,255,0.1); font-size: 3rem; pointer-events: none; }
         
         .map-b { 
             display: inline-flex; width: 40px; height: 40px; font-size: 1.5rem; 
             align-items: center; justify-content: center; background: rgba(255,255,255,0.2); 
             border-radius: 4px; margin: 2px; box-shadow: 1px 1px 2px rgba(0,0,0,0.3);
-            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: default;
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: default; pointer-events: none;
         }
         @keyframes popIn { from { transform: scale(0); } to { transform: scale(1); } }
 
@@ -209,7 +229,7 @@
 
 <header>
     <div class="header-info">
-        <div class="game-title">Burgherr V15</div>
+        <div class="game-title">Burgherr V16</div>
         <div class="objective" id="obj-disp">Lade...</div>
     </div>
 
@@ -268,10 +288,22 @@
 
 <main>
     <div id="map-area">
-        <div class="zone" id="z-forest"><div class="zone-label">Wald</div></div>
-        <div class="zone" id="z-mountain"><div class="zone-label">Berg</div></div>
-        <div class="zone" id="z-town"><div class="zone-label">Stadt</div></div>
-        <div class="zone" id="z-farm"><div class="zone-label">Feld</div></div>
+        <div class="zone" id="z-forest" onclick="Game.clickGather('wood', event)">
+            <div class="zone-hint">🌲</div>
+            <div class="zone-label">Wald</div>
+        </div>
+        <div class="zone" id="z-mountain" onclick="Game.clickGather('stone', event)">
+            <div class="zone-hint">⛰️</div>
+            <div class="zone-label">Berg</div>
+        </div>
+        <div class="zone" id="z-town">
+            <div class="zone-hint">🏰</div>
+            <div class="zone-label">Stadt</div>
+        </div>
+        <div class="zone" id="z-farm" onclick="Game.clickGather('apple', event)">
+            <div class="zone-hint">🍎</div>
+            <div class="zone-label">Feld</div>
+        </div>
     </div>
 
     <aside>
@@ -330,8 +362,8 @@ const T = {
 const SafeT = (k) => T[k] || k; // Fallback
 
 const Levels = [
-    {id:1, t:"Gründung", msg:"Baut Hütten (Stadt) und Holzfäller (Wald). Achte auf deine Nahrung!", goal:{wood:50, pop:10}, start:{gold:100, wood:20, food:20}},
-    {id:2, t:"Stein & Brot", msg:"Baut Steinbrüche (Berge, brauchen Ochsen!) & Brotproduktion.", goal:{stone:20, bread:30}, start:{gold:150, wood:50, food:30}},
+    {id:1, t:"Gründung", msg:"Klicke auf Wald und Felder, um Rohstoffe zu sammeln! Baue dann Hütten und Holzfäller.", goal:{wood:50, pop:10}, start:{gold:50, wood:0, food:15}},
+    {id:2, t:"Stein & Brot", msg:"Baut Steinbrüche & Brotproduktion. Klicke auf Berge für Stein.", goal:{stone:20, bread:30}, start:{gold:100, wood:50, food:30}},
     {id:3, t:"Waffen", msg:"Stellt Bögen und Speere her.", goal:{bow:5, spear:5}, start:{gold:200, wood:100, stone:50, food:50}},
     {id:4, t:"Armee", msg:"Bildet 10 Soldaten aus.", goal:{soldier:10}, start:{gold:300, wood:100, stone:100, iron:20, food:100}},
     {id:5, t:"Kathedrale", msg:"Das Meisterwerk.", goal:{cath:1}, start:{gold:1000, wood:500, stone:500, iron:100, food:200}}
@@ -345,14 +377,13 @@ const Units = {
 };
 
 const Config = {
-    tick: 5000,
-    // NEUES STEUERSYSTEM
+    tick: 3000, // Faster Pacing
     taxes: [
-        {n:"Keine",   g:0, h:1},    // Bonus
-        {n:"Gering",  g:1, h:-1},   // Nachhaltig
-        {n:"Normal",  g:2, h:-3},   // Erfordert Gegengewicht
-        {n:"Hoch",    g:4, h:-10},  // Aggressiv
-        {n:"Wucher",  g:8, h:-25}   // Notfall
+        {n:"Keine",   g:0, h:1},
+        {n:"Gering",  g:1, h:-1},
+        {n:"Normal",  g:2, h:-3},
+        {n:"Hoch",    g:4, h:-10},
+        {n:"Wucher",  g:8, h:-25}
     ],
     b: {
         // BURG
@@ -401,10 +432,9 @@ let lastTickTime = 0;
 
 const Game = {
     init: function() {
-        if(localStorage.getItem('sh_v15')) {
+        if(localStorage.getItem('sh_v16')) {
             try {
-                S = JSON.parse(localStorage.getItem('sh_v15'));
-                // Migration fixes
+                S = JSON.parse(localStorage.getItem('sh_v16'));
                 if(!S.b.gran && S.b.granary) { S.b.gran = S.b.granary; delete S.b.granary; }
                 UI.init();
                 UI.showModal("Willkommen zurück", "Dein Lehen erwartet dich.", "Weiter");
@@ -413,10 +443,7 @@ const Game = {
             this.startLevel(1);
         }
         
-        // Tick Loop
         setInterval(this.tick, Config.tick);
-        
-        // Visual Loop (Progress Bar)
         lastTickTime = Date.now();
         requestAnimationFrame(UI.animateTick);
     },
@@ -432,9 +459,8 @@ const Game = {
             pop: { curr:5, max:0, hap:100 },
             b: {}, w: {}, tax: 0,
             factors: { food:0, tax:0 },
-            rates: {} // For tracking +5/-3 etc.
+            rates: {} 
         };
-        // Load Start Res
         for(let k in l.start) S.res[k] = l.start[k];
         for(let k in Config.b) { S.b[k]=0; S.w[k]=0; }
         
@@ -444,14 +470,39 @@ const Game = {
         UI.showModal("Level " + id + ": " + l.t, l.msg, "Starten");
     },
 
+    // MANUAL CLICK GATHERING
+    clickGather: function(type, e) {
+        if(S.paused) return;
+        
+        // Check Limits
+        let maxS = (S.b.stock || 1) * 50;
+        let maxF = (S.b.gran || 1) * 50;
+        let curS = S.res.wood + S.res.stone + S.res.iron + S.res.wheat + S.res.flour;
+        let curF = S.res.bread + S.res.meat + S.res.apple + S.res.cheese;
+
+        if(type === 'wood' || type === 'stone') {
+            if(curS >= maxS) { UI.showFloatingText(type, "Voll!", "neg"); return; }
+        }
+        if(type === 'apple') {
+            if(curF >= maxF) { UI.showFloatingText(type, "Voll!", "neg"); return; }
+        }
+
+        // Add Resource
+        S.res[type]++;
+        UI.update();
+        
+        // Visuals
+        UI.showFloatingText(type, "+1", "pos");
+        UI.showMapClickEffect(e.currentTarget, type === 'apple' ? '🍎' : (type==='wood'?'🌲':'🧱'));
+    },
+
     tick: function() {
         if(S.paused) { lastTickTime = Date.now(); return; }
         S.day++;
         lastTickTime = Date.now();
         
-        // SNAPSHOT for Rate Calculation
         let startRes = JSON.parse(JSON.stringify(S.res));
-        let pLog = []; // Prod Log
+        let pLog = [];
         
         // 1. LIMITS
         let maxS = (S.b.stock || 1) * 50;
@@ -496,9 +547,9 @@ const Game = {
             }
         }
 
-        // 3. EAT
+        // 3. EAT (Prioritize Cheap Food)
         let eat = S.pop.curr;
-        let foods = ['bread','meat','cheese','apple'];
+        let foods = ['apple','bread','cheese','meat']; // New Order
         let ateTypes = 0;
         foods.forEach(f => {
             if(eat > 0 && S.res[f] > 0) {
@@ -528,7 +579,7 @@ const Game = {
 
         S.pop.hap = Math.max(0, Math.min(100, S.pop.hap + hChg));
 
-        // 4. POPULATION & EVENTS
+        // 4. POPULATION
         S.pop.max = (S.b.hovel*5) + (S.b.house*10) + 5;
         let work = 0; for(let k in S.w) work += S.w[k];
         let sold = 0; for(let k in S.units) sold += S.units[k];
@@ -541,18 +592,16 @@ const Game = {
             for(let k in S.w) if(S.w[k]>0){S.w[k]--; break;}
         }
 
-        // 5. CALC RATES & LOG
+        // 5. RATES
         S.rates = {};
         for(let k in S.res) {
             let diff = S.res[k] - startRes[k];
             if(diff !== 0) {
                 S.rates[k] = diff;
                 if(diff > 0) UI.showFloatingText(k, `+${diff}`, 'pos');
-                // Keine Floating Text für Verbrauch
             }
         }
         
-        // Log Logic (Simplified)
         let prodArr = [];
         for(let k in S.rates) {
             if(S.rates[k] > 0 && k !== 'gold') prodArr.push(`${S.rates[k]} ${SafeT(k)}`);
@@ -643,8 +692,8 @@ const Game = {
         S.paused = !S.paused; 
         if(!S.paused) lastTickTime = Date.now();
     },
-    save: function() { localStorage.setItem('sh_v15', JSON.stringify(S)); UI.log("Gespeichert", "prod"); },
-    reset: function() { localStorage.removeItem('sh_v15'); location.reload(); }
+    save: function() { localStorage.setItem('sh_v16', JSON.stringify(S)); UI.log("Gespeichert", "prod"); },
+    reset: function() { localStorage.removeItem('sh_v16'); location.reload(); }
 };
 
 const UI = {
@@ -736,7 +785,6 @@ const UI = {
     },
 
     updateBuildState: function() {
-        // Prüft, ob Gebäude kaufbar sind und färbt sie grün
         document.querySelectorAll('.b-card').forEach(card => {
             let key = card.getAttribute('data-key');
             if(!key) return;
@@ -746,7 +794,6 @@ const UI = {
             if(can) card.classList.add('can-build');
             else card.classList.remove('can-build');
             
-            // Tooltip update mit fehlenden Res
             let txt = [];
             if(b.cost.g) txt.push(`<span class="${S.res.gold<b.cost.g?'missing-res':''}">${b.cost.g}💰</span>`);
             if(b.cost.w) txt.push(`<span class="${S.res.wood<b.cost.w?'missing-res':''}">${b.cost.w}🌲</span>`);
@@ -757,7 +804,6 @@ const UI = {
     },
 
     showFloatingText: function(key, text, type) {
-        // Find position based on resource group ID in header
         let targetId = "";
         if(['wood','stone','iron'].includes(key)) targetId = 'rg-store';
         else if(['bread','meat','apple','cheese'].includes(key)) targetId = 'rg-food';
@@ -774,6 +820,23 @@ const UI = {
         target.appendChild(el);
         
         setTimeout(() => el.remove(), 1500);
+    },
+
+    // NEW MAP CLICK EFFECT
+    showMapClickEffect: function(el, icon) {
+        let pop = document.createElement('div');
+        pop.className = 'click-pop';
+        pop.innerText = icon;
+        
+        // Random Position inside element
+        let rect = el.getBoundingClientRect();
+        let x = Math.random() * (rect.width - 20);
+        let y = Math.random() * (rect.height - 20);
+        pop.style.left = x + 'px';
+        pop.style.top = y + 'px';
+        
+        el.appendChild(pop);
+        setTimeout(() => pop.remove(), 1000);
     },
 
     log: function(t, c) {
@@ -814,10 +877,13 @@ const UI = {
     },
 
     renderMap: function() {
-        // Reset Map
         ['forest','mountain','town','farm'].forEach(z => {
             let el = document.getElementById('z-'+z);
-            while(el.childNodes.length > 1) el.removeChild(el.lastChild);
+            // Keep hints and labels
+            let nodes = Array.from(el.childNodes);
+            nodes.forEach(n => {
+                if(n.className === 'map-b' || n.className === 'click-pop') el.removeChild(n);
+            });
         });
         for(let k in S.b) {
             for(let i=0; i<S.b[k]; i++) this.addMapIcon(k);
@@ -846,7 +912,7 @@ const UI = {
         newBtn.onclick = function() {
             document.getElementById('modal-mask').style.display = 'none';
             S.paused = false;
-            lastTickTime = Date.now(); // Reset Tick timer
+            lastTickTime = Date.now(); 
             if(cb) cb();
         };
         
