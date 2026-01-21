@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Burgherr WebApp - Stronghold Style Pop</title>
+    <title>Burgherr WebApp - UI Fix</title>
     <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=MedievalSharp&display=swap" rel="stylesheet">
     
     <style>
@@ -96,12 +96,12 @@
         .res-val { font-weight: 900; font-size: 1rem; color: #fff; }
         .gold-val { color: var(--highlight); }
 
-        /* TOOLTIP FÜR POPULARITÄT (Das Herzstück dieser Änderung) */
+        /* --- TOOLTIP FIX --- */
         .pop-tooltip-container { position: relative; }
         
         .pop-tooltip {
             visibility: hidden;
-            width: 200px;
+            width: 220px; /* Etwas breiter */
             background-color: #333;
             color: #fff;
             text-align: left;
@@ -110,8 +110,11 @@
             position: absolute;
             z-index: 100;
             top: 100%;
-            left: 50%; /* Zentrieren */
-            transform: translateX(-50%); /* Zentrieren */
+            /* FIX: Ausrichtung rechtsbündig statt zentriert */
+            right: 0; 
+            left: auto;
+            transform: none; 
+            
             margin-top: 10px;
             box-shadow: 0 5px 15px rgba(0,0,0,0.5);
             font-size: 0.85rem;
@@ -122,8 +125,16 @@
         
         /* Der kleine Pfeil oben am Tooltip */
         .pop-tooltip::after {
-            content: ""; position: absolute; bottom: 100%; left: 50%; margin-left: -5px;
-            border-width: 5px; border-style: solid; border-color: transparent transparent #333 transparent;
+            content: ""; 
+            position: absolute; 
+            bottom: 100%; 
+            /* FIX: Pfeil muss jetzt rechts sitzen, da Box rechtsbündig ist */
+            right: 25px; 
+            left: auto;
+            margin-left: 0;
+            border-width: 5px; 
+            border-style: solid; 
+            border-color: transparent transparent #333 transparent;
         }
 
         .pop-tooltip-container:hover .pop-tooltip { visibility: visible; opacity: 1; }
@@ -357,7 +368,7 @@ const Config = {
     taxes: [
         { name: "Großzügige Bestechung", gold: -4, pop: +10 },
         { name: "Kleine Bestechung", gold: -2, pop: +5 },
-        { name: "Keine Steuern", gold: 0, pop: +1 }, // +1 Basis-Moral
+        { name: "Keine Steuern", gold: 0, pop: +1 },
         { name: "Niedrige Steuern", gold: 2, pop: -2 },
         { name: "Hohe Steuern", gold: 4, pop: -6 },
         { name: "Grausame Steuern", gold: 8, pop: -15 }
@@ -375,9 +386,7 @@ const State = {
     migrationProgress: 0,
     b: { woodcutter: 0, quarry: 0, ironmine: 0, house: 0, farm_apple: 0, hunter: 0, farm_wheat: 0, mill: 0, bakery: 0, weaponsmith: 0, barracks: 0 },
     
-    // NEU: Wir speichern die letzte Änderung für das Tooltip
     factors: { food: 0, tax: 0, events: 0 },
-    
     flags: { seenCombat: false, seenStarvation: false, seenNoWorkers: false }
 };
 
@@ -411,7 +420,6 @@ const Game = {
         State.day++;
         State.lastTick = Date.now();
         
-        // Reset Faktoren
         State.factors.food = 0;
         State.factors.tax = 0;
         State.factors.events = 0;
@@ -438,7 +446,6 @@ const Game = {
         State.meat += prod(State.b.hunter * 2);
         State.wheat += prod(State.b.farm_wheat * 2);
 
-        // Verarbeitung
         let millCap = prod(State.b.mill * 2); 
         let wheatProc = Math.min(State.wheat, millCap);
         State.wheat -= wheatProc; State.flour += (wheatProc * 2);
@@ -455,7 +462,7 @@ const Game = {
         const taxInfo = Config.taxes[State.taxIndex];
         if (State.population > 0) {
             State.gold += (State.population * taxInfo.gold);
-            State.factors.tax = taxInfo.pop; // Faktor speichern
+            State.factors.tax = taxInfo.pop;
         }
 
         // 4. Konsum & Nahrungsbonus
@@ -465,11 +472,9 @@ const Game = {
         const totalChange = State.factors.food + State.factors.tax + State.factors.events;
         State.popularity += totalChange;
 
-        // Limits
         if(State.popularity > 100) State.popularity = 100;
         if(State.popularity < 0) State.popularity = 0;
 
-        // Checks
         this.checkCombat();
         this.handleMigration();
 
@@ -480,14 +485,13 @@ const Game = {
         if(State.population === 0) return;
 
         let needed = State.population;
-        let foodTypesEaten = 0; // Vielfalt!
+        let foodTypesEaten = 0;
         
         const eat = (type) => {
             if (State[type] > 0) {
                 let take = Math.min(State[type], needed);
                 State[type] -= take;
                 needed -= take;
-                // Wenn wir von diesem Typ was gegessen haben, zählt es zur Vielfalt
                 if (take > 0) foodTypesEaten++;
             }
         };
@@ -495,25 +499,17 @@ const Game = {
         eat('bread'); eat('meat'); eat('apple');
 
         if (needed > 0) {
-            // Hungerstrafe
             State.factors.food = -20;
             if(!State.flags.seenStarvation) {
                 UI.showModal("Hungersnot", "Sire, das Volk hungert! -20 Beliebtheit.");
                 State.flags.seenStarvation = true;
             }
         } else {
-            // SATT!
-            // Basis: Jeder bekommt +1 weil satt.
-            // Bonus: +1 für jeden ZUSÄTZLICHEN Typ (Stronghold Logik: "Vielfalt")
-            // Wenn 1 Typ gegessen: +0 Bonus (Basis Moral ist in Steuern enthalten oder neutral)
-            // Sagen wir: Faktor = Anzahl Typen.
-            // 1 Typ = +1. 2 Typen = +2. 3 Typen = +3.
             State.factors.food = foodTypesEaten;
         }
     },
 
     handleMigration: function() {
-        // Migration nur wenn Beliebtheit >= 50
         let growth = 0;
         if(State.popularity >= 50) {
             growth = (State.popularity - 40) * 0.5;
@@ -555,14 +551,12 @@ const Game = {
             
             if (myStr >= enemyStr) {
                 UI.log("Sieg! Die Ehre ist unser.", "important");
-                // Sieg gibt kurzfristig Moral
                 State.factors.events = 5; 
-                State.popularity += 5; // Direkt-Bonus
+                State.popularity += 5;
             } else {
                 UI.log("Niederlage! Unsere Lager sind leer.", "combat");
                 State.gold = Math.floor(State.gold / 2);
                 State.apple = 0; State.meat = 0; State.bread = 0;
-                // Niederlage tut weh
                 State.factors.events = -10;
                 State.popularity -= 10;
                 if(State.soldiers > 0) State.soldiers--;
@@ -574,7 +568,7 @@ const Game = {
         let newIndex = State.taxIndex + dir;
         if (newIndex >= 0 && newIndex < Config.taxes.length) {
             State.taxIndex = newIndex;
-            UI.update(); // Update UI sofort damit Tooltip stimmt
+            UI.update(); 
         }
     },
 
@@ -637,11 +631,9 @@ const UI = {
         document.getElementById('stat-day').innerText = s.day;
         document.getElementById('stat-pop').innerText = `${s.population} / ${s.maxPop}`;
 
-        // TAX
         const tax = Config.taxes[s.taxIndex];
         document.getElementById('display-tax').innerText = tax.name;
         
-        // WORKERS
         const effPct = Math.floor(efficiency * 100);
         const elWorker = document.getElementById('stat-workers');
         if(jobs === 0) elWorker.innerText = "Keine Jobs";
@@ -650,15 +642,12 @@ const UI = {
             elWorker.className = (effPct < 100) ? 'efficiency-display low' : 'efficiency-display';
         }
 
-        // TOOLTIP UPDATE (Das Herzstück)
         this.updateTooltip();
     },
 
     updateTooltip: function() {
         const f = State.factors;
-        // Tax Info live holen, falls wir im Pause-Modus umschalten
         const taxVal = Config.taxes[State.taxIndex].pop;
-        
         const total = f.food + taxVal + f.events;
         
         const row = (label, val) => {
@@ -680,11 +669,10 @@ const UI = {
         
         document.getElementById('pop-details').innerHTML = html;
         
-        // Farbe des Herzens anpassen
         const popEl = document.getElementById('res-pop');
-        if(State.popularity >= 80) popEl.style.color = "#81c784"; // Grün
-        else if(State.popularity >= 40) popEl.style.color = "#fff"; // Weiß
-        else popEl.style.color = "#e57373"; // Rot
+        if(State.popularity >= 80) popEl.style.color = "#81c784";
+        else if(State.popularity >= 40) popEl.style.color = "#fff";
+        else popEl.style.color = "#e57373";
     },
 
     updateBars: function() {
