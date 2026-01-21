@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Burgherr V3.1 - Realismus</title>
+    <title>Burgherr V3.2 - Pre-Monetization</title>
     <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=MedievalSharp&display=swap" rel="stylesheet">
     
     <style>
@@ -147,6 +147,13 @@
         }
         .btn:active { transform: translateY(2px); background: #ddd; }
         .btn-war { background: #5d4037; color: #fff; border-color: #3e2723; }
+        
+        /* NEU: Gold Button für Ads */
+        .btn-gold { 
+            background: linear-gradient(to bottom, #ffd700, #ffb300); color: #4e342e; border-color: #c49000;
+            text-shadow: 0 1px 0 rgba(255,255,255,0.4); box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .btn-gold:active { background: #ffb300; transform: translateY(2px); box-shadow: none; }
 
         /* --- FOOTER (BUILDING) --- */
         footer { 
@@ -331,6 +338,9 @@
         <div class="log-box" id="log"></div>
         <div class="controls">
             <div class="c-row">
+                <button class="btn btn-gold" onclick="Game.watchAdForReward()" style="flex:1.5;">💰 Schatzkammer (+250g)</button>
+            </div>
+            <div class="c-row">
                 <button class="btn" onclick="UI.openRecruit()">🛡️</button>
                 <button class="btn btn-war" onclick="UI.openWar()">⚔️</button>
                 <button class="btn" onclick="UI.openMarket()">⚖️</button>
@@ -375,10 +385,9 @@ const T = {
 };
 const SafeT = (k) => T[k] || k; 
 
-// Rules zur Zentralisierung der Typen
 const Rules = {
     storeTypes: ['wood','stone','iron','wheat','flour','hops'],
-    foodTypes:  ['bread','meat','apple','cheese','beer'] // Bier zählt zum Speicherplatz
+    foodTypes:  ['bread','meat','apple','cheese','beer'] 
 };
 
 const Levels = [
@@ -425,7 +434,7 @@ const Config = {
         barrack:{n:"Kaserne",c:"burg",i:"⛺",z:"z-town",cost:{g:150,s:20},desc:"Armee"},
         merc:{n:"Söldnerlager",c:"burg",i:"🎪",z:"z-town",cost:{g:500,w:100},desc:"Söldner"},
         
-        // WERK (type: mat = Produktionsgebäude)
+        // WERK
         wood:{n:"Holzfäller",c:"werk",i:"🪓",z:"z-forest",cost:{g:10},prod:"wood",amt:3, type:"mat"},
         stock:{n:"Vorratslager",c:"werk",i:"📦",z:"z-town",cost:{w:20},desc:"Lager"},
         ox:{n:"Ochsenjoch",c:"werk",i:"🐂",z:"z-mountain",cost:{g:20,w:20}},
@@ -465,9 +474,9 @@ let lastTickTime = 0;
 
 const Game = {
     init: function() {
-        if(localStorage.getItem('sh_v31_real')) {
+        if(localStorage.getItem('sh_v32_monetize')) {
             try {
-                let load = JSON.parse(localStorage.getItem('sh_v31_real'));
+                let load = JSON.parse(localStorage.getItem('sh_v32_monetize'));
                 if(load) S = load;
                 else this.startLevel(1);
                 Game.recalcStats(); 
@@ -500,7 +509,6 @@ const Game = {
         S.b.stock = 1; S.b.gran = 1;
         Game.recalcStats(); 
         
-        // Einmaliges Auto-Assign beim Start
         Game.autoAssign(); 
 
         UI.init();
@@ -689,11 +697,8 @@ const Game = {
             return; 
         }
 
-        // HIER KEIN AUTO ASSIGN MEHR - MANUELLE KONTROLLE!
-
         if(S.pop.hap > 70 && S.pop.curr < S.pop.max && Math.random()>0.6) {
             S.pop.curr++; 
-            // Neue Bürger suchen nicht automatisch Jobs, sie sind "idle"
             UI.log("Neuer Bürger", "prod");
         } else if(S.pop.hap < 20 && S.pop.curr > 0) {
             S.pop.curr--; UI.log("Bürger geflohen", "warn");
@@ -723,7 +728,6 @@ const Game = {
         UI.update();
     },
 
-    // Nur noch einmalig beim Start/Bau, nicht mehr im Tick
     autoAssign: function() {
         let cw = Game.countWorkers();
         if(cw.idle <= 0) return;
@@ -749,30 +753,26 @@ const Game = {
         }
     },
 
-    // Manuelle Zuweisung per Button
     assign: function(key, dir) {
         if(!S.b[key]) return;
         let b = Config.b[key];
-        // Nicht-Produktionsgebäude brauchen keine Worker
         if(!Game.isProductionBuilding(b)) return;
 
         let cw = Game.countWorkers();
         
         if(dir > 0) {
-            // Einstellen
             if(cw.idle > 0 && S.w[key] < S.b[key]) {
                 S.w[key]++;
             } else if(cw.idle <= 0) {
                 UI.showFloatingText('r-idle', "Keine Bürger!", "neg");
             }
         } else {
-            // Feuern
             if(S.w[key] > 0) {
                 S.w[key]--;
             }
         }
         UI.update();
-        UI.renderBuild(); // Cards neu malen für Zahlen
+        UI.renderBuild();
     },
 
     unassignWorker: function(protectFood) {
@@ -788,12 +788,9 @@ const Game = {
         let b = Config.b[key];
         if(!(S.res.gold >= (b.cost.g||0) && S.res.wood >= (b.cost.w||0) && S.res.stone >= (b.cost.s||0))) return;
 
-        // In V3.1: Bauen immer erlaubt, auch ohne Worker. Man muss sie danach zuweisen.
-        
         S.res.gold -= (b.cost.g||0); S.res.wood -= (b.cost.w||0); S.res.stone -= (b.cost.s||0);
         S.b[key] = (S.b[key]||0) + 1;
         
-        // Convenience: Wenn jemand frei ist, steck ihn rein. Wenn nicht, bleibt es leer.
         if(Game.isProductionBuilding(b)) {
             let cw = Game.countWorkers();
             if(cw.idle > 0) {
@@ -817,7 +814,6 @@ const Game = {
         } else {
             if((S.b.barrack||0) < 1) return;
             if(cw.idle < 1) { 
-                // In V3.1 feuern wir NICHT automatisch. Der Spieler muss selbst Platz machen.
                 UI.showModal("Keine Rekruten", "Du hast keine untätigen Bürger. Feuere jemanden aus einem Betrieb.", "OK");
                 return;
             }
@@ -833,6 +829,35 @@ const Game = {
         }
         UI.update();
     },
+
+    // --- MONETIZATION SIMULATION ---
+    watchAdForReward: function() {
+        // PLATZHALTER FÜR CRAZYGAMES SDK
+        // 1. Spiel pausieren
+        S.paused = true;
+        
+        // 2. SDK Aufruf simulieren (hier modal zeigen)
+        UI.showModal("Königlicher Herold", "Eine Botschaft aus fernen Landen trifft ein... (Werbung wird simuliert)", "...", () => {
+            // Leere Callback-Funktion, damit das Spiel pausiert bleibt, wenn man auf "..." klickt.
+            // In der Realität würde das SDK das Schließen des Ads handeln.
+        });
+        
+        // 3. Erfolg simulieren nach 3 Sekunden
+        setTimeout(() => {
+            // SDK meldet "Ad Finished"
+            S.res.gold += 250; // BELOHNUNG
+            
+            // Spiel fortsetzen
+            S.paused = false;
+            lastTickTime = Date.now();
+            
+            // UI updaten und Erfolg melden
+            UI.update();
+            UI.showModal("Belohnung erhalten!", "Der Schatzmeister hat 250 Gold in die Truhen gelegt.", "Fantastisch");
+            UI.log("Königliche Belohnung erhalten (+250g)", "prod");
+        }, 3000); 
+    },
+    // -------------------------------
 
     launchWar: function(idx) {
         let m = Missions[idx];
@@ -881,8 +906,8 @@ const Game = {
         UI.update(); UI.renderMarket();
     },
 
-    save: function() { localStorage.setItem('sh_v31_real', JSON.stringify(S)); UI.log("Gespeichert", "prod"); },
-    reset: function() { localStorage.removeItem('sh_v31_real'); location.reload(); }
+    save: function() { localStorage.setItem('sh_v32_monetize', JSON.stringify(S)); UI.log("Gespeichert", "prod"); },
+    reset: function() { localStorage.removeItem('sh_v32_monetize'); location.reload(); }
 };
 
 const UI = {
@@ -1098,6 +1123,7 @@ const UI = {
             
             let el = document.createElement('div'); el.className = "b-card";
             el.setAttribute('data-key', k);
+            // Klick auf Karte baut, Klick auf Buttons steuert Worker
             el.onclick = (e) => { if(!e.target.classList.contains('w-btn')) Game.build(k); };
             
             // MANUAL WORKER CONTROL
