@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Burgherr V24 - Stable Mobile</title>
+    <title>Burgherr V24 - Fixed</title>
     <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=MedievalSharp&display=swap" rel="stylesheet">
     
     <style>
@@ -24,7 +24,7 @@
         
         body { 
             font-family: 'Lato', sans-serif; background: var(--bg-body); color: #ccc; margin: 0; 
-            height: 100vh; height: 100dvh; /* Mobile Fix */
+            height: 100vh; height: 100dvh; 
             display: flex; flex-direction: column; overflow: hidden; 
         }
 
@@ -38,9 +38,12 @@
             display: flex; align-items: center; justify-content: space-between; padding: 0 10px; z-index: 100; position: relative;
         }
 
-        .header-info { width: 140px; flex-shrink: 0; }
+        .header-info { width: 140px; flex-shrink: 0; display:flex; flex-direction:column; justify-content:center; }
         .game-title { font-family: 'MedievalSharp'; font-size: 1.4rem; color: var(--highlight); margin: 0; line-height: 1; text-shadow: 2px 2px 0 #000; }
         .objective { font-size: 0.65rem; background: rgba(255,255,255,0.05); padding: 3px; border-left: 3px solid var(--highlight); margin-top: 3px; color: #bbb; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        
+        /* NEU: Militär Stats im Header */
+        .mil-stats { font-size: 0.75rem; color: #ef5350; margin-top: 4px; font-weight: bold; }
 
         /* Scrollable Resources */
         .res-container { display: flex; gap: 6px; flex: 1; justify-content: flex-end; overflow-x: auto; padding-bottom: 5px; -webkit-overflow-scrolling: touch; }
@@ -49,7 +52,7 @@
         .res-group { 
             background: #2d2d2d; border: 1px solid #444; border-radius: 4px; padding: 4px 8px; 
             min-width: 65px; text-align: center; display: flex; flex-direction: column; justify-content: center;
-            position: relative; cursor: help; transition: background 0.2s; flex-shrink: 0;
+            position: relative; cursor: pointer; transition: background 0.2s; flex-shrink: 0;
         }
         
         .res-label { font-size: 0.55rem; text-transform: uppercase; color: #888; border-bottom: 1px solid #444; margin-bottom: 2px; }
@@ -72,18 +75,6 @@
         }
         @keyframes floatUp { 0% { opacity: 1; top: -20px; transform: translateX(-50%); } 100% { opacity: 0; top: -50px; transform: translateX(-50%); } }
         @keyframes floatUpMap { 0% { opacity: 1; transform: translateY(0) scale(1); } 100% { opacity: 0; transform: translateY(-50px) scale(1.5); } }
-
-        /* TOOLTIP (Nur noch für Desktop-Hover bei Lagern, Volk hat jetzt Klick) */
-        .tooltip { 
-            display: none; position: absolute; top: 100%; right: 0; margin-top: 5px; z-index: 2000;
-            background: #e0e0e0; color: #000; padding: 10px; border: 2px solid var(--border); border-radius: 4px;
-            width: 240px; text-align: left; box-shadow: 0 5px 15px rgba(0,0,0,0.5); pointer-events: none;
-        }
-        @media (max-width: 600px) {
-            .tooltip { right: auto; left: 50%; transform: translateX(-50%); width: 280px; }
-            .float-txt { top: -60px; animation: floatUpMobile 1.5s forwards; } 
-            @keyframes floatUpMobile { 0% { opacity: 1; top: -60px; transform: translateX(-50%); } 100% { opacity: 0; top: -100px; transform: translateX(-50%); } }
-        }
 
         .tt-row { display: flex; justify-content: space-between; font-size: 0.8rem; border-bottom: 1px dashed #ccc; padding: 2px 0; }
         .pop-val { display:flex; gap:5px; align-items:center; }
@@ -179,7 +170,9 @@
         .b-card:active { transform: scale(0.95); }
         .b-card.can-build { background: var(--can-build); border-color: var(--can-build-border); box-shadow: 0 2px 4px rgba(46, 125, 50, 0.2); }
         .b-count { position: absolute; top: -5px; right: -5px; background: var(--accent); color: #fff; font-size: 0.7rem; padding: 2px 6px; border-radius: 10px; font-weight: bold; box-shadow: 1px 1px 2px rgba(0,0,0,0.5); }
-        
+        /* NEU: Worker Indicator auf der Karte */
+        .b-worker { position: absolute; bottom: 2px; left: 2px; color: #2e7d32; font-size: 0.65rem; font-weight: bold; background: rgba(255,255,255,0.7); padding: 0 3px; border-radius: 3px; }
+
         /* MODALS */
         .modal-mask { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 5000; justify-content: center; align-items: center; backdrop-filter: blur(4px); }
         
@@ -198,7 +191,8 @@
         /* --- MOBILE OPTIMIZATION --- */
         @media (max-width: 768px) {
             header { height: 70px; padding: 0 5px; }
-            .header-info { display: none; } 
+            .header-info { display: flex; width: auto; align-items: flex-start; }
+            .game-title { font-size: 1.1rem; }
             
             main { flex-direction: column; }
             #map-area { flex: 1.5; min-height: 40vh; }
@@ -263,6 +257,9 @@
     <div class="header-info">
         <div class="game-title">Burgherr</div>
         <div class="objective" id="obj-disp">Lade...</div>
+        <div class="mil-stats">
+            💂 <span id="s-sold">0</span> ⚔️ <span id="s-wep">0</span>
+        </div>
     </div>
 
     <div class="res-container">
@@ -271,7 +268,7 @@
             <div class="res-values">💰 <span id="r-gold">0</span></div>
         </div>
         
-        <div class="res-group" id="rg-store">
+        <div class="res-group" id="rg-store" onclick="UI.showStorage()">
             <span class="res-label">Lager</span>
             <div class="res-values">
                 <span class="res-item" title="Holz">🌲<span id="r-wood">0</span><span id="d-wood" class="rate-ind"></span></span>
@@ -280,10 +277,9 @@
                 <span class="res-item" title="Weizen">🌾<span id="r-wheat">0</span><span id="d-wheat" class="rate-ind"></span></span>
                 <span class="res-item" title="Mehl">🥡<span id="r-flour">0</span><span id="d-flour" class="rate-ind"></span></span>
             </div>
-            <div class="tooltip">Limit: <span id="tt-stock">100</span></div>
         </div>
 
-        <div class="res-group" id="rg-food">
+        <div class="res-group" id="rg-food" onclick="UI.showFood()">
             <span class="res-label">Nahrung</span>
             <div class="res-values">
                 <span class="res-item" title="Brot">🍞<span id="r-bread">0</span><span id="d-bread" class="rate-ind"></span></span>
@@ -291,7 +287,6 @@
                 <span class="res-item" title="Äpfel">🍎<span id="r-apple">0</span><span id="d-apple" class="rate-ind"></span></span>
                 <span class="res-item" title="Käse">🧀<span id="r-cheese">0</span><span id="d-cheese" class="rate-ind"></span></span>
             </div>
-            <div class="tooltip">Limit: <span id="tt-food">100</span></div>
         </div>
 
         <div class="res-group" onclick="UI.showHappy()" style="cursor:pointer; border-color:#8d6e63;">
@@ -588,7 +583,7 @@ const Game = {
             if(Math.random() < 0.2) {
                 S.pop.curr--;
                 UI.log("Ein Bürger verhungert.", "death");
-                Game.unassignWorker(); 
+                Game.unassignWorker(true); // True: Priorisiere Überleben (Feuere Luxusarbeiter zuerst)
             }
         } else { hChg += 1; S.factors.food = 1; }
 
@@ -612,21 +607,37 @@ const Game = {
             if(S.res[k] < 0) S.res[k] = 0;
         }
 
+        // --- BUG FIX: LAGERLOGIK ---
         let curS = 0; ['wood','stone','iron','wheat','flour'].forEach(k=>curS+=S.res[k]);
         let curF = 0; ['bread','meat','apple','cheese'].forEach(k=>curF+=S.res[k]);
 
         if(curS > maxS) {
             let types = ['wood','stone','iron','wheat','flour'];
             let over = curS - maxS;
+            // Lösche gerecht: Wer am meisten da ist, fliegt raus (oder einfach Reihe um, aber nur wenn > 0)
             while(over > 0) {
-                for(let t of types) { if(S.res[t] > 0 && over > 0) { S.res[t]--; over--; } }
+                let deletedSomething = false;
+                for(let t of types) { 
+                    if(S.res[t] > 0 && over > 0) { 
+                        S.res[t]--; over--; 
+                        deletedSomething = true;
+                    } 
+                }
+                if(!deletedSomething) break; // Should not happen if calcs are correct
             }
         }
         if(curF > maxF) {
-            let types = ['bread','meat','apple','cheese'];
+            let types = ['apple','bread','meat','cheese']; // Billiges zuerst
             let over = curF - maxF;
             while(over > 0) {
-                for(let t of types) { if(S.res[t] > 0 && over > 0) { S.res[t]--; over--; } }
+                let deletedSomething = false;
+                for(let t of types) { 
+                    if(S.res[t] > 0 && over > 0) { 
+                        S.res[t]--; over--; 
+                        deletedSomething = true;
+                    } 
+                }
+                if(!deletedSomething) break;
             }
         }
 
@@ -642,7 +653,7 @@ const Game = {
             S.pop.curr++; Game.autoAssign();
         } else if(S.pop.hap < 20 && S.pop.curr > 0) {
             S.pop.curr--; UI.log("Bürger geflohen", "warn");
-            Game.unassignWorker();
+            Game.unassignWorker(true);
         }
 
         S.rates = {};
@@ -696,8 +707,21 @@ const Game = {
         }
     },
 
-    unassignWorker: function() {
-        for(let k in S.w) { if(S.w[k] > 0) { S.w[k]--; return; } }
+    // --- BUG FIX: WORKER FIRING PRIORITY ---
+    unassignWorker: function(protectFood) {
+        // Liste von Jobs, die man zuerst feuern sollte (Luxus, Waffen, Grundstoffe)
+        // Lebensmittel am Ende
+        const fireOrder = ['merc','smith','armor','fletch','pole','iron','gold','quarry','wood','brew','mill','bake','dairy','hunter','apple','wheat','hops'];
+        
+        for(let key of fireOrder) {
+            if(S.w[key] > 0) {
+                S.w[key]--;
+                return true; // Erfolgreich gefeuert
+            }
+        }
+        // Fallback falls Job nicht in Liste
+        for(let k in S.w) { if(S.w[k] > 0) { S.w[k]--; return true; } }
+        return false; // Niemand zum Feuern da
     },
 
     build: function(key) {
@@ -723,7 +747,13 @@ const Game = {
             if(S.res.gold >= 50) { S.res.gold-=50; S.units.merc++; UI.log("Söldner angeheuert", "prod"); }
         } else {
             if((S.b.barrack||0) < 1) return;
-            if(idle < 1) { Game.unassignWorker(); work--; idle++; }
+            // --- BUG FIX: PHANTOM SOLDATEN ---
+            if(idle < 1) { 
+                // Versuch jemanden zu feuern
+                let fired = Game.unassignWorker(true);
+                if(!fired) return; // Abbruch! Keine Leute mehr da (weder Idle noch Arbeiter)
+                work--; idle++; // Stats korrigieren
+            }
             if(idle < 1) return; 
 
             if(S.res.gold >= u.cost && S.res[u.res] >= 1) {
@@ -827,6 +857,11 @@ const UI = {
         let sold = 0; for(let k in S.units) sold += S.units[k];
         let idle = S.pop.curr - sold - work;
 
+        // NEU: Update Militär Stats
+        let weps = (S.res.bow||0) + (S.res.spear||0) + (S.res.sword||0) + (S.res.armor||0);
+        document.getElementById('s-sold').innerText = sold;
+        document.getElementById('s-wep').innerText = weps;
+
         document.getElementById('r-pop').innerText = S.pop.curr + "/" + S.pop.max;
         document.getElementById('r-idle').innerText = idle;
         document.getElementById('r-hap').innerText = Math.floor(S.pop.hap);
@@ -836,7 +871,6 @@ const UI = {
         let tIdx = Config.taxes[S.tax];
         document.getElementById('tax-name').innerText = tIdx.n;
         
-        // Tax Impact Display
         let taxGold = S.pop.curr * tIdx.g;
         let taxHap = tIdx.h;
         let impactEl = document.getElementById('tax-impact');
@@ -847,11 +881,9 @@ const UI = {
         
         let maxS = (S.b.stock||1)*50;
         let curS = 0; ['wood','stone','iron','wheat','flour'].forEach(k=>curS+=(S.res[k]||0));
-        document.getElementById('tt-stock').innerText = `${Math.floor(curS)}/${maxS}`;
         
         let maxF = (S.b.gran||1)*50;
         let curF = 0; ['bread','meat','apple','cheese'].forEach(k=>curF+=(S.res[k]||0));
-        document.getElementById('tt-food').innerText = `${Math.floor(curF)}/${maxF}`;
 
         let l = Levels.find(x => x.id == S.lvl);
         if(l) {
@@ -898,9 +930,20 @@ const UI = {
             </div>
             <p style="font-size:0.8rem; color:#666; margin-top:10px;">(Die Beliebtheit nähert sich diesem Wert an)</p>
         `;
-        
         UI.showModal("Volkslaune", "", "Schließen");
         document.getElementById('m-body').innerHTML = html;
+    },
+
+    showStorage: function() {
+        let maxS = (S.b.stock||1)*50;
+        let curS = 0; ['wood','stone','iron','wheat','flour'].forEach(k=>curS+=(S.res[k]||0));
+        UI.showModal("Lager", `Belegung: ${Math.floor(curS)} / ${maxS}\nBaue 'Vorratslager', um das Limit zu erhöhen.`, "Schließen");
+    },
+    
+    showFood: function() {
+        let maxF = (S.b.gran||1)*50;
+        let curF = 0; ['bread','meat','apple','cheese'].forEach(k=>curF+=(S.res[k]||0));
+        UI.showModal("Kornspeicher", `Nahrung: ${Math.floor(curF)} / ${maxF}\nBaue 'Kornspeicher', um das Limit zu erhöhen.`, "Schließen");
     },
 
     updateBuildState: function() {
@@ -981,11 +1024,15 @@ const UI = {
             el.setAttribute('data-key', k);
             el.onclick = () => Game.build(k);
             
+            // NEU: Anzeige der Arbeiter auf der Karte
+            let workerHtml = (S.w[k] > 0) ? `<div class="b-worker">👤${S.w[k]}</div>` : '';
+
             el.innerHTML = `
                 ${S.b[k]>0 ? `<div class="b-count">${S.b[k]}</div>`:''}
                 <div style="font-size:2rem">${b.i}</div>
                 <div style="font-size:0.7rem;font-weight:bold">${b.n}</div>
                 <div class="cost-disp" style="font-size:0.6rem;color:#666"></div>
+                ${workerHtml}
             `;
             d.appendChild(el);
         }
