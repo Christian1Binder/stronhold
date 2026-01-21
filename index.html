@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Burgherr V13 - Final Stable</title>
+    <title>Burgherr V13 - Final Fixed</title>
     <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=MedievalSharp&display=swap" rel="stylesheet">
     
     <style>
@@ -15,6 +15,7 @@
             --text: #3e2723;
             --success: #2e7d32;
             --danger: #c62828;
+            --accent: #d84315;
         }
 
         * { box-sizing: border-box; user-select: none; }
@@ -23,19 +24,19 @@
         /* --- HEADER --- */
         header { 
             background: #222; height: 120px; flex-shrink: 0; border-bottom: 3px solid var(--border);
-            display: flex; align-items: center; justify-content: space-between; padding: 0 15px;
+            display: flex; align-items: center; justify-content: space-between; padding: 0 15px; z-index: 100;
         }
 
         .header-info { width: 220px; }
         .game-title { font-family: 'MedievalSharp'; font-size: 1.8rem; color: var(--highlight); margin: 0; line-height: 1; text-shadow: 2px 2px 0 #000; }
         .objective { font-size: 0.75rem; background: rgba(255,255,255,0.1); padding: 5px; border-left: 3px solid var(--highlight); margin-top: 5px; color: #ddd; }
-        .obj-done { text-decoration: line-through; color: var(--success); }
+        .obj-done { text-decoration: line-through; color: var(--success); opacity: 0.7; }
 
         .res-container { display: flex; gap: 8px; flex: 1; justify-content: flex-end; }
         .res-group { 
             background: #333; border: 1px solid #555; border-radius: 4px; padding: 4px 8px; 
             min-width: 70px; text-align: center; display: flex; flex-direction: column; justify-content: center;
-            position: relative;
+            position: relative; cursor: help;
         }
         .res-group:hover .tooltip { display: block; }
         
@@ -44,14 +45,14 @@
         
         /* TOOLTIP */
         .tooltip { 
-            display: none; position: absolute; top: 100%; right: 0; margin-top: 5px; z-index: 1000;
+            display: none; position: absolute; top: 100%; right: 0; margin-top: 5px; z-index: 2000;
             background: #e0e0e0; color: #000; padding: 10px; border: 2px solid var(--border); border-radius: 4px;
-            width: 200px; text-align: left; box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            width: 200px; text-align: left; box-shadow: 0 5px 15px rgba(0,0,0,0.5); pointer-events: none;
         }
         .tt-row { display: flex; justify-content: space-between; font-size: 0.8rem; border-bottom: 1px dashed #ccc; padding: 2px 0; }
 
         /* --- MAIN --- */
-        main { display: flex; flex: 1; overflow: hidden; }
+        main { display: flex; flex: 1; overflow: hidden; position: relative; }
 
         /* KARTE */
         #map-area { 
@@ -59,7 +60,7 @@
             background: radial-gradient(#558b2f, #1b5e20); 
             display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 2px;
         }
-        .zone { position: relative; border: 1px dashed rgba(255,255,255,0.1); }
+        .zone { position: relative; border: 1px dashed rgba(255,255,255,0.1); display: flex; align-content: flex-start; flex-wrap: wrap; padding: 10px; overflow: hidden; }
         .zone-label { position: absolute; bottom: 5px; right: 5px; font-family: 'MedievalSharp'; font-size: 2rem; color: rgba(255,255,255,0.2); pointer-events: none; }
         
         /* Gebäude Icons auf Karte */
@@ -74,14 +75,14 @@
         /* SIDEBAR */
         aside { 
             width: 340px; background: var(--panel-bg); border-left: 5px solid var(--border); 
-            display: flex; flex-direction: column; color: var(--text);
+            display: flex; flex-direction: column; color: var(--text); z-index: 50;
         }
         
         .log-box { 
-            flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 5px; 
+            flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column-reverse; gap: 5px; 
             background: rgba(0,0,0,0.05); font-size: 0.85rem;
         }
-        .log-entry { background: #fff; padding: 5px 8px; border-radius: 4px; border-left: 4px solid #999; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+        .log-entry { background: #fff; padding: 5px 8px; border-radius: 4px; border-left: 4px solid #999; box-shadow: 0 1px 2px rgba(0,0,0,0.1); flex-shrink: 0; }
         .log-entry.prod { border-color: var(--success); }
         .log-entry.warn { border-color: var(--danger); background: #ffebee; }
         
@@ -99,6 +100,8 @@
             height: 160px; background: #fdf5e6; border-top: 5px solid var(--border); flex-shrink: 0;
             display: flex; padding: 0 10px; align-items: center; 
             background-image: url('https://www.transparenttextures.com/patterns/aged-paper.png');
+            background-color: #d7ccc8; /* Fallback */
+            z-index: 60;
         }
         
         .cat-bar { width: 140px; display: flex; flex-wrap: wrap; gap: 5px; border-right: 2px solid #ccc; padding-right: 10px; justify-content: center; }
@@ -243,7 +246,7 @@
 
 <footer>
     <div class="cat-bar">
-        <div class="cat-btn selected" onclick="UI.setCat('burg')">🏰</div>
+        <div class="cat-btn active" onclick="UI.setCat('burg')">🏰</div>
         <div class="cat-btn" onclick="UI.setCat('werk')">🔨</div>
         <div class="cat-btn" onclick="UI.setCat('farm')">🍎</div>
         <div class="cat-btn" onclick="UI.setCat('stadt')">🏠</div>
@@ -328,10 +331,11 @@ let S = {}; // State
 
 const Game = {
     init: function() {
-        // Neuer Slot V13 - garantiert sauber
-        if(localStorage.getItem('sh_v13')) {
+        if(localStorage.getItem('sh_v13_fixed')) {
             try {
-                S = JSON.parse(localStorage.getItem('sh_v13'));
+                S = JSON.parse(localStorage.getItem('sh_v13_fixed'));
+                // Sanity Check
+                if(!S.b.gran && S.b.granary) { S.b.gran = S.b.granary; delete S.b.granary; } // Migration fix
                 UI.init();
                 UI.showModal("Willkommen zurück", "Spiel geladen.", "Weiter");
             } catch(e) { this.reset(); }
@@ -357,7 +361,10 @@ const Game = {
         // Load Start Res
         for(let k in l.start) S.res[k] = l.start[k];
         for(let k in Config.b) { S.b[k]=0; S.w[k]=0; }
-        S.b.stock = 1; S.b.granary = 1; // Start Buildings
+        
+        // INITIAL BUILDINGS (FIXED NAMES)
+        S.b.stock = 1; 
+        S.b.gran = 1; // FIX: War vorher granary, muss aber gran heißen
 
         UI.init();
         UI.showModal("Level " + id + ": " + l.t, l.msg, "Starten");
@@ -370,8 +377,10 @@ const Game = {
         let pLog = [], eLog = [];
         
         // 1. LIMITS
-        let maxS = S.b.stock * 50;
-        let maxF = S.b.granary * 50;
+        let maxS = (S.b.stock || 1) * 50;
+        // FIX: Zugriff auf S.b.gran statt S.b.granary
+        let maxF = (S.b.gran || 1) * 50; 
+        
         let curS = S.res.wood + S.res.stone + S.res.iron + S.res.wheat + S.res.flour;
         let curF = S.res.bread + S.res.meat + S.res.apple + S.res.cheese;
         let fullS = curS >= maxS;
@@ -443,7 +452,7 @@ const Game = {
         }
 
         // Church
-        hChg += (S.b.church * 5);
+        hChg += ((S.b.church||0) * 5);
 
         S.pop.hap = Math.max(0, Math.min(100, S.pop.hap + hChg));
 
@@ -543,8 +552,8 @@ const Game = {
     },
 
     togglePause: function() { S.paused = !S.paused; },
-    save: function() { localStorage.setItem('sh_v13', JSON.stringify(S)); UI.log("Gespeichert", "prod"); },
-    reset: function() { localStorage.removeItem('sh_v13'); location.reload(); }
+    save: function() { localStorage.setItem('sh_v13_fixed', JSON.stringify(S)); UI.log("Gespeichert", "prod"); },
+    reset: function() { localStorage.removeItem('sh_v13_fixed'); location.reload(); }
 };
 
 const UI = {
@@ -556,10 +565,12 @@ const UI = {
     },
     
     update: function() {
-        // Resources
+        // Resources (Resourcen UND Units)
         ['gold','wood','stone','iron','bread','meat','apple','cheese','wheat','flour','hops','bow','spear','sword','merc'].forEach(k => {
             let el = document.getElementById('r-'+k);
-            if(el) el.innerText = Math.floor(S.res[k] || S.units[k] || 0); // Safe read
+            // Nutze S.units für merc/truppen, S.res für rest
+            let val = S.res[k] !== undefined ? S.res[k] : (S.units[k] !== undefined ? S.units[k] : 0);
+            if(el) el.innerText = Math.floor(val); 
         });
 
         // Pop & Info
@@ -580,11 +591,12 @@ const UI = {
             <div class="tt-row"><span>Steuer:</span><span>${S.factors.tax}</span></div>
         `;
         
-        let maxS = S.b.stock*50;
+        // FIX: S.b.stock und S.b.gran statt granary
+        let maxS = (S.b.stock||1)*50;
         let curS = S.res.wood+S.res.stone+S.res.iron+S.res.wheat+S.res.flour;
         document.getElementById('tt-stock').innerText = `${Math.floor(curS)}/${maxS}`;
         
-        let maxF = S.b.granary*50;
+        let maxF = (S.b.gran||1)*50;
         let curF = S.res.bread+S.res.meat+S.res.apple+S.res.cheese;
         document.getElementById('tt-food').innerText = `${Math.floor(curF)}/${maxF}`;
 
@@ -610,13 +622,14 @@ const UI = {
         let d = document.createElement('div');
         d.className = `log-entry ${c}`;
         d.innerText = `Tag ${S.day}: ${t}`;
-        document.getElementById('log').prepend(d);
+        let log = document.getElementById('log');
+        log.appendChild(d); // Append statt Prepend für logische Leserichtung in flex-col-reverse
     },
 
     setCat: function(c) {
         this.cat = c; 
         document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
-        if(event) event.target.classList.add('active');
+        if(event && event.currentTarget) event.currentTarget.classList.add('active');
         this.renderBuild();
     },
 
@@ -659,6 +672,7 @@ const UI = {
         let zone = document.getElementById(b.z);
         if(zone) {
             let d = document.createElement('div'); d.className='map-b'; d.innerText = b.i;
+            d.title = b.n; // Tooltip on hover
             zone.appendChild(d);
         }
     },
