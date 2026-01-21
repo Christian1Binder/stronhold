@@ -3,306 +3,233 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Burgherr V24 - Stable Mobile</title>
+    <title>Burgherr V2.0 - Reforged</title>
     <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=MedievalSharp&display=swap" rel="stylesheet">
     
     <style>
         :root {
-            --bg-body: #0d0d0d; 
-            --panel-bg: #e0d5b7;
+            --bg-body: #121212; 
+            --panel-bg: #e6dac3;
             --border: #3e2723;
             --highlight: #ffb300;
             --text: #271c19;
             --success: #2e7d32;
-            --danger: #b71c1c;
+            --danger: #c62828;
             --accent: #d84315;
-            --can-build: #e8f5e9;
-            --can-build-border: #2e7d32;
+            --btn-bg: #d7ccc8;
         }
 
         * { box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
         
         body { 
-            font-family: 'Lato', sans-serif; background: var(--bg-body); color: #ccc; margin: 0; 
-            height: 100vh; height: 100dvh; /* Mobile Fix */
-            display: flex; flex-direction: column; overflow: hidden; 
+            font-family: 'Lato', sans-serif; background: var(--bg-body); color: #ddd; margin: 0; 
+            height: 100vh; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; 
         }
 
         /* --- TICK BAR --- */
-        #tick-container { height: 6px; background: #000; width: 100%; position: relative; z-index: 200; flex-shrink: 0; }
-        #tick-bar { height: 100%; background: var(--highlight); width: 0%; transition: width 0.1s linear; box-shadow: 0 0 10px var(--highlight); }
+        #tick-container { height: 4px; background: #000; width: 100%; position: relative; z-index: 200; flex-shrink: 0; }
+        #tick-bar { height: 100%; background: var(--highlight); width: 0%; transition: width 0.1s linear; }
 
         /* --- HEADER --- */
         header { 
-            background: #1a1a1a; height: 90px; flex-shrink: 0; border-bottom: 3px solid var(--border);
-            display: flex; align-items: center; justify-content: space-between; padding: 0 10px; z-index: 100; position: relative;
+            background: #1e1e1e; height: 85px; flex-shrink: 0; border-bottom: 3px solid var(--border);
+            display: flex; align-items: center; justify-content: space-between; padding: 0 10px; z-index: 100;
         }
 
-        .header-info { width: 140px; flex-shrink: 0; }
-        .game-title { font-family: 'MedievalSharp'; font-size: 1.4rem; color: var(--highlight); margin: 0; line-height: 1; text-shadow: 2px 2px 0 #000; }
-        .objective { font-size: 0.65rem; background: rgba(255,255,255,0.05); padding: 3px; border-left: 3px solid var(--highlight); margin-top: 3px; color: #bbb; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .header-title { font-family: 'MedievalSharp'; color: var(--highlight); line-height: 1; }
+        .header-title h1 { margin: 0; font-size: 1.2rem; }
+        .header-title span { font-size: 0.7rem; color: #888; }
 
-        /* Scrollable Resources */
-        .res-container { display: flex; gap: 6px; flex: 1; justify-content: flex-end; overflow-x: auto; padding-bottom: 5px; -webkit-overflow-scrolling: touch; }
-        .res-container::-webkit-scrollbar { height: 0px; } 
+        /* Resources Scroll */
+        .res-container { display: flex; gap: 5px; flex: 1; justify-content: flex-end; overflow-x: auto; padding-bottom: 5px; margin-left: 10px; }
+        .res-container::-webkit-scrollbar { display: none; } 
 
         .res-group { 
-            background: #2d2d2d; border: 1px solid #444; border-radius: 4px; padding: 4px 8px; 
-            min-width: 65px; text-align: center; display: flex; flex-direction: column; justify-content: center;
-            position: relative; cursor: help; transition: background 0.2s; flex-shrink: 0;
+            background: #333; border: 1px solid #555; border-radius: 4px; padding: 3px 6px; 
+            min-width: 60px; text-align: center; display: flex; flex-direction: column; justify-content: center; flex-shrink: 0;
         }
         
-        .res-label { font-size: 0.55rem; text-transform: uppercase; color: #888; border-bottom: 1px solid #444; margin-bottom: 2px; }
-        .res-values { display: flex; gap: 10px; justify-content: center; font-weight: bold; font-size: 0.85rem; color: #eee; position: relative; }
+        .res-label { font-size: 0.5rem; text-transform: uppercase; color: #aaa; border-bottom: 1px solid #444; margin-bottom: 2px; }
+        .res-values { display: flex; gap: 8px; justify-content: center; font-weight: bold; font-size: 0.8rem; color: #eee; }
+        .res-item { position: relative; }
         
-        .res-item { position: relative; display: inline-block; min-width: 20px; text-align: center; }
-        .rate-ind { font-size: 0.65rem; position: absolute; top: -10px; right: -8px; opacity: 0.9; font-weight: 900; text-shadow: 1px 1px 0 #000; }
+        .rate-ind { font-size: 0.6rem; position: absolute; top: -8px; right: -6px; font-weight: 900; text-shadow: 1px 1px 0 #000; }
         .rate-pos { color: #66bb6a; }
         .rate-neg { color: #ef5350; }
 
-        /* Floating Text */
-        .float-txt {
-            position: absolute; top: -20px; left: 50%; transform: translateX(-50%);
-            font-size: 1.2rem; font-weight: 900; pointer-events: none;
-            animation: floatUp 1.5s forwards; text-shadow: 1px 1px 0 #000; z-index: 3000;
-        }
-        .click-pop {
-            position: absolute; font-size: 2rem; font-weight: bold; color: #fff; pointer-events: none; z-index: 4000;
-            text-shadow: 0 0 5px #000; animation: floatUpMap 0.6s forwards;
-        }
-        @keyframes floatUp { 0% { opacity: 1; top: -20px; transform: translateX(-50%); } 100% { opacity: 0; top: -50px; transform: translateX(-50%); } }
-        @keyframes floatUpMap { 0% { opacity: 1; transform: translateY(0) scale(1); } 100% { opacity: 0; transform: translateY(-50px) scale(1.5); } }
-
-        /* TOOLTIP */
-        .tooltip { 
-            display: none; position: absolute; top: 100%; right: 0; margin-top: 5px; z-index: 2000;
-            background: #e0e0e0; color: #000; padding: 10px; border: 2px solid var(--border); border-radius: 4px;
-            width: 240px; text-align: left; box-shadow: 0 5px 15px rgba(0,0,0,0.5); pointer-events: none;
-        }
-        /* Mobile Tooltip Fix */
-        @media (max-width: 600px) {
-            .tooltip { right: auto; left: 50%; transform: translateX(-50%); width: 280px; }
-            .float-txt { top: -60px; animation: floatUpMobile 1.5s forwards; } 
-            @keyframes floatUpMobile { 0% { opacity: 1; top: -60px; transform: translateX(-50%); } 100% { opacity: 0; top: -100px; transform: translateX(-50%); } }
-        }
-
-        .tt-row { display: flex; justify-content: space-between; font-size: 0.8rem; border-bottom: 1px dashed #ccc; padding: 2px 0; }
-        .pop-val { display:flex; gap:5px; align-items:center; }
-        .idle-val { color: var(--highlight); margin-left: 8px; }
-
-        /* --- MAIN MAP --- */
+        /* --- MAIN LAYOUT --- */
         main { display: flex; flex: 1; overflow: hidden; position: relative; }
 
         #map-area { 
-            flex: 1; position: relative; overflow: hidden; padding: 10px;
-            background-color: #0d1b0e;
-            display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 8px;
+            flex: 1; position: relative; overflow: hidden; padding: 8px;
+            background-color: #0f1910;
+            display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 6px;
         }
         
         .zone { 
-            position: relative; border-radius: 8px; overflow: hidden; 
-            box-shadow: inset 0 0 20px rgba(0,0,0,0.6);
-            transition: transform 0.1s; cursor: pointer; border: 2px solid rgba(255,255,255,0.05);
-            touch-action: manipulation; 
+            position: relative; border-radius: 6px; overflow: hidden; 
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.7); border: 2px solid rgba(255,255,255,0.05);
+            transition: transform 0.1s; cursor: pointer;
         }
-        .zone:active { transform: scale(0.97); border-color: rgba(255,255,255,0.4); }
+        .zone:active { transform: scale(0.98); border-color: rgba(255,255,255,0.3); }
 
         #z-forest { background: radial-gradient(circle at center, #2e7d32, #1b5e20); }
-        #z-mountain { background: linear-gradient(135deg, #5d4037, #3e2723); } 
+        #z-mount { background: linear-gradient(135deg, #5d4037, #3e2723); } 
         #z-town { background: radial-gradient(#d7ccc8, #8d6e63); border: 2px solid #5d4037; }
         #z-farm { background: radial-gradient(#8bc34a, #558b2f); }
 
         .zone-label { 
-            position: absolute; bottom: 10px; left: 10px; 
-            font-family: 'MedievalSharp'; font-size: 1.2rem; color: rgba(255,255,255,0.6); 
-            text-shadow: 1px 1px 2px #000; pointer-events: none; z-index: 10;
+            position: absolute; bottom: 5px; left: 8px; 
+            font-family: 'MedievalSharp'; font-size: 1rem; color: rgba(255,255,255,0.7); 
+            text-shadow: 1px 1px 2px #000; pointer-events: none;
         }
-        .zone-hint { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); opacity: 0.15; font-size: 4rem; pointer-events: none; }
 
-        .map-b { 
-            position: absolute; font-size: 1.6rem; 
-            filter: drop-shadow(2px 2px 1px rgba(0,0,0,0.5)); pointer-events: none;
-            animation: popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-        @keyframes popIn { from { transform: scale(0) translateY(20px); opacity:0; } to { transform: scale(1) translateY(0); opacity:1; } }
-
-        /* SIDEBAR */
+        /* Sidebar */
         aside { 
-            width: 320px; background: var(--panel-bg); border-left: 5px solid var(--border); 
+            width: 280px; background: var(--panel-bg); border-left: 4px solid var(--border); 
             display: flex; flex-direction: column; color: var(--text); z-index: 50; flex-shrink: 0;
         }
         .log-box { 
-            flex: 1; overflow-y: auto; padding: 5px; display: flex; flex-direction: column; gap: 4px; 
-            background: rgba(0,0,0,0.05); font-size: 0.8rem; position: relative;
+            flex: 1; overflow-y: auto; padding: 5px; display: flex; flex-direction: column; gap: 3px; 
+            background: rgba(0,0,0,0.05); font-size: 0.75rem; 
         }
         .log-entry { 
-            background: #fff; padding: 4px 8px; border-radius: 4px; border-left: 4px solid #999; 
-            box-shadow: 0 1px 2px rgba(0,0,0,0.1); flex-shrink: 0; animation: slideIn 0.3s ease-out;
+            background: #fff; padding: 3px 6px; border-radius: 3px; border-left: 3px solid #999; 
+            animation: slideIn 0.2s; 
         }
-        @keyframes slideIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(-5px); } to { opacity: 1; transform: translateX(0); } }
+        .log-entry.bad { border-color: var(--danger); background: #ffebee; }
+        .log-entry.good { border-color: var(--success); }
+
+        .controls { padding: 10px; background: #bcaaa4; border-top: 2px solid var(--border); display: flex; flex-direction: column; gap: 5px; }
         
-        .log-entry:nth-child(1) { font-weight: bold; border-left-width: 6px; } 
-        .log-entry:nth-child(n+10) { opacity: 0.5; } 
-
-        .log-entry.prod { border-color: var(--success); }
-        .log-entry.warn { border-color: var(--danger); background: #ffebee; }
-        .log-entry.death { border-color: #000; background: #444; color: #fff; }
-        .log-entry.war { border-color: var(--highlight); background: #fff8e1; }
-
-        .controls { padding: 8px; background: #bcaaa4; border-top: 2px solid var(--border); }
-        .c-row { display: flex; gap: 5px; margin-bottom: 5px; }
         .btn { 
-            flex: 1; padding: 10px 5px; border: 1px solid var(--border); background: #efebe9; 
-            font-weight: bold; cursor: pointer; border-radius: 4px; color: var(--text); font-size: 0.9rem;
-            touch-action: manipulation;
+            border: 1px solid var(--border); background: var(--btn-bg); 
+            padding: 8px; border-radius: 4px; font-weight: bold; cursor: pointer; color: var(--text);
+            box-shadow: 0 2px 0 #8d6e63; position: relative;
         }
-        .btn:active { transform: translateY(2px); background: #ddd; }
-        .btn-war { background: #5d4037; color: #fff; border-color: #3e2723; }
+        .btn:active { transform: translateY(2px); box-shadow: none; }
+        .btn-red { background: #d32f2f; color: #fff; border-color: #b71c1c; box-shadow: 0 2px 0 #b71c1c; }
 
-        /* --- FOOTER (BUILDING) --- */
+        /* --- FOOTER (BUILDING & WORKERS) --- */
         footer { 
-            height: 150px; background: #d7ccc8; border-top: 5px solid var(--border); flex-shrink: 0;
-            display: flex; padding: 0 5px; align-items: center; 
+            height: 160px; background: #d7ccc8; border-top: 4px solid var(--border); flex-shrink: 0;
+            display: flex; flex-direction: column; z-index: 60;
             background-image: url('https://www.transparenttextures.com/patterns/aged-paper.png');
-            z-index: 60;
         }
         
-        .cat-bar { width: 120px; display: flex; flex-wrap: wrap; gap: 4px; border-right: 2px solid #ccc; padding-right: 5px; justify-content: center; }
-        .cat-btn { width: 36px; height: 36px; background: var(--border); color: #fff; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; cursor: pointer; border: 2px solid transparent; }
-        .cat-btn.active { background: var(--highlight); color: #000; border-color: #fff; }
+        .cat-bar { height: 35px; display: flex; border-bottom: 1px solid #a1887f; background: rgba(0,0,0,0.05); overflow-x: auto; }
+        .cat-btn { flex: 1; min-width: 50px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; cursor: pointer; border-right: 1px solid #a1887f; }
+        .cat-btn.active { background: var(--highlight); color: #000; box-shadow: inset 0 0 10px rgba(0,0,0,0.1); }
 
-        .build-bar { flex: 1; display: flex; gap: 8px; overflow-x: auto; padding: 5px; height: 100%; align-items: center; -webkit-overflow-scrolling: touch; }
-        .b-card { 
-            min-width: 75px; height: 100px; background: rgba(0,0,0,0.05); border-radius: 6px; 
-            display: flex; flex-direction: column; align-items: center; justify-content: center; 
-            cursor: pointer; position: relative; border: 2px solid transparent; transition: 0.1s; flex-shrink: 0;
+        .build-bar { flex: 1; display: flex; gap: 8px; overflow-x: auto; padding: 8px; align-items: center; }
+        
+        /* CARD DESIGN */
+        .card { 
+            width: 90px; height: 100%; background: #efebe9; border: 1px solid #8d6e63; border-radius: 6px; 
+            display: flex; flex-direction: column; flex-shrink: 0; position: relative;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2); transition: 0.1s;
         }
-        .b-card:active { transform: scale(0.95); }
-        .b-card.can-build { background: var(--can-build); border-color: var(--can-build-border); box-shadow: 0 2px 4px rgba(46, 125, 50, 0.2); }
-        .b-count { position: absolute; top: -5px; right: -5px; background: var(--accent); color: #fff; font-size: 0.7rem; padding: 2px 6px; border-radius: 10px; font-weight: bold; box-shadow: 1px 1px 2px rgba(0,0,0,0.5); }
-        
-        /* MODALS */
-        .modal-mask { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 5000; justify-content: center; align-items: center; backdrop-filter: blur(4px); }
-        
-        .modal-win { 
-            background: var(--panel-bg); 
-            width: 95%; max-width: 500px; 
-            max-height: 90vh; overflow-y: auto; 
-            padding: 20px; border: 4px solid var(--border); border-radius: 8px; text-align: center; color: var(--text); box-shadow: 0 0 50px #000; position: relative; 
+        .card-head { 
+            height: 50px; display: flex; flex-direction: column; align-items: center; justify-content: center; 
+            border-bottom: 1px dashed #ccc; cursor: pointer; position: relative;
         }
+        .card-head:active { background: #e0e0e0; }
+        .card-icon { font-size: 1.4rem; line-height: 1; }
+        .card-name { font-size: 0.6rem; font-weight: bold; text-align: center; margin-top: 2px; }
+        .lvl-badge { position: absolute; top: 2px; right: 2px; background: var(--border); color: #fff; font-size: 0.55rem; padding: 1px 4px; border-radius: 4px; }
         
-        .list-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; text-align: left; margin: 15px 0; }
-        .list-item { background: rgba(255,255,255,0.5); padding: 5px; border: 1px solid #999; display: flex; justify-content: space-between; align-items: center; border-radius: 4px; font-size: 0.85rem; }
-        .missing-res { color: var(--danger); font-weight: bold; }
-        .war-card { background: rgba(0,0,0,0.1); padding: 8px; margin-bottom: 5px; border: 1px solid #777; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem; }
+        /* Worker Controls in Card */
+        .card-workers { flex: 1; display: flex; align-items: center; justify-content: space-between; padding: 2px 4px; background: rgba(0,0,0,0.03); }
+        .w-btn { 
+            width: 20px; height: 20px; border: 1px solid #999; background: #fff; border-radius: 3px; 
+            display: flex; align-items: center; justify-content: center; cursor: pointer; font-weight: bold;
+        }
+        .w-val { font-size: 0.7rem; font-weight: bold; }
+        
+        .cost-pop {
+            position: absolute; top: -30px; left: 50%; transform: translateX(-50%);
+            background: rgba(0,0,0,0.9); color: #fff; padding: 4px 8px; border-radius: 4px;
+            font-size: 0.7rem; pointer-events: none; opacity: 0; transition: opacity 0.2s; z-index: 100; width: 120px; text-align: center;
+        }
+        .card:hover .cost-pop { opacity: 1; top: -45px; }
 
-        /* --- MOBILE OPTIMIZATION --- */
-        @media (max-width: 768px) {
+        /* Floating Text */
+        .float-txt {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            font-size: 1.2rem; font-weight: 900; pointer-events: none;
+            animation: floatUp 1s forwards; text-shadow: 1px 1px 0 #000; z-index: 3000;
+        }
+        @keyframes floatUp { 100% { opacity: 0; transform: translate(-50%, -80px); } }
+
+        /* Mobile Fixes */
+        @media (max-width: 700px) {
             header { height: 70px; padding: 0 5px; }
-            .header-info { display: none; } 
-            
+            .header-title { display: none; }
             main { flex-direction: column; }
-            #map-area { flex: 1.5; min-height: 40vh; }
-            
-            aside { 
-                width: 100%; height: auto; flex: 1; min-height: 180px; 
-                border-left: none; border-top: 4px solid var(--border); 
-                flex-direction: row; 
-            }
+            #map-area { flex: 1.2; min-height: 30vh; }
+            aside { width: 100%; height: auto; flex: 1; border-left: none; border-top: 4px solid var(--border); flex-direction: row; }
             .log-box { flex: 1; border-right: 2px solid var(--border); }
-            .controls { width: 140px; overflow-y: auto; padding: 5px; display: flex; flex-direction: column; justify-content: center; }
-            
-            footer { height: 130px; flex-direction: column; padding: 0; }
-            .cat-bar { width: 100%; height: 40px; border-right: none; border-bottom: 2px solid #ccc; flex-wrap: nowrap; overflow-x: auto; justify-content: flex-start; padding: 2px 5px; }
-            .cat-btn { flex-shrink: 0; width: 40px; }
-            .build-bar { width: 100%; height: 90px; }
-            
-            .list-grid { grid-template-columns: 1fr; }
+            .controls { width: 130px; justify-content: center; }
+            footer { height: 180px; }
+            .card { width: 100px; }
+            .w-btn { width: 28px; height: 28px; } /* Bigger touch targets */
         }
+        
+        /* Modal */
+        .modal-mask { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 5000; justify-content: center; align-items: center; backdrop-filter: blur(2px); }
+        .modal-win { background: var(--panel-bg); width: 90%; max-width: 400px; padding: 20px; border: 4px solid var(--border); border-radius: 8px; text-align: center; color: var(--text); box-shadow: 0 0 30px #000; }
     </style>
 </head>
 <body>
 
 <div id="modal-mask" class="modal-mask">
     <div class="modal-win">
-        <h2 id="m-title" style="font-family:'MedievalSharp'; margin-top:0">Titel</h2>
-        <div id="m-body" style="font-size:1.1rem; line-height:1.4">Text</div>
-        <button id="m-btn" class="btn" style="margin-top:20px; width:100%; background:var(--highlight);">Aktion</button>
-    </div>
-</div>
-
-<div id="war-mask" class="modal-mask">
-    <div class="modal-win">
-        <h2 style="font-family:'MedievalSharp'; margin:0">Feldzüge</h2>
-        <div style="margin-bottom:10px; border-bottom:1px solid #999; padding-bottom:5px;">
-            Armee: <span id="army-str" style="font-weight:bold; font-size:1.2rem">0</span> ⚔️
-        </div>
-        <div id="war-list" class="list-grid" style="grid-template-columns: 1fr;"></div>
-        <button onclick="UI.closeWar()" class="btn" style="width:100%">Rückzug</button>
-    </div>
-</div>
-
-<div id="recruit-mask" class="modal-mask">
-    <div class="modal-win">
-        <h2 style="font-family:'MedievalSharp'; margin:0">Kaserne</h2>
-        <div id="recruit-list" class="list-grid"></div>
-        <button onclick="UI.closeRecruit()" class="btn" style="width:100%">Schließen</button>
-    </div>
-</div>
-
-<div id="market-mask" class="modal-mask">
-    <div class="modal-win">
-        <h2 style="font-family:'MedievalSharp'; margin:0">Markt</h2>
-        <div id="market-list" class="list-grid"></div>
-        <button onclick="UI.closeMarket()" class="btn" style="width:100%">Schließen</button>
+        <h2 id="m-title" style="font-family:'MedievalSharp'; margin-top:0">Willkommen</h2>
+        <div id="m-body" style="margin-bottom:20px;"></div>
+        <button onclick="UI.closeModal()" class="btn" style="width:100%; background:var(--highlight);">Weiter</button>
     </div>
 </div>
 
 <div id="tick-container"><div id="tick-bar"></div></div>
 
 <header>
-    <div class="header-info">
-        <div class="game-title">Burgherr</div>
-        <div class="objective" id="obj-disp">Lade...</div>
+    <div class="header-title">
+        <h1>Burgherr</h1>
+        <span>Reforged</span>
     </div>
 
     <div class="res-container">
-        <div class="res-group" id="rg-gold">
+        <div class="res-group">
             <span class="res-label">Schatz</span>
             <div class="res-values">💰 <span id="r-gold">0</span></div>
         </div>
         
-        <div class="res-group" id="rg-store">
-            <span class="res-label">Lager</span>
+        <div class="res-group">
+            <span class="res-label">Lager <span id="limit-store" style="font-weight:normal; opacity:0.7"></span></span>
             <div class="res-values">
                 <span class="res-item" title="Holz">🌲<span id="r-wood">0</span><span id="d-wood" class="rate-ind"></span></span>
                 <span class="res-item" title="Stein">🧱<span id="r-stone">0</span><span id="d-stone" class="rate-ind"></span></span>
-                <span class="res-item" title="Eisen">⛓️<span id="r-iron">0</span><span id="d-iron" class="rate-ind"></span></span>
                 <span class="res-item" title="Weizen">🌾<span id="r-wheat">0</span><span id="d-wheat" class="rate-ind"></span></span>
                 <span class="res-item" title="Mehl">🥡<span id="r-flour">0</span><span id="d-flour" class="rate-ind"></span></span>
             </div>
-            <div class="tooltip">Limit: <span id="tt-stock">100</span></div>
-        </div>
-
-        <div class="res-group" id="rg-food">
-            <span class="res-label">Nahrung</span>
-            <div class="res-values">
-                <span class="res-item" title="Brot">🍞<span id="r-bread">0</span><span id="d-bread" class="rate-ind"></span></span>
-                <span class="res-item" title="Fleisch">🥩<span id="r-meat">0</span><span id="d-meat" class="rate-ind"></span></span>
-                <span class="res-item" title="Äpfel">🍎<span id="r-apple">0</span><span id="d-apple" class="rate-ind"></span></span>
-                <span class="res-item" title="Käse">🧀<span id="r-cheese">0</span><span id="d-cheese" class="rate-ind"></span></span>
-            </div>
-            <div class="tooltip">Limit: <span id="tt-food">100</span></div>
         </div>
 
         <div class="res-group">
-            <span class="res-label">Volk</span>
-            <div class="res-values pop-val">
-                <span title="Bürger">👨‍🌾 <span id="r-pop">0</span></span>
-                <span title="Beliebtheit">❤️ <span id="r-hap">0</span></span>
-                <span title="Untätig" class="idle-val">💤 <span id="r-idle">0</span></span>
+            <span class="res-label">Speise <span id="limit-food" style="font-weight:normal; opacity:0.7"></span></span>
+            <div class="res-values">
+                <span class="res-item" title="Brot">🍞<span id="r-bread">0</span><span id="d-bread" class="rate-ind"></span></span>
+                <span class="res-item" title="Äpfel">🍎<span id="r-apple">0</span><span id="d-apple" class="rate-ind"></span></span>
             </div>
-            <div class="tooltip"><div id="hap-breakdown"></div></div>
+        </div>
+
+        <div class="res-group" style="border-color: #8d6e63;">
+            <span class="res-label">Volk</span>
+            <div class="res-values">
+                <span title="Bürger">👨‍🌾 <span id="pop-curr">0</span>/<span id="pop-max">0</span></span>
+                <span title="Untätig" style="color:var(--highlight)">💤 <span id="pop-idle">0</span></span>
+                <span title="Laune">❤️ <span id="pop-hap">0</span></span>
+            </div>
         </div>
     </div>
 </header>
@@ -310,19 +237,15 @@
 <main>
     <div id="map-area">
         <div class="zone" id="z-forest" onclick="Game.clickGather('wood', event)">
-            <div class="zone-hint">🌲</div>
             <div class="zone-label">Forst</div>
         </div>
-        <div class="zone" id="z-mountain" onclick="Game.clickGather('stone', event)">
-            <div class="zone-hint">⛰️</div>
+        <div class="zone" id="z-mount" onclick="Game.clickGather('stone', event)">
             <div class="zone-label">Gebirge</div>
         </div>
         <div class="zone" id="z-town">
-            <div class="zone-hint">🏰</div>
             <div class="zone-label">Stadt</div>
         </div>
         <div class="zone" id="z-farm" onclick="Game.clickGather('apple', event)">
-            <div class="zone-hint">🍎</div>
             <div class="zone-label">Ländereien</div>
         </div>
     </div>
@@ -330,738 +253,409 @@
     <aside>
         <div class="log-box" id="log"></div>
         <div class="controls">
-            <div class="c-row">
-                <button class="btn" onclick="UI.openRecruit()">🛡️</button>
-                <button class="btn btn-war" onclick="UI.openWar()">⚔️</button>
-                <button class="btn" onclick="UI.openMarket()">⚖️</button>
+            <div style="font-size:0.8rem; text-align:center;">
+                Tag <span id="day-disp">1</span>
             </div>
-            <div style="background:rgba(255,255,255,0.5); padding:3px; border-radius:4px; font-size:0.7rem; margin:5px 0; text-align:center;">
-                Steuer: <strong id="tax-name">Keine</strong>
-                <div>
-                    <button onclick="Game.tax(-1)" style="padding:2px 8px;cursor:pointer">➖</button> 
-                    <button onclick="Game.tax(1)" style="padding:2px 8px;cursor:pointer">➕</button>
-                </div>
-            </div>
-            <div style="text-align:center; font-size:0.7rem; margin-top:5px;">
-                Tag <span id="day-disp">1</span> - Lvl <span id="lvl-disp">1</span><br>
-                <button onclick="Game.save()" style="margin-top:3px; padding:2px 5px;">Save</button>
-                <button onclick="Game.reset()" style="margin-top:3px; padding:2px 5px; color:red">Reset</button>
-            </div>
+            <button class="btn" onclick="Game.save()">💾 Speichern</button>
+            <button class="btn btn-red" onclick="Game.hardReset()">☠️ Neustart</button>
         </div>
     </aside>
 </main>
 
 <footer>
     <div class="cat-bar">
-        <div class="cat-btn active" onclick="UI.setCat('burg')">🏰</div>
-        <div class="cat-btn" onclick="UI.setCat('werk')">🔨</div>
-        <div class="cat-btn" onclick="UI.setCat('farm')">🍎</div>
-        <div class="cat-btn" onclick="UI.setCat('stadt')">🏠</div>
-        <div class="cat-btn" onclick="UI.setCat('waffen')">⚔️</div>
-        <div class="cat-btn" onclick="UI.setCat('nahrung')">🍞</div>
-    </div>
+        <div class="cat-btn active" onclick="UI.setCat('res')">🔨</div>
+        <div class="cat-btn" onclick="UI.setCat('food')">🍎</div>
+        <div class="cat-btn" onclick="UI.setCat('town')">🏠</div>
+        </div>
     <div class="build-bar" id="build-list"></div>
 </footer>
 
 <script>
-/* DATEN */
-const T = {
-    wood:"Holz", stone:"Stein", iron:"Eisen", pitch:"Pech", wheat:"Weizen", flour:"Mehl", hops:"Hopfen",
-    bread:"Brot", meat:"Fleisch", cheese:"Käse", apple:"Äpfel", beer:"Bier",
-    bow:"Bogen", spear:"Speer", sword:"Schwert", armor:"Rüstung", leather:"Leder",
-    gold:"Gold", pop:"Bürger", archer:"Schütze", pikeman:"Pikenier", swordsman:"Schwertkämpfer", merc:"Söldner",
-    cath:"Kathedrale"
-};
-const SafeT = (k) => T[k] || k; 
-
-const Levels = [
-    {
-        id:1, 
-        t:"Gründung", 
-        msg:"Sorge für Nahrung und Unterkünfte. Klicke auf die Karte für erste Rohstoffe!", 
-        goal:{wood:50, pop:10}, 
-        start:{gold: 100, wood: 60, bread: 50, apple: 20}
-    },
-    {id:2, t:"Stein & Brot", msg:"Baut Steinbrüche & Brotproduktion. Klicke auf Berge für Stein.", goal:{stone:20, bread:30}, start:{gold:150, wood:50, bread:50}},
-    {id:3, t:"Waffen", msg:"Stellt Bögen und Speere her.", goal:{bow:5, spear:5}, start:{gold:200, wood:100, stone:50, bread:100, meat:20}},
-    {id:4, t:"Armee", msg:"Bildet 10 Soldaten aus.", goal:{soldier:10}, start:{gold:300, wood:100, stone:100, iron:20, bread:100, meat:50}},
-    {id:5, t:"Kathedrale", msg:"Das Meisterwerk.", goal:{cath:1}, start:{gold:1000, wood:500, stone:500, iron:100, bread:200, wine:50}}
-];
-
-const Units = {
-    archer: {n:"Schütze", cost:10, res:"bow", str:5},
-    pikeman: {n:"Pikenier", cost:15, res:"spear", str:8},
-    swordsman: {n:"Schwertk.", cost:30, res:"sword", arm:"armor", str:15},
-    merc: {n:"Söldner", cost:50, str:10}
-};
-
-const Missions = [
-    {n:"Banditenlager", str:20, loot:{gold:50, wood:20, bread:20}, risk:"Niedrig"},
-    {n:"Wegelagerer", str:50, loot:{gold:100, iron:10, meat:20}, risk:"Mittel"},
-    {n:"Raubritterburg", str:150, loot:{gold:300, stone:50, sword:5, armor:2}, risk:"Hoch"},
-    {n:"Feindliche Grafschaft", str:500, loot:{gold:1000, iron:100}, risk:"Extrem"}
-];
-
+/* --- KONFIGURATION & DATEN --- */
 const Config = {
-    tick: 4000, 
-    taxes: [
-        {n:"Keine",   g:0, h:1},
-        {n:"Gering",  g:1, h:-1}, 
-        {n:"Normal",  g:2, h:-2},
-        {n:"Hoch",    g:4, h:-4},
-        {n:"Wucher",  g:8, h:-10}
-    ],
+    tick: 2000, // ms pro Tick
     b: {
-        // BURG
-        wall_w:{n:"Holzwall",c:"burg",i:"🪵",z:"z-town",cost:{g:10,w:20}},
-        tower:{n:"Turm",c:"burg",i:"🗼",z:"z-mountain",cost:{g:100,s:50}},
-        barrack:{n:"Kaserne",c:"burg",i:"⛺",z:"z-town",cost:{g:150,s:20},desc:"Armee"},
-        merc:{n:"Söldnerlager",c:"burg",i:"🎪",z:"z-town",cost:{g:500,w:100},desc:"Söldner"},
+        // RESSOURCEN
+        woodcutter: { n:"Holzfäller", c:"res", i:"🪓", desc:"Hackt Holz", cost:{g:10}, prod:{wood:3}, cap:2 },
+        quarry:     { n:"Steinbruch", c:"res", i:"⛏️", desc:"Baut Stein ab", cost:{g:50,w:50}, prod:{stone:2}, cap:3 },
+        stock:      { n:"Lager",      c:"res", i:"📦", desc:"Platz +50", cost:{w:50}, passive:true, store:50 },
         
-        // WERK
-        wood:{n:"Holzfäller",c:"werk",i:"🪓",z:"z-forest",cost:{g:10},prod:"wood",amt:3},
-        stock:{n:"Vorratslager",c:"werk",i:"📦",z:"z-town",cost:{w:20},desc:"Lager"},
-        ox:{n:"Ochsenjoch",c:"werk",i:"🐂",z:"z-mountain",cost:{g:20,w:20}},
-        quarry:{n:"Steinbruch",c:"werk",i:"⛏️",z:"z-mountain",cost:{g:50,w:50},prod:"stone",amt:2,need:"ox"},
-        iron:{n:"Eisenmine",c:"werk",i:"⛓️",z:"z-mountain",cost:{g:100,w:100},prod:"iron",amt:1},
-        
-        // FARM
-        apple:{n:"Obstgarten",c:"farm",i:"🍎",z:"z-farm",cost:{g:30,w:10},prod:"apple",amt:3},
-        hunter:{n:"Jäger",c:"farm",i:"🏹",z:"z-forest",cost:{g:20,w:5},prod:"meat",amt:2},
-        dairy:{n:"Käserei",c:"farm",i:"🧀",z:"z-farm",cost:{g:40,w:20},prod:"cheese",amt:2},
-        wheat:{n:"Getreide",c:"farm",i:"🌾",z:"z-farm",cost:{g:40,w:10},prod:"wheat",amt:2},
-        hops:{n:"Hopfen",c:"farm",i:"🌿",z:"z-farm",cost:{g:40,w:10},prod:"hops",amt:2},
-        
+        // ESSEN
+        orchard:    { n:"Obstgarten", c:"food", i:"🌳", desc:"Erntet Äpfel", cost:{g:20,w:10}, prod:{apple:2}, cap:2 },
+        farm:       { n:"Bauernhof",  c:"food", i:"🌾", desc:"Sät Weizen", cost:{g:50,w:30}, prod:{wheat:3}, cap:3 },
+        mill:       { n:"Mühle",      c:"food", i:"⚙️", desc:"Weizen zu Mehl", cost:{g:100,w:50,s:20}, convert:{in:'wheat',out:'flour',ratio:1}, cap:2 },
+        bakery:     { n:"Bäckerei",   c:"food", i:"🍞", desc:"Mehl zu Brot", cost:{g:100,w:50,s:20}, convert:{in:'flour',out:'bread',ratio:3}, cap:3 },
+        granary:    { n:"Kornspeicher", c:"food", i:"🛖", desc:"Essen +50", cost:{w:30,s:10}, passive:true, foodStore:50 },
+
         // STADT
-        hovel:{n:"Hütte",c:"stadt",i:"🛖",z:"z-town",cost:{w:10},pop:5},
-        house:{n:"Haus",c:"stadt",i:"🏠",z:"z-town",cost:{g:50,w:30,s:10},pop:10},
-        church:{n:"Kirche",c:"stadt",i:"⛪",z:"z-town",cost:{g:500,s:100},rel:10},
-        cath:{n:"KATHEDRALE",c:"stadt",i:"🕍",z:"z-town",cost:{g:5000,s:2000},rel:50},
-        
-        // WAFFEN
-        fletch:{n:"Pfeilmacher",c:"waffen",i:"🏹",z:"z-town",cost:{g:100,w:50},use:"wood",out:"bow",amt:1},
-        pole:{n:"Pikenmacher",c:"waffen",i:"🔱",z:"z-town",cost:{g:100,w:50},use:"wood",out:"spear",amt:1},
-        smith:{n:"Schmiede",c:"waffen",i:"⚔️",z:"z-town",cost:{g:200,w:100},use:"iron",out:"sword",amt:1},
-        armor:{n:"Rüstung",c:"waffen",i:"🛡️",z:"z-town",cost:{g:200,w:100},use:"iron",out:"armor",amt:1},
-        
-        // NAHRUNG
-        gran:{n:"Kornspeicher",c:"nahrung",i:"🛖",z:"z-town",cost:{w:20},cap:50},
-        mill:{n:"Mühle",c:"nahrung",i:"⚙️",z:"z-town",cost:{g:100,w:50},proc:"wheat",out:"flour",r:1},
-        bake:{n:"Bäcker",c:"nahrung",i:"🍞",z:"z-town",cost:{g:50,w:20},proc:"flour",out:"bread",r:4},
-        brew:{n:"Brauerei",c:"nahrung",i:"🍺",z:"z-town",cost:{g:100,w:20},proc:"hops",out:"beer",r:2}
+        tent:       { n:"Zelt",       c:"town", i:"⛺", desc:"Pop +2", cost:{w:10}, passive:true, pop:2 },
+        house:      { n:"Haus",       c:"town", i:"🏠", desc:"Pop +5", cost:{g:20,w:30,s:5}, passive:true, pop:5 },
+        manor:      { n:"Herrenhaus", c:"town", i:"🏰", desc:"Pop +10", cost:{g:200,w:100,s:50}, passive:true, pop:10 }
     }
 };
 
-/* LOGIC */
-let S = {}; 
-let lastTickTime = 0;
+/* --- STATE MANAGEMENT --- */
+let S = {
+    day: 1,
+    res: { gold:50, wood:0, stone:0, wheat:0, flour:0, bread:10, apple:10 },
+    b: {}, // Gebäude Anzahl
+    w: {}, // Zugewiesene Arbeiter
+    pop: { curr: 3, hap: 100 },
+    rates: {} // Letzte Netto-Raten für UI
+};
 
+let tickInterval;
+let lastTick = Date.now();
+
+/* --- LOGIK CORE --- */
 const Game = {
     init: function() {
-        if(localStorage.getItem('sh_v24')) {
-            try {
-                S = JSON.parse(localStorage.getItem('sh_v24'));
-                if(!S.b.gran && S.b.granary) { S.b.gran = S.b.granary; delete S.b.granary; }
-                Game.recalcStats(); 
-                UI.init();
-                UI.showModal("Willkommen zurück", "Dein Lehen erwartet dich.", "Weiter");
-            } catch(e) { this.reset(); }
-        } else {
-            this.startLevel(1);
-        }
-        
-        setInterval(this.tick, Config.tick);
-        lastTickTime = Date.now();
-        requestAnimationFrame(UI.animateTick);
-    },
-
-    startLevel: function(id) {
-        let l = Levels.find(x => x.id == id);
-        if(!l) return UI.showModal("Spielende", "Du bist der wahre Burgherr!", "Hurra");
-        
-        S = {
-            lvl: id, day: 1, paused: true,
-            res: { gold:0, wood:0, stone:0, iron:0, pitch:0, wheat:0, flour:0, bread:0, meat:0, cheese:0, apple:0, hops:0, beer:0, bow:0, spear:0, sword:0, armor:0, leather:0 },
-            units: { archer:0, pikeman:0, swordsman:0, merc:0 },
-            pop: { curr:5, max:0, hap:100 },
-            b: {}, w: {}, tax: 0,
-            factors: { food:0, tax:0 },
-            rates: {} 
-        };
-        for(let k in l.start) S.res[k] = l.start[k];
-        for(let k in Config.b) { S.b[k]=0; S.w[k]=0; }
-        
-        S.b.stock = 1; S.b.gran = 1;
-        Game.recalcStats(); 
-
+        this.load();
         UI.init();
-        UI.showModal("Level " + id + ": " + l.t, l.msg, "Starten");
-    },
-
-    recalcStats: function() {
-        S.pop.max = (S.b.hovel*5) + (S.b.house*10) + 5;
-    },
-
-    getArmyStr: function() {
-        let s = 0;
-        for(let k in S.units) s += (S.units[k] * Units[k].str);
-        return s;
-    },
-
-    clickGather: function(type, e) {
-        if(S.paused) return;
+        tickInterval = setInterval(this.tick, Config.tick);
+        requestAnimationFrame(UI.animTick);
         
-        let maxS = (S.b.stock || 1) * 50;
-        let maxF = (S.b.gran || 1) * 50;
-        let curS = S.res.wood + S.res.stone + S.res.iron + S.res.wheat + S.res.flour;
-        let curF = S.res.bread + S.res.meat + S.res.apple + S.res.cheese;
-
-        if(type === 'wood' || type === 'stone') {
-            if(curS >= maxS) { UI.showFloatingText(type, "Voll!", "neg"); return; }
-        }
-        if(type === 'apple') {
-            if(curF >= maxF) { UI.showFloatingText(type, "Voll!", "neg"); return; }
-        }
-
-        S.res[type]++;
-        UI.update();
-        
-        UI.showFloatingText(type, "+1", "pos");
-        UI.showMapClickEffect(e.currentTarget, type === 'apple' ? '🍎' : (type==='wood'?'🌲':'🧱'));
+        if(S.day === 1) UI.modal("Willkommen Burgherr", "Dein Volk erwartet Befehle. Weise Arbeiter zu (unten im Menü), um die Wirtschaft anzukurbeln. Klicke auf die Karte für erste Rohstoffe.");
     },
 
     tick: function() {
-        if(S.paused) { lastTickTime = Date.now(); return; }
         S.day++;
-        lastTickTime = Date.now();
+        lastTick = Date.now();
         
-        let startRes = JSON.parse(JSON.stringify(S.res));
-        Game.recalcStats();
+        // 1. Reset Rates
+        let d = {}; // Delta
+        for(let k in S.res) d[k] = 0;
         
-        // 1. LIMITS & SPACE (FIXED LOGIC)
-        let maxS = (S.b.stock || 1) * 50;
-        let maxF = (S.b.gran || 1) * 50; 
-        
-        let curS = S.res.wood + S.res.stone + S.res.iron + S.res.wheat + S.res.flour;
-        let curF = S.res.bread + S.res.meat + S.res.apple + S.res.cheese;
-        
-        let spaceS = maxS - curS;
-        let spaceF = maxF - curF;
+        // 2. Kapazitäten berechnen
+        let maxStore = 50 + ((S.b.stock||0)*50);
+        let maxFood = 50 + ((S.b.granary||0)*50);
+        let popCap = 3 + ((S.b.tent||0)*2) + ((S.b.house||0)*5) + ((S.b.manor||0)*10);
 
-        // 2. PRODUCTION
+        // 3. Produktion durch Gebäude
         for(let k in Config.b) {
             let b = Config.b[k];
-            let n = S.w[k];
-            if(n <= 0) continue;
-
-            if(b.need && S.b[b.need] < n) n = S.b[b.need]; 
-
-            if(b.prod) {
-                let isFood = ['meat','apple','cheese','wheat','hops'].includes(b.prod);
-                let isStorage = !['meat','apple','cheese','bread'].includes(b.prod);
-                let amt = n * (b.amt||1);
-                
-                if(isFood && spaceF > 0) {
-                    let realAdd = Math.min(amt, spaceF);
-                    S.res[b.prod] = (S.res[b.prod]||0) + realAdd;
-                    spaceF -= realAdd;
-                } else if(isStorage && spaceS > 0) {
-                    let realAdd = Math.min(amt, spaceS);
-                    S.res[b.prod] = (S.res[b.prod]||0) + realAdd;
-                    spaceS -= realAdd;
+            let count = S.b[k] || 0;
+            let workers = S.w[k] || 0;
+            
+            if(count > 0 && workers > 0) {
+                // Einfache Produktion
+                if(b.prod) {
+                    for(let rKey in b.prod) {
+                        d[rKey] += (workers * b.prod[rKey]);
+                    }
                 }
-            }
-            if(b.proc) {
-                let take = Math.min(S.res[b.proc]||0, n);
-                let outAmt = take * (b.r||1);
-                
-                // Logic check: only produce if we have space
-                let canProd = true;
-                if(['bread'].includes(b.out) && spaceF < outAmt) canProd = false;
-                if(['flour'].includes(b.out) && spaceS < outAmt) canProd = false;
-                
-                if(take > 0 && canProd) {
-                    S.res[b.proc] -= take;
-                    S.res[b.out] = (S.res[b.out]||0) + outAmt;
-                    if(['bread'].includes(b.out)) spaceF -= outAmt;
-                    if(['flour'].includes(b.out)) spaceS -= outAmt;
-                }
-            }
-            if(b.use) {
-                if((S.res[b.use]||0) >= n) {
-                    S.res[b.use] -= n;
-                    S.res[b.out] = (S.res[b.out]||0) + (n*(b.amt||1));
+                // Umwandlung (Konverter)
+                if(b.convert) {
+                    let needed = workers; // 1 Worker verarbeitet 1 Item pro Tick
+                    let avail = S.res[b.convert.in] + d[b.convert.in]; // Verfügbar (inkl. aktueller Prod)
+                    
+                    let actualWork = Math.min(needed, Math.max(0, avail));
+                    
+                    if(actualWork < needed) UI.log(`Zu wenig ${b.convert.in} für ${b.n}`, 'bad');
+                    
+                    d[b.convert.in] -= actualWork;
+                    d[b.convert.out] += (actualWork * b.convert.ratio);
                 }
             }
         }
 
-        // 3. EAT
-        let eat = S.pop.curr;
-        let foods = ['apple','bread','cheese','meat'];
-        let ateTypes = 0;
-        foods.forEach(f => {
-            if(eat > 0 && S.res[f] > 0) {
-                let take = Math.min(eat, S.res[f]);
-                S.res[f] -= take; eat -= take; ateTypes++;
+        // 4. Konsum (Essen)
+        let hungry = S.pop.curr;
+        let ate = 0;
+        // Priorität: Äpfel -> Brot
+        ['apple','bread'].forEach(f => {
+            if(hungry > 0) {
+                let avail = S.res[f] + d[f]; // Verfügbar nach Produktion
+                let take = Math.min(hungry, Math.max(0, avail));
+                d[f] -= take;
+                hungry -= take;
+                ate += take;
             }
         });
 
-        let hChg = 0;
-        if(eat > 0) { 
-            UI.log(`${eat} hungern!`, 'warn'); 
-            hChg -= 3; 
-            S.factors.food = -3; 
-            if(Math.random() < 0.1) {
-                S.pop.curr--;
-                UI.log("Ein Bürger verhungert.", "death");
-            }
-        }
-        else { hChg += (ateTypes); S.factors.food = ateTypes; }
-
-        let tx = Config.taxes[S.tax];
-        hChg += tx.h;
-        S.res.gold += (S.pop.curr * tx.g);
-        S.factors.tax = tx.h;
-
-        if(S.res.beer >= S.pop.curr && S.pop.curr > 0) {
-            S.res.beer -= S.pop.curr;
-            hChg += 5;
+        // 5. Ergebnisse anwenden & Limits
+        // Happiness
+        if(hungry > 0) {
+            S.pop.hap = Math.max(0, S.pop.hap - 5);
+            UI.log(`${hungry} hungern!`, 'bad');
+        } else {
+            if(S.pop.hap < 100) S.pop.hap++;
         }
 
-        hChg += ((S.b.church||0) * 5);
-        let diff = Math.max(-10, Math.min(10, hChg));
-        S.pop.hap = Math.max(0, Math.min(100, S.pop.hap + diff));
-
-        // 4. GAME OVER & POP GROWTH
-        if(S.pop.curr <= 0) {
-            S.pop.curr = 0; 
-            S.paused = true;
-            UI.update();
-            UI.showModal("GAME OVER", "Das Dorf ist ausgestorben.", "Neustart", Game.reset);
-            return; 
+        // Bevölkerungswachstum / Tod
+        if(hungry > 2 && Math.random() < 0.2) {
+            S.pop.curr--; 
+            Game.unassignRandom();
+            UI.log("Ein Bürger ist verhungert", 'bad');
+        } else if(S.pop.hap > 80 && S.pop.curr < popCap && Math.random() < 0.3) {
+            S.pop.curr++;
+            UI.log("Ein neuer Bürger ist geboren", 'good');
         }
 
-        let work = 0; for(let k in S.w) work += S.w[k];
-        let sold = 0; for(let k in S.units) sold += S.units[k];
-        let idle = S.pop.curr - sold - work;
-
-        if(S.pop.hap > 60 && S.pop.curr < S.pop.max && Math.random()>0.5) {
-            S.pop.curr++; 
-            Game.autoAssign();
-        } else if(S.pop.hap < 20 && S.pop.curr > 0) {
-            S.pop.curr--; UI.log("Bürger geflohen", "warn");
-            for(let k in S.w) if(S.w[k]>0){S.w[k]--; break;}
+        // Ressourcen addieren mit Hard Caps
+        for(let k in d) {
+            let old = S.res[k];
+            let val = old + d[k];
+            
+            // Cap Check
+            let isFood = ['apple','bread','wheat','flour'].includes(k);
+            let limit = isFood ? maxFood : maxStore;
+            if(k === 'gold') limit = 99999;
+            
+            if(val > limit) val = limit;
+            if(val < 0) val = 0;
+            
+            S.res[k] = val;
+            S.rates[k] = val - old; // Wahre Rate speichern
         }
 
-        // 5. RATES
-        S.rates = {};
-        for(let k in S.res) {
-            let diff = S.res[k] - startRes[k];
-            if(diff !== 0) {
-                S.rates[k] = diff;
-                if(diff > 0) UI.showFloatingText(k, `+${diff}`, 'pos');
-            }
-        }
-
-        // 6. WIN CHECK
-        let l = Levels.find(x => x.id == S.lvl);
-        let win = true;
-        for(let k in l.goal) {
-            let val = 0;
-            if(k=='pop') val=S.pop.curr;
-            else if(k=='soldier') val=sold;
-            else val = S.res[k] || S.b[k] || 0;
-            if(val < l.goal[k]) win = false;
-        }
-        if(win) {
-            S.paused = true;
-            UI.showModal("SIEG!", "Level geschafft!", "Nächstes Level", () => Game.startLevel(S.lvl+1));
-        }
-
+        S.pop.max = popCap;
         UI.update();
     },
 
-    autoAssign: function() {
-        let work = 0; for(let k in S.w) work += S.w[k];
-        let sold = 0; for(let k in S.units) sold += S.units[k];
-        let idle = S.pop.curr - sold - work;
-        if(idle <= 0) return;
-
-        for(let k in Config.b) {
-            let b = Config.b[k];
-            if((b.prod || b.proc || b.use) && S.b[k] > S.w[k]) {
-                S.w[k]++; idle--;
-                if(idle<=0) break;
-            }
+    // Helfer: Zieht Arbeiter ab, wenn einer stirbt
+    unassignRandom: function() {
+        for(let k in S.w) {
+            if(S.w[k] > 0) { S.w[k]--; break; }
         }
     },
 
+    // Klick auf Karte
+    clickGather: function(res, e) {
+        S.res[res] = (S.res[res]||0) + 1;
+        UI.floatText(e.clientX, e.clientY, "+1");
+        UI.update();
+    },
+
+    // Bauen
     build: function(key) {
         let b = Config.b[key];
-        if(S.res.gold >= (b.cost.g||0) && S.res.wood >= (b.cost.w||0) && S.res.stone >= (b.cost.s||0)) {
-            S.res.gold -= (b.cost.g||0); S.res.wood -= (b.cost.w||0); S.res.stone -= (b.cost.s||0);
-            S.b[key]++;
-            Game.recalcStats(); // UPDATE LIMITS IMMEDIATELY
-            Game.autoAssign();
-            UI.addMapIcon(key);
-            UI.renderBuild();
-            UI.update();
-        }
+        // Check Cost
+        if(!Game.canAfford(b.cost)) return;
+        
+        // Pay
+        for(let c in b.cost) S.res[{g:'gold',w:'wood',s:'stone'}[c]] -= b.cost[c];
+        
+        S.b[key] = (S.b[key]||0) + 1;
+        UI.update();
+        UI.renderBuild(); // Re-render card for new limits
     },
 
-    recruit: function(key) {
-        let work = 0; for(let k in S.w) work += S.w[k];
-        let sold = 0; for(let k in S.units) sold += S.units[k];
-        let idle = S.pop.curr - sold - work;
-        let u = Units[key];
+    // Arbeiter zuweisen
+    assign: function(key, delta) {
+        if(!S.b[key]) return;
+        let b = Config.b[key];
+        let maxSlots = S.b[key] * (b.cap || 0);
+        let curr = S.w[key] || 0;
 
-        if(key === 'merc') {
-            if(S.b.merc < 1) return;
-            if(S.res.gold >= 50) { S.res.gold-=50; S.units.merc++; UI.log("Söldner angeheuert", "prod"); }
+        if(delta > 0) {
+            // Hinzufügen
+            let busy = 0; for(let k in S.w) busy += S.w[k];
+            let idle = S.pop.curr - busy;
+            if(idle > 0 && curr < maxSlots) {
+                S.w[key] = curr + 1;
+            }
         } else {
-            if(S.b.barrack < 1) return;
-            if(idle < 1) return;
-            if(S.res.gold >= u.cost && S.res[u.res] >= 1) {
-                if(u.arm && S.res[u.arm] < 1) return;
-                S.res.gold -= u.cost;
-                S.res[u.res]--;
-                if(u.arm) S.res[u.arm]--;
-                S.units[key]++;
-                UI.log(u.n + " ausgebildet", "prod");
+            // Entfernen
+            if(curr > 0) {
+                S.w[key] = curr - 1;
             }
         }
         UI.update();
+        UI.updateCards(); // Refresh buttons
     },
 
-    launchWar: function(idx) {
-        let m = Missions[idx];
-        let str = Game.getArmyStr();
-        
-        let rng = (Math.random() * 0.4) + 0.8; 
-        let enemyRoll = m.str * rng;
-        let playerRoll = str;
-        
-        let win = playerRoll >= enemyRoll;
-        
-        let lossRate = win ? 0.1 : 0.3;
-        let lostUnits = [];
-        for(let k in S.units) {
-            let uCount = S.units[k];
-            if(uCount > 0) {
-                let kill = Math.ceil(uCount * lossRate * Math.random());
-                if(kill > 0) {
-                    S.units[k] -= kill;
-                    lostUnits.push(`${kill} ${Units[k].n}`);
-                }
-            }
+    canAfford: function(cost) {
+        if(!cost) return true;
+        if(cost.g && S.res.gold < cost.g) return false;
+        if(cost.w && S.res.wood < cost.w) return false;
+        if(cost.s && S.res.stone < cost.s) return false;
+        return true;
+    },
+
+    save: function() {
+        localStorage.setItem('burgherr_v2', JSON.stringify(S));
+        UI.log("Spiel gespeichert");
+    },
+    load: function() {
+        let d = localStorage.getItem('burgherr_v2');
+        if(d) {
+            try {
+                let saved = JSON.parse(d);
+                // Merge save with default structure to avoid crashes on updates
+                S = { ...S, ...saved, res: { ...S.res, ...saved.res } };
+            } catch(e) { console.error("Save corrupted"); }
         }
-        
-        if(win) {
-            let lootText = [];
-            for(let k in m.loot) {
-                S.res[k] = (S.res[k]||0) + m.loot[k];
-                lootText.push(`${m.loot[k]} ${SafeT(k)}`);
-            }
-            UI.log(`Sieg gegen ${m.n}! Beute: ${lootText.join(', ')}`, 'war');
-        } else {
-            UI.log(`Niederlage gegen ${m.n}.`, 'warn');
+    },
+    hardReset: function() {
+        if(confirm("Wirklich alles löschen?")) {
+            localStorage.removeItem('burgherr_v2');
+            location.reload();
         }
-        
-        if(lostUnits.length) UI.log(`Verluste: ${lostUnits.join(', ')}`, 'death');
-        
-        UI.update();
-        UI.closeWar();
-    },
-
-    tax: function(d) {
-        let n = S.tax + d;
-        if(n >= 0 && n < 5) S.tax = n;
-        UI.update();
-    },
-
-    trade: function(k, buy) {
-        if(buy && S.res.gold >= 5) { S.res.gold-=5; S.res[k]+=5; }
-        if(!buy && S.res[k] >= 5) { S.res[k]-=5; S.res.gold+=3; }
-        UI.update(); UI.renderMarket();
-    },
-
-    togglePause: function() { 
-        S.paused = !S.paused; 
-        if(!S.paused) lastTickTime = Date.now();
-    },
-    save: function() { localStorage.setItem('sh_v24', JSON.stringify(S)); UI.log("Gespeichert", "prod"); },
-    reset: function() { localStorage.removeItem('sh_v24'); location.reload(); }
+    }
 };
 
+/* --- UI MANAGER --- */
 const UI = {
-    cat: 'burg',
+    cat: 'res',
+    
     init: function() {
-        this.renderMap();
         this.renderBuild();
         this.update();
     },
-    
-    animateTick: function() {
-        if(!S.paused) {
-            let now = Date.now();
-            let diff = now - lastTickTime;
-            let pct = Math.min(100, (diff / Config.tick) * 100);
-            document.getElementById('tick-bar').style.width = pct + "%";
-        }
-        requestAnimationFrame(UI.animateTick);
+
+    animTick: function() {
+        let now = Date.now();
+        let diff = now - lastTick;
+        let pct = Math.min(100, (diff / Config.tick) * 100);
+        document.getElementById('tick-bar').style.width = pct + "%";
+        requestAnimationFrame(UI.animTick);
     },
-    
+
     update: function() {
-        ['gold','wood','stone','iron','wheat','flour','bread','meat','apple','cheese','bow','spear','sword','merc'].forEach(k => {
+        // Resources
+        for(let k in S.res) {
             let el = document.getElementById('r-'+k);
-            if(el) {
-                let val = S.res[k] !== undefined ? S.res[k] : (S.units[k] !== undefined ? S.units[k] : 0);
-                el.innerText = Math.floor(val); 
-            }
+            if(el) el.innerText = Math.floor(S.res[k]);
             
-            let dEl = document.getElementById('d-'+k);
-            if(dEl) {
+            let rateEl = document.getElementById('d-'+k);
+            if(rateEl) {
                 let r = S.rates[k] || 0;
-                dEl.innerText = r > 0 ? `+${r}` : (r < 0 ? r : "");
-                dEl.className = "rate-ind " + (r >= 0 ? "rate-pos" : "rate-neg");
+                rateEl.innerText = r > 0 ? '+'+r : (r<0 ? r : '');
+                rateEl.className = 'rate-ind ' + (r>=0 ? 'rate-pos' : 'rate-neg');
             }
-        });
+        }
 
-        let work = 0; for(let k in S.w) work += S.w[k];
-        let sold = 0; for(let k in S.units) sold += S.units[k];
-        let idle = S.pop.curr - sold - work;
-
-        document.getElementById('r-pop').innerText = S.pop.curr + "/" + S.pop.max;
-        document.getElementById('r-idle').innerText = idle;
-        document.getElementById('r-hap').innerText = Math.floor(S.pop.hap);
+        // Pop
+        let busy = 0; for(let k in S.w) busy += S.w[k];
+        let idle = S.pop.curr - busy;
+        document.getElementById('pop-curr').innerText = S.pop.curr;
+        document.getElementById('pop-max').innerText = S.pop.max;
+        document.getElementById('pop-idle').innerText = idle;
+        document.getElementById('pop-hap').innerText = S.pop.hap;
         document.getElementById('day-disp').innerText = S.day;
-        document.getElementById('lvl-disp').innerText = S.lvl;
-        
-        let tIdx = Config.taxes[S.tax];
-        document.getElementById('tax-name').innerText = tIdx.n;
-        document.getElementById('tax-impact').innerText = `+${S.pop.curr * tIdx.g}💰 / ${tIdx.h}❤️`;
-        if(tIdx.h < 0) document.getElementById('tax-impact').style.color = 'var(--danger)';
-        else document.getElementById('tax-impact').style.color = 'var(--success)';
 
-        document.getElementById('hap-breakdown').innerHTML = `
-            <div class="tt-row"><span>Essen:</span><span>${S.factors.food > 0 ? '+'+S.factors.food : S.factors.food}</span></div>
-            <div class="tt-row"><span>Steuer:</span><span>${S.factors.tax}</span></div>
-            <div class="tt-row"><span>Kirche:</span><span>+${(S.b.church||0)*5}</span></div>
-        `;
-        
-        let maxS = (S.b.stock||1)*50;
-        let curS = S.res.wood+S.res.stone+S.res.iron+S.res.wheat+S.res.flour;
-        document.getElementById('tt-stock').innerText = `${Math.floor(curS)}/${maxS}`;
-        
-        let maxF = (S.b.gran||1)*50;
-        let curF = S.res.bread+S.res.meat+S.res.apple+S.res.cheese;
-        document.getElementById('tt-food').innerText = `${Math.floor(curF)}/${maxF}`;
+        // Limits Display
+        let maxStore = 50 + ((S.b.stock||0)*50);
+        let maxFood = 50 + ((S.b.granary||0)*50);
+        document.getElementById('limit-store').innerText = "(Max: "+maxStore+")";
+        document.getElementById('limit-food').innerText = "(Max: "+maxFood+")";
 
-        let l = Levels.find(x => x.id == S.lvl);
-        if(l) {
-            let h = "";
-            for(let k in l.goal) {
-                let v = 0;
-                if(k=='pop') v = S.pop.curr;
-                else if(k=='soldier') v = sold;
-                else v = S.res[k] || S.b[k] || 0;
-                let c = v >= l.goal[k] ? 'obj-done' : '';
-                h += `<span class="${c}">${SafeT(k)}: ${Math.floor(v)}/${l.goal[k]}</span> `;
-            }
-            document.getElementById('obj-disp').innerHTML = h;
-        }
-
-        this.updateBuildState();
-        if(document.getElementById('war-mask').style.display === 'flex') {
-            document.getElementById('army-str').innerText = Game.getArmyStr();
-        }
-    },
-
-    updateBuildState: function() {
-        document.querySelectorAll('.b-card').forEach(card => {
-            let key = card.getAttribute('data-key');
-            if(!key) return;
-            let b = Config.b[key];
-            let can = S.res.gold >= (b.cost.g||0) && S.res.wood >= (b.cost.w||0) && S.res.stone >= (b.cost.s||0);
-            
-            if(can) card.classList.add('can-build');
-            else card.classList.remove('can-build');
-            
-            let txt = [];
-            if(b.cost.g) txt.push(`<span class="${S.res.gold<b.cost.g?'missing-res':''}">${b.cost.g}💰</span>`);
-            if(b.cost.w) txt.push(`<span class="${S.res.wood<b.cost.w?'missing-res':''}">${b.cost.w}🌲</span>`);
-            if(b.cost.s) txt.push(`<span class="${S.res.stone<b.cost.s?'missing-res':''}">${b.cost.s}🧱</span>`);
-            
-            card.querySelector('.cost-disp').innerHTML = txt.join(' ');
-        });
-    },
-
-    showFloatingText: function(key, text, type) {
-        let targetId = "";
-        if(['wood','stone','iron','wheat','flour'].includes(key)) targetId = 'rg-store';
-        else if(['bread','meat','apple','cheese'].includes(key)) targetId = 'rg-food';
-        else if(key === 'gold') targetId = 'rg-gold';
-        else return; 
-        
-        let target = document.getElementById(targetId);
-        if(!target) return;
-        
-        let el = document.createElement('div');
-        el.className = 'float-txt';
-        el.style.color = type === 'pos' ? '#4caf50' : '#f44336';
-        el.innerText = text;
-        target.appendChild(el);
-        
-        setTimeout(() => el.remove(), 1500);
-    },
-
-    showMapClickEffect: function(el, icon) {
-        let pop = document.createElement('div');
-        pop.className = 'click-pop';
-        pop.innerText = icon;
-        let rect = el.getBoundingClientRect();
-        let x = Math.random() * (rect.width - 20);
-        let y = Math.random() * (rect.height - 20);
-        pop.style.left = x + 'px';
-        pop.style.top = y + 'px';
-        el.appendChild(pop);
-        setTimeout(() => pop.remove(), 800);
-    },
-
-    log: function(t, c) {
-        let d = document.createElement('div');
-        d.className = `log-entry ${c}`;
-        d.innerText = `Tag ${S.day}: ${t}`;
-        let log = document.getElementById('log');
-        log.prepend(d);
-        if(log.childNodes.length > 20) log.removeChild(log.lastChild);
+        this.updateCards();
     },
 
     setCat: function(c) {
-        this.cat = c; 
+        this.cat = c;
         document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
         if(event && event.currentTarget) event.currentTarget.classList.add('active');
         this.renderBuild();
-        this.updateBuildState();
     },
 
     renderBuild: function() {
-        const d = document.getElementById('build-list'); d.innerHTML = "";
+        const list = document.getElementById('build-list');
+        list.innerHTML = "";
+        
+        for(let k in Config.b) {
+            let b = Config.b[k];
+            if(b.c !== this.cat) continue;
+
+            let card = document.createElement('div');
+            card.className = "card";
+            card.id = "card-"+k;
+            
+            // Tooltip Cost Construction
+            let costs = [];
+            if(b.cost.g) costs.push(b.cost.g + " Gold");
+            if(b.cost.w) costs.push(b.cost.w + " Holz");
+            if(b.cost.s) costs.push(b.cost.s + " Stein");
+
+            // Worker Controls (nur wenn kein Passivgebäude)
+            let workerHtml = "";
+            if(!b.passive) {
+                workerHtml = `
+                    <div class="card-workers">
+                        <div class="w-btn" onclick="Game.assign('${k}', -1)">-</div>
+                        <div class="w-val"><span id="w-${k}">0</span>/<span id="cap-${k}">0</span></div>
+                        <div class="w-btn" onclick="Game.assign('${k}', 1)">+</div>
+                    </div>
+                `;
+            } else {
+                workerHtml = `<div class="card-workers" style="justify-content:center; color:#777; font-size:0.6rem;">Passiv</div>`;
+            }
+
+            card.innerHTML = `
+                <div class="cost-pop">${costs.join(', ')}</div>
+                <div class="lvl-badge" id="lvl-${k}">0</div>
+                <div class="card-head" onclick="Game.build('${k}')">
+                    <div class="card-icon">${b.i}</div>
+                    <div class="card-name">${b.n}</div>
+                </div>
+                ${workerHtml}
+            `;
+            list.appendChild(card);
+        }
+        this.updateCards();
+    },
+
+    updateCards: function() {
         for(let k in Config.b) {
             let b = Config.b[k];
             if(b.c !== this.cat) continue;
             
-            let el = document.createElement('div'); el.className = "b-card";
-            el.setAttribute('data-key', k);
-            el.onclick = () => Game.build(k);
-            
-            el.innerHTML = `
-                ${S.b[k]>0 ? `<div class="b-count">${S.b[k]}</div>`:''}
-                <div style="font-size:2rem">${b.i}</div>
-                <div style="font-size:0.7rem;font-weight:bold">${b.n}</div>
-                <div class="cost-disp" style="font-size:0.6rem;color:#666"></div>
-            `;
-            d.appendChild(el);
+            // Update Level
+            let lvlEl = document.getElementById('lvl-'+k);
+            if(lvlEl) lvlEl.innerText = S.b[k] || 0;
+
+            // Update Workers
+            if(!b.passive) {
+                let wEl = document.getElementById('w-'+k);
+                let capEl = document.getElementById('cap-'+k);
+                if(wEl) wEl.innerText = S.w[k] || 0;
+                if(capEl) capEl.innerText = (S.b[k]||0) * b.cap;
+            }
+
+            // Visual Feedback Cost
+            let card = document.getElementById('card-'+k);
+            if(card) {
+                if(Game.canAfford(b.cost)) card.style.opacity = "1";
+                else card.style.opacity = "0.6";
+            }
         }
     },
 
-    renderMap: function() {
-        ['forest','mountain','town','farm'].forEach(z => {
-            let el = document.getElementById('z-'+z);
-            let nodes = Array.from(el.childNodes);
-            nodes.forEach(n => {
-                if(n.className === 'map-b' || n.className === 'click-pop') el.removeChild(n);
-            });
-        });
-        for(let k in S.b) {
-            for(let i=0; i<S.b[k]; i++) this.addMapIcon(k);
-        }
+    log: function(msg, type) {
+        let div = document.createElement('div');
+        div.className = `log-entry ${type||''}`;
+        div.innerText = `Tag ${S.day}: ${msg}`;
+        let box = document.getElementById('log');
+        box.prepend(div);
+        if(box.childNodes.length > 20) box.removeChild(box.lastChild);
     },
 
-    addMapIcon: function(k) {
-        let b = Config.b[k];
-        let zone = document.getElementById(b.z);
-        if(zone) {
-            let d = document.createElement('div'); d.className='map-b'; d.innerText = b.i;
-            d.title = b.n;
-            d.style.left = (10 + Math.random() * 70) + '%';
-            d.style.top = (10 + Math.random() * 70) + '%';
-            zone.appendChild(d);
-        }
+    floatText: function(x, y, txt) {
+        let el = document.createElement('div');
+        el.className = 'float-txt';
+        el.innerText = txt;
+        el.style.left = x + 'px';
+        el.style.top = y + 'px';
+        document.body.appendChild(el);
+        setTimeout(() => el.remove(), 1000);
     },
 
-    showModal: function(t, b, btnTxt, cb) {
-        document.getElementById('m-title').innerText = t;
-        document.getElementById('m-body').innerText = b;
-        let btn = document.getElementById('m-btn');
-        btn.innerText = btnTxt || "OK";
-        
-        let newBtn = btn.cloneNode(true);
-        btn.parentNode.replaceChild(newBtn, btn);
-        
-        newBtn.onclick = function() {
-            document.getElementById('modal-mask').style.display = 'none';
-            S.paused = false;
-            lastTickTime = Date.now(); 
-            if(cb) cb();
-        };
-        
+    modal: function(title, txt) {
+        document.getElementById('m-title').innerText = title;
+        document.getElementById('m-body').innerText = txt;
         document.getElementById('modal-mask').style.display = 'flex';
     },
-
-    openRecruit: function() {
-        document.getElementById('recruit-mask').style.display='flex';
-        let l = document.getElementById('recruit-list'); l.innerHTML="";
-        for(let k in Units) {
-            let u = Units[k];
-            let row = document.createElement('div'); row.className='list-item';
-            let cost = `${u.cost}💰` + (u.res ? ` +1 ${SafeT(u.res)}` : "");
-            row.innerHTML = `<span>${u.n} (${u.str}⚔️)</span><button class="btn" style="padding:2px 8px" onclick="Game.recruit('${k}')">Ausbilden (${cost})</button>`;
-            l.appendChild(row);
-        }
-    },
-    closeRecruit: function() { document.getElementById('recruit-mask').style.display='none'; },
-
-    openWar: function() {
-        document.getElementById('war-mask').style.display='flex';
-        let l = document.getElementById('war-list'); l.innerHTML="";
-        document.getElementById('army-str').innerText = Game.getArmyStr();
-        
-        Missions.forEach((m, idx) => {
-            let row = document.createElement('div'); row.className='war-card';
-            let lootTxt = [];
-            for(let k in m.loot) lootTxt.push(`${m.loot[k]} ${SafeT(k)}`);
-            row.innerHTML = `
-                <div>
-                    <div style="font-weight:bold">${m.n}</div>
-                    <div class="war-loot">Beute: ${lootTxt.join(', ')}</div>
-                </div>
-                <div style="text-align:right">
-                    <div class="war-lvl">Stärke: ${m.str}</div>
-                    <button class="btn" style="margin-top:5px; background:var(--danger); color:#fff" onclick="Game.launchWar(${idx})">Angriff!</button>
-                </div>
-            `;
-            l.appendChild(row);
-        });
-    },
-    closeWar: function() { document.getElementById('war-mask').style.display='none'; },
-
-    openMarket: function() {
-        document.getElementById('market-mask').style.display='flex';
-        this.renderMarket();
-    },
-    closeMarket: function() { document.getElementById('market-mask').style.display='none'; },
-    renderMarket: function() {
-        let l = document.getElementById('market-list'); l.innerHTML="";
-        ['wood','stone','iron','wheat','flour','bread','meat','cheese','apple','bow','spear','sword'].forEach(k => {
-            let row = document.createElement('div'); row.className='list-item';
-            row.innerHTML = `<span>${SafeT(k)}: ${Math.floor(S.res[k]||0)}</span><div><button onclick="Game.trade('${k}',1)">Kauf</button> <button onclick="Game.trade('${k}',0)">Verk</button></div>`;
-            l.appendChild(row);
-        });
+    closeModal: function() {
+        document.getElementById('modal-mask').style.display = 'none';
     }
 };
 
+// Start
 Game.init();
+
 </script>
 </body>
 </html>
