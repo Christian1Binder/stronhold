@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Burgherr WebApp - Workforce Logic</title>
+    <title>Burgherr WebApp - Stronghold Style Pop</title>
     <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=MedievalSharp&display=swap" rel="stylesheet">
     
     <style>
@@ -14,6 +14,7 @@
             --primary-dark: #5d4037;
             --secondary: #37474f;
             --accent: #d32f2f;
+            --positive: #2e7d32;
             --highlight: #f9a825;
             --text-main: #333333;
             --text-light: #f1f1f1;
@@ -81,55 +82,68 @@
             position: relative;
             margin-top: 5px;
             box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
-            opacity: 0; 
-            transition: opacity 0.5s;
+            opacity: 0; transition: opacity 0.5s;
         }
 
-        .res-container {
-            display: flex;
-            gap: 10px;
-            flex: 1;
-            justify-content: flex-end;
-        }
-
+        .res-container { display: flex; gap: 10px; flex: 1; justify-content: flex-end; }
         .res-group {
-            background: rgba(0,0,0,0.3);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 6px;
-            padding: 5px 8px;
-            display: flex;
-            flex-direction: column;
-            min-width: 120px;
+            background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 6px; padding: 5px 8px; display: flex; flex-direction: column; min-width: 120px;
         }
-
         .res-items { display: flex; justify-content: space-around; align-items: center; gap: 8px; }
         .res-item { display: flex; flex-direction: column; align-items: center; position: relative; cursor: help; }
         .res-icon { font-size: 1.2rem; }
         .res-val { font-weight: 900; font-size: 1rem; color: #fff; }
         .gold-val { color: var(--highlight); }
 
+        /* TOOLTIP FÜR POPULARITÄT (Das Herzstück dieser Änderung) */
+        .pop-tooltip-container { position: relative; }
+        
+        .pop-tooltip {
+            visibility: hidden;
+            width: 200px;
+            background-color: #333;
+            color: #fff;
+            text-align: left;
+            border-radius: 6px;
+            padding: 10px;
+            position: absolute;
+            z-index: 100;
+            top: 100%;
+            left: 50%; /* Zentrieren */
+            transform: translateX(-50%); /* Zentrieren */
+            margin-top: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            font-size: 0.85rem;
+            opacity: 0;
+            transition: opacity 0.2s;
+            border: 1px solid #555;
+        }
+        
+        /* Der kleine Pfeil oben am Tooltip */
+        .pop-tooltip::after {
+            content: ""; position: absolute; bottom: 100%; left: 50%; margin-left: -5px;
+            border-width: 5px; border-style: solid; border-color: transparent transparent #333 transparent;
+        }
+
+        .pop-tooltip-container:hover .pop-tooltip { visibility: visible; opacity: 1; }
+
+        .tooltip-row { display: flex; justify-content: space-between; margin-bottom: 4px; border-bottom: 1px solid #444; padding-bottom: 2px; }
+        .tooltip-row:last-child { border-bottom: none; margin-bottom: 0; font-weight: bold; padding-top: 5px; border-top: 1px solid #777; }
+        .val-pos { color: #81c784; }
+        .val-neg { color: #e57373; }
+        .val-neu { color: #ccc; }
+
         /* --- MAIN --- */
         main { display: flex; flex: 1; overflow: hidden; }
 
         aside {
-            width: 320px;
-            background-color: #f4ecd8;
-            padding: 15px;
-            overflow-y: auto;
-            border-right: 1px solid #dccbb1;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
+            width: 320px; background-color: #f4ecd8; padding: 15px;
+            overflow-y: auto; border-right: 1px solid #dccbb1; display: flex; flex-direction: column; gap: 15px;
         }
         aside.right { border-right: none; border-left: 1px solid #dccbb1; }
 
-        h2 {
-            font-family: 'MedievalSharp', cursive;
-            color: var(--primary-dark);
-            border-bottom: 2px solid var(--primary);
-            font-size: 1.2rem;
-            margin: 0 0 5px 0;
-        }
+        h2 { font-family: 'MedievalSharp', cursive; color: var(--primary-dark); border-bottom: 2px solid var(--primary); font-size: 1.2rem; margin: 0 0 5px 0; }
 
         /* CLICKER */
         .clicker-area { display: flex; gap: 10px; margin-bottom: 5px; }
@@ -235,10 +249,17 @@
                     <div class="res-item" title="Äpfel"><span class="res-icon">🍎</span><span class="res-val" id="res-apple">0</span></div>
                 </div>
             </div>
-            <div class="res-group">
+            
+            <div class="res-group pop-tooltip-container">
                 <div class="res-items">
                     <div class="res-item" title="Soldaten"><span class="res-icon">🛡️</span><span class="res-val" id="res-soldier">0</span></div>
-                    <div class="res-item" title="Beliebtheit"><span class="res-icon">❤️</span><span class="res-val" id="res-pop">0</span></div>
+                    <div class="res-item">
+                        <span class="res-icon">❤️</span>
+                        <span class="res-val" id="res-pop" style="color:#81c784">0</span>
+                    </div>
+                </div>
+                <div class="pop-tooltip" id="pop-details">
+                    <div class="tooltip-row"><span>Wird geladen...</span></div>
                 </div>
             </div>
         </div>
@@ -317,7 +338,6 @@
 </div>
 
 <script>
-/* --- KONFIGURATION --- */
 const Config = {
     tickRate: 5000, 
     combatStartDay: 40, 
@@ -334,11 +354,10 @@ const Config = {
         weaponsmith:{ costG: 100, costW: 0, costS: 20, name: "Waffenschmiede" },
         barracks:   { costG: 150, costW: 0, costS: 50, name: "Kaserne" }
     },
-    // Steuerraten: [Name, Gold pro Kopf, Beliebtheit Effekt]
     taxes: [
         { name: "Großzügige Bestechung", gold: -4, pop: +10 },
         { name: "Kleine Bestechung", gold: -2, pop: +5 },
-        { name: "Keine Steuern", gold: 0, pop: +1 },
+        { name: "Keine Steuern", gold: 0, pop: +1 }, // +1 Basis-Moral
         { name: "Niedrige Steuern", gold: 2, pop: -2 },
         { name: "Hohe Steuern", gold: 4, pop: -6 },
         { name: "Grausame Steuern", gold: 8, pop: -15 }
@@ -351,10 +370,14 @@ const State = {
     wheat: 0, flour: 0, bread: 0, meat: 5, apple: 5,
     weapons: 0, soldiers: 0,
     population: 5, maxPop: 10, popularity: 100, 
-    taxIndex: 2, // Start bei "Keine Steuern" (Index 2)
+    taxIndex: 2, 
     
     migrationProgress: 0,
     b: { woodcutter: 0, quarry: 0, ironmine: 0, house: 0, farm_apple: 0, hunter: 0, farm_wheat: 0, mill: 0, bakery: 0, weaponsmith: 0, barracks: 0 },
+    
+    // NEU: Wir speichern die letzte Änderung für das Tooltip
+    factors: { food: 0, tax: 0, events: 0 },
+    
     flags: { seenCombat: false, seenStarvation: false, seenNoWorkers: false }
 };
 
@@ -367,7 +390,7 @@ const Phrases = {
 
 const Game = {
     init: function() {
-        UI.log("Sire! Baut Hütten und besorgt Nahrung, damit das Volk arbeitet.", "important");
+        UI.log("Sire! Fahrt mit der Maus über das ❤️-Symbol um Details zur Beliebtheit zu sehen.", "important");
         UI.update();
         setInterval(() => { if(!State.paused) this.tick(); }, Config.tickRate);
         setInterval(() => { if(!State.paused) UI.updateBars(); }, 100);
@@ -387,44 +410,35 @@ const Game = {
     tick: function() {
         State.day++;
         State.lastTick = Date.now();
+        
+        // Reset Faktoren
+        State.factors.food = 0;
+        State.factors.tax = 0;
+        State.factors.events = 0;
 
-        // 1. ARBEITSKRAFT BERECHNEN
-        // Wie viele Jobs gibt es? (Summe aller Produktionsgebäude)
-        // (Hütten zählen nicht als Job, Kasernen auch nicht direkt, aber Soldaten fehlen als Arbeiter)
+        // 1. Jobs & Effizienz
         const jobs = State.b.woodcutter + State.b.quarry + State.b.ironmine + 
                      State.b.farm_apple + State.b.hunter + State.b.farm_wheat + 
                      State.b.mill + State.b.bakery + State.b.weaponsmith;
         
-        // Verfügbare Bauern (Pop - Soldaten)
         const peasants = Math.max(0, State.population - State.soldiers);
         
         let efficiency = 1.0;
-        
         if (jobs > 0) {
-            if (peasants === 0) {
-                efficiency = 0; // Keiner da zum Arbeiten
-                if (!State.flags.seenNoWorkers && State.day > 2) {
-                    UI.showModal("Stillstand", "Sire, wir haben keine Arbeiter! Die Gebäude stehen still. Ihr müsst manuell sammeln oder Beliebtheit steigern.");
-                    State.flags.seenNoWorkers = true;
-                }
-            } else if (peasants < jobs) {
-                efficiency = peasants / jobs; // z.B. 5 Bauern auf 10 Jobs = 0.5 (50%)
-                UI.log("Zu wenig Arbeiter! Produktion läuft verlangsamt.", "combat");
-            }
+            if (peasants === 0) efficiency = 0;
+            else if (peasants < jobs) efficiency = peasants / jobs;
         }
 
-        // 2. PRODUKTION (Mit Effizienz multipliziert)
+        // 2. Produktion
         const prod = (base) => base * efficiency;
-
         State.wood += prod(State.b.woodcutter * 2);
         State.stone += prod(State.b.quarry * 1);
         State.iron += prod(State.b.ironmine * 1);
-
         State.apple += prod(State.b.farm_apple * 3);
         State.meat += prod(State.b.hunter * 2);
         State.wheat += prod(State.b.farm_wheat * 2);
 
-        // Verarbeitungsketten (benötigen auch Effizienz der Betriebe)
+        // Verarbeitung
         let millCap = prod(State.b.mill * 2); 
         let wheatProc = Math.min(State.wheat, millCap);
         State.wheat -= wheatProc; State.flour += (wheatProc * 2);
@@ -437,16 +451,25 @@ const Game = {
         let ironProc = Math.min(State.iron, smithCap);
         State.iron -= ironProc; State.weapons += ironProc;
 
-        // 3. STEUERN & VERBRAUCH
+        // 3. Steuern
         const taxInfo = Config.taxes[State.taxIndex];
-        
-        // Steuern berechnen (Nur wenn Leute da sind)
         if (State.population > 0) {
             State.gold += (State.population * taxInfo.gold);
-            State.popularity += taxInfo.pop; // Pop Effekt anwenden
+            State.factors.tax = taxInfo.pop; // Faktor speichern
         }
 
+        // 4. Konsum & Nahrungsbonus
         this.handleConsumption();
+
+        // 5. Gesamtrechnung
+        const totalChange = State.factors.food + State.factors.tax + State.factors.events;
+        State.popularity += totalChange;
+
+        // Limits
+        if(State.popularity > 100) State.popularity = 100;
+        if(State.popularity < 0) State.popularity = 0;
+
+        // Checks
         this.checkCombat();
         this.handleMigration();
 
@@ -454,42 +477,47 @@ const Game = {
     },
 
     handleConsumption: function() {
-        if(State.population === 0) return; // Geister essen nicht
+        if(State.population === 0) return;
 
         let needed = State.population;
+        let foodTypesEaten = 0; // Vielfalt!
         
         const eat = (type) => {
-            let take = Math.min(State[type], needed);
-            State[type] -= take;
-            needed -= take;
+            if (State[type] > 0) {
+                let take = Math.min(State[type], needed);
+                State[type] -= take;
+                needed -= take;
+                // Wenn wir von diesem Typ was gegessen haben, zählt es zur Vielfalt
+                if (take > 0) foodTypesEaten++;
+            }
         };
 
         eat('bread'); eat('meat'); eat('apple');
 
         if (needed > 0) {
-            State.popularity -= 20; // Starker Abzug bei Hunger
+            // Hungerstrafe
+            State.factors.food = -20;
             if(!State.flags.seenStarvation) {
-                UI.showModal("Hungersnot", "Sire, das Volk hungert! Ohne Essen keine Arbeit!");
+                UI.showModal("Hungersnot", "Sire, das Volk hungert! -20 Beliebtheit.");
                 State.flags.seenStarvation = true;
             }
         } else {
-            // Kleiner Bonus nur wenn nicht gehungert wurde
-             if(State.popularity < 100) State.popularity += 1;
+            // SATT!
+            // Basis: Jeder bekommt +1 weil satt.
+            // Bonus: +1 für jeden ZUSÄTZLICHEN Typ (Stronghold Logik: "Vielfalt")
+            // Wenn 1 Typ gegessen: +0 Bonus (Basis Moral ist in Steuern enthalten oder neutral)
+            // Sagen wir: Faktor = Anzahl Typen.
+            // 1 Typ = +1. 2 Typen = +2. 3 Typen = +3.
+            State.factors.food = foodTypesEaten;
         }
-        
-        // Cap Popularity
-        if(State.popularity > 100) State.popularity = 100;
-        if(State.popularity < 0) State.popularity = 0;
     },
 
     handleMigration: function() {
-        // Migration passiert nur wenn wir nicht schon Maximum haben
-        // UND wenn Beliebtheit hoch genug ist (>50)
+        // Migration nur wenn Beliebtheit >= 50
         let growth = 0;
         if(State.popularity >= 50) {
-            growth = (State.popularity - 40) * 0.5; // Schnellerer Zuwachs
+            growth = (State.popularity - 40) * 0.5;
         } else {
-            // Bei niedriger Beliebtheit verlieren wir Fortschritt oder Leute
             State.migrationProgress = 0;
         }
         
@@ -499,46 +527,44 @@ const Game = {
                 State.population++;
                 State.migrationProgress = 0;
                 UI.log("Ein neuer Siedler ist eingezogen.", "important");
-                // Visual feedback
                 const rect = document.getElementById('res-pop').getBoundingClientRect();
                 UI.showFloaty(rect.left, rect.top, "+1😊", "#81c784");
             }
         }
 
-        // Wegzug (Passiert schneller als Zuzug!)
         if(State.popularity < 30 && State.population > 0) {
-            // 20% Chance pro Tick dass einer geht
             if(Math.random() < 0.3) {
                 State.population--;
-                State.popularity = 40; // Reset damit nicht alle sofort gehen
-                UI.log("Ein Bürger hat die Burg verlassen!", "combat");
+                State.popularity = 40; 
+                UI.log("Ein Bürger verlässt uns.", "combat");
             }
         }
     },
 
     checkCombat: function() {
-        if(State.day < Config.combatStartDay) return;
-        if(State.population === 0) return; // Geister werden nicht angegriffen
+        if(State.day < Config.combatStartDay || State.population === 0) return;
 
         if(Math.random() < 0.1) {
             State.paused = true;
             UI.showModal("Angriff!", "Banditen greifen an!");
-            State.flags.seenCombat = true;
 
             const enemyStr = Math.floor(State.day * 1.5);
-            const myStr = State.soldiers * 12; // Soldaten stärker gemacht
+            const myStr = State.soldiers * 12;
             
             UI.log(`Kampf! Feind: ${enemyStr} vs Wir: ${myStr}`, "combat");
             
             if (myStr >= enemyStr) {
                 UI.log("Sieg! Die Ehre ist unser.", "important");
-                State.popularity += 15;
+                // Sieg gibt kurzfristig Moral
+                State.factors.events = 5; 
+                State.popularity += 5; // Direkt-Bonus
             } else {
                 UI.log("Niederlage! Unsere Lager sind leer.", "combat");
                 State.gold = Math.floor(State.gold / 2);
                 State.apple = 0; State.meat = 0; State.bread = 0;
-                State.popularity -= 20;
-                // Soldaten sterben bei Niederlage evtl
+                // Niederlage tut weh
+                State.factors.events = -10;
+                State.popularity -= 10;
                 if(State.soldiers > 0) State.soldiers--;
             }
         }
@@ -548,7 +574,7 @@ const Game = {
         let newIndex = State.taxIndex + dir;
         if (newIndex >= 0 && newIndex < Config.taxes.length) {
             State.taxIndex = newIndex;
-            UI.update();
+            UI.update(); // Update UI sofort damit Tooltip stimmt
         }
     },
 
@@ -561,14 +587,10 @@ const Game = {
         let pool = Phrases.neutral;
         if(State.popularity > 80) pool = Phrases.happy;
         if(State.popularity < 40) pool = Phrases.angry;
-
         const text = pool[Math.floor(Math.random() * pool.length)];
         const el = document.getElementById('villager-chatter');
         el.style.opacity = 0;
-        setTimeout(() => {
-            el.innerText = `"${text}"`;
-            el.style.opacity = 1;
-        }, 300);
+        setTimeout(() => { el.innerText = `"${text}"`; el.style.opacity = 1; }, 300);
     },
 
     build: function(type) {
@@ -615,19 +637,54 @@ const UI = {
         document.getElementById('stat-day').innerText = s.day;
         document.getElementById('stat-pop').innerText = `${s.population} / ${s.maxPop}`;
 
-        // Tax Display
+        // TAX
         const tax = Config.taxes[s.taxIndex];
         document.getElementById('display-tax').innerText = tax.name;
         
-        // Workers Display
+        // WORKERS
         const effPct = Math.floor(efficiency * 100);
         const elWorker = document.getElementById('stat-workers');
-        // Wenn keine Jobs da sind, ist Effizienz egal (aber 100% angezeigt sieht besser aus als 0%)
         if(jobs === 0) elWorker.innerText = "Keine Jobs";
         else {
             elWorker.innerText = `${peasants}/${jobs} Arbeiter (${effPct}%)`;
             elWorker.className = (effPct < 100) ? 'efficiency-display low' : 'efficiency-display';
         }
+
+        // TOOLTIP UPDATE (Das Herzstück)
+        this.updateTooltip();
+    },
+
+    updateTooltip: function() {
+        const f = State.factors;
+        // Tax Info live holen, falls wir im Pause-Modus umschalten
+        const taxVal = Config.taxes[State.taxIndex].pop;
+        
+        const total = f.food + taxVal + f.events;
+        
+        const row = (label, val) => {
+            let colorClass = "val-neu";
+            if(val > 0) colorClass = "val-pos";
+            if(val < 0) colorClass = "val-neg";
+            const sign = val > 0 ? "+" : "";
+            return `<div class="tooltip-row"><span>${label}:</span><span class="${colorClass}">${sign}${val}</span></div>`;
+        };
+
+        let html = "";
+        html += row("Nahrung (Vielfalt)", f.food);
+        html += row("Steuern", taxVal);
+        html += row("Ereignisse/Angst", f.events);
+        html += `<div class="tooltip-row" style="margin-top:5px; border-top:1px solid #555; padding-top:3px;">
+                    <span>Trend:</span>
+                    <span class="${total >= 0 ? 'val-pos' : 'val-neg'}">${total > 0 ? '+' : ''}${total}</span>
+                 </div>`;
+        
+        document.getElementById('pop-details').innerHTML = html;
+        
+        // Farbe des Herzens anpassen
+        const popEl = document.getElementById('res-pop');
+        if(State.popularity >= 80) popEl.style.color = "#81c784"; // Grün
+        else if(State.popularity >= 40) popEl.style.color = "#fff"; // Weiß
+        else popEl.style.color = "#e57373"; // Rot
     },
 
     updateBars: function() {
@@ -635,7 +692,6 @@ const UI = {
         let pctDay = (timePassed / Config.tickRate) * 100;
         if(pctDay > 100) pctDay = 100;
         document.getElementById('bar-day').style.width = pctDay + '%';
-        
         let pctMig = Math.min(State.migrationProgress, 100);
         document.getElementById('bar-migration').style.width = pctMig + '%';
         document.getElementById('text-migration').innerText = Math.floor(pctMig) + '%';
