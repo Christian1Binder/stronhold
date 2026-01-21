@@ -650,10 +650,20 @@ const Game = {
     build: function(key) {
         let b = Config.b[key];
         if(S.res.gold >= (b.cost.g||0) && S.res.wood >= (b.cost.w||0) && S.res.stone >= (b.cost.s||0)) {
+            // Rohstoffe abziehen
             S.res.gold -= (b.cost.g||0); S.res.wood -= (b.cost.w||0); S.res.stone -= (b.cost.s||0);
+            
+            // Counter erhöhen
             S.b[key]++;
+            
+            // Logik-Updates
             Game.autoAssign();
             UI.addMapIcon(key);
+            
+            // --- FIX: VISUELLE LISTE NEU ZEICHNEN ---
+            UI.renderBuild(); 
+            // ----------------------------------------
+
             UI.update();
         }
     },
