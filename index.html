@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Burgherr V22 - Pocket Edition</title>
+    <title>Burgherr V23 - Mobile King</title>
     <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=MedievalSharp&display=swap" rel="stylesheet">
     
     <style>
@@ -21,7 +21,13 @@
         }
 
         * { box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
-        body { font-family: 'Lato', sans-serif; background: var(--bg-body); color: #ccc; margin: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+        
+        /* 100dvh fix for mobile browsers */
+        body { 
+            font-family: 'Lato', sans-serif; background: var(--bg-body); color: #ccc; margin: 0; 
+            height: 100vh; height: 100dvh; 
+            display: flex; flex-direction: column; overflow: hidden; 
+        }
 
         /* --- TICK BAR --- */
         #tick-container { height: 6px; background: #000; width: 100%; position: relative; z-index: 200; flex-shrink: 0; }
@@ -38,37 +44,36 @@
         .objective { font-size: 0.65rem; background: rgba(255,255,255,0.05); padding: 3px; border-left: 3px solid var(--highlight); margin-top: 3px; color: #bbb; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .obj-done { text-decoration: line-through; color: var(--success); opacity: 0.7; }
 
-        /* Scrollable Resources on Mobile */
-        .res-container { display: flex; gap: 5px; flex: 1; justify-content: flex-end; overflow-x: auto; padding-bottom: 5px; -webkit-overflow-scrolling: touch; }
-        .res-container::-webkit-scrollbar { height: 4px; }
-        .res-container::-webkit-scrollbar-thumb { background: #555; border-radius: 2px; }
+        /* Scrollable Resources */
+        .res-container { display: flex; gap: 6px; flex: 1; justify-content: flex-end; overflow-x: auto; padding-bottom: 5px; -webkit-overflow-scrolling: touch; }
+        .res-container::-webkit-scrollbar { height: 0px; } /* Hide scrollbar */
 
         .res-group { 
-            background: #2d2d2d; border: 1px solid #444; border-radius: 4px; padding: 4px 6px; 
+            background: #2d2d2d; border: 1px solid #444; border-radius: 4px; padding: 4px 8px; 
             min-width: 65px; text-align: center; display: flex; flex-direction: column; justify-content: center;
             position: relative; cursor: help; transition: background 0.2s; flex-shrink: 0;
         }
-        .res-group:active, .res-group:hover { background: #444; } /* Visual touch feedback */
+        .res-group:active { background: #444; }
         
         .res-label { font-size: 0.55rem; text-transform: uppercase; color: #888; border-bottom: 1px solid #444; margin-bottom: 2px; }
-        .res-values { display: flex; gap: 8px; justify-content: center; font-weight: bold; font-size: 0.85rem; color: #eee; position: relative; }
+        .res-values { display: flex; gap: 10px; justify-content: center; font-weight: bold; font-size: 0.85rem; color: #eee; position: relative; }
         
         .res-item { position: relative; display: inline-block; min-width: 20px; text-align: center; }
-        .rate-ind { font-size: 0.65rem; position: absolute; top: -8px; right: -5px; opacity: 0.9; font-weight: 900; text-shadow: 1px 1px 0 #000; }
+        .rate-ind { font-size: 0.65rem; position: absolute; top: -10px; right: -8px; opacity: 0.9; font-weight: 900; text-shadow: 1px 1px 0 #000; }
         .rate-pos { color: #66bb6a; }
         .rate-neg { color: #ef5350; }
 
         /* Floating Text */
         .float-txt {
-            position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
-            font-size: 1rem; font-weight: 900; pointer-events: none;
+            position: absolute; top: -20px; left: 50%; transform: translateX(-50%);
+            font-size: 1.2rem; font-weight: 900; pointer-events: none;
             animation: floatUp 1.5s forwards; text-shadow: 1px 1px 0 #000; z-index: 3000;
         }
         .click-pop {
             position: absolute; font-size: 2rem; font-weight: bold; color: #fff; pointer-events: none; z-index: 4000;
             text-shadow: 0 0 5px #000; animation: floatUpMap 0.6s forwards;
         }
-        @keyframes floatUp { 0% { opacity: 1; top: -10px; transform: translateX(-50%); } 100% { opacity: 0; top: -40px; transform: translateX(-50%); } }
+        @keyframes floatUp { 0% { opacity: 1; top: -20px; transform: translateX(-50%); } 100% { opacity: 0; top: -50px; transform: translateX(-50%); } }
         @keyframes floatUpMap { 0% { opacity: 1; transform: translateY(0) scale(1); } 100% { opacity: 0; transform: translateY(-50px) scale(1.5); } }
 
         /* TOOLTIP */
@@ -77,9 +82,10 @@
             background: #e0e0e0; color: #000; padding: 10px; border: 2px solid var(--border); border-radius: 4px;
             width: 240px; text-align: left; box-shadow: 0 5px 15px rgba(0,0,0,0.5); pointer-events: none;
         }
-        /* Mobile Tooltip Fix: Show below or center */
         @media (max-width: 600px) {
             .tooltip { right: auto; left: 50%; transform: translateX(-50%); width: 280px; }
+            .float-txt { top: -60px; animation: floatUpMobile 1.5s forwards; } 
+            @keyframes floatUpMobile { 0% { opacity: 1; top: -60px; transform: translateX(-50%); } 100% { opacity: 0; top: -100px; transform: translateX(-50%); } }
         }
 
         .tt-row { display: flex; justify-content: space-between; font-size: 0.8rem; border-bottom: 1px dashed #ccc; padding: 2px 0; }
@@ -99,7 +105,7 @@
             position: relative; border-radius: 8px; overflow: hidden; 
             box-shadow: inset 0 0 20px rgba(0,0,0,0.6);
             transition: transform 0.1s; cursor: pointer; border: 2px solid rgba(255,255,255,0.05);
-            touch-action: manipulation; /* Improves touch response */
+            touch-action: manipulation; 
         }
         .zone:active { transform: scale(0.97); border-color: rgba(255,255,255,0.4); }
 
@@ -179,7 +185,14 @@
         
         /* MODALS */
         .modal-mask { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 5000; justify-content: center; align-items: center; backdrop-filter: blur(4px); }
-        .modal-win { background: var(--panel-bg); width: 500px; max-width: 95%; max-height: 90vh; overflow-y: auto; padding: 20px; border: 4px solid var(--border); border-radius: 8px; text-align: center; color: var(--text); box-shadow: 0 0 50px #000; position: relative; }
+        
+        /* FIX MODAL WIDTH */
+        .modal-win { 
+            background: var(--panel-bg); 
+            width: 95%; max-width: 500px; /* Responsive Width */
+            max-height: 90vh; overflow-y: auto; 
+            padding: 20px; border: 4px solid var(--border); border-radius: 8px; text-align: center; color: var(--text); box-shadow: 0 0 50px #000; position: relative; 
+        }
         
         .list-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; text-align: left; margin: 15px 0; }
         .list-item { background: rgba(255,255,255,0.5); padding: 5px; border: 1px solid #999; display: flex; justify-content: space-between; align-items: center; border-radius: 4px; font-size: 0.85rem; }
@@ -189,7 +202,7 @@
         /* --- MOBILE OPTIMIZATION --- */
         @media (max-width: 768px) {
             header { height: 70px; padding: 0 5px; }
-            .header-info { display: none; } /* Verstecke Titel für mehr Platz auf Handy */
+            .header-info { display: none; } 
             
             main { flex-direction: column; }
             #map-area { flex: 1.5; min-height: 40vh; }
@@ -207,8 +220,7 @@
             .cat-btn { flex-shrink: 0; width: 40px; }
             .build-bar { width: 100%; height: 90px; }
             
-            .modal-win { width: 95%; padding: 15px; }
-            .list-grid { grid-template-columns: 1fr; } /* Listen untereinander auf Handy */
+            .list-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -449,10 +461,11 @@ let lastTickTime = 0;
 
 const Game = {
     init: function() {
-        if(localStorage.getItem('sh_v22')) {
+        if(localStorage.getItem('sh_v23')) {
             try {
-                S = JSON.parse(localStorage.getItem('sh_v22'));
+                S = JSON.parse(localStorage.getItem('sh_v23'));
                 if(!S.b.gran && S.b.granary) { S.b.gran = S.b.granary; delete S.b.granary; }
+                Game.recalcStats(); // Fix limits immediately on load
                 UI.init();
                 UI.showModal("Willkommen zurück", "Dein Lehen erwartet dich.", "Weiter");
             } catch(e) { this.reset(); }
@@ -482,9 +495,14 @@ const Game = {
         for(let k in Config.b) { S.b[k]=0; S.w[k]=0; }
         
         S.b.stock = 1; S.b.gran = 1;
+        Game.recalcStats(); // Fix limits immediately on start
 
         UI.init();
         UI.showModal("Level " + id + ": " + l.t, l.msg, "Starten");
+    },
+
+    recalcStats: function() {
+        S.pop.max = (S.b.hovel*5) + (S.b.house*10) + 5;
     },
 
     getArmyStr: function() {
@@ -521,6 +539,7 @@ const Game = {
         lastTickTime = Date.now();
         
         let startRes = JSON.parse(JSON.stringify(S.res));
+        Game.recalcStats(); // Ensure limits are always correct
         
         // 1. LIMITS & SPACE
         let maxS = (S.b.stock || 1) * 50;
@@ -613,7 +632,7 @@ const Game = {
         let diff = Math.max(-10, Math.min(10, hChg));
         S.pop.hap = Math.max(0, Math.min(100, S.pop.hap + diff));
 
-        // 4. GAME OVER
+        // 4. GAME OVER & POP GROWTH
         if(S.pop.curr <= 0) {
             S.pop.curr = 0; 
             S.paused = true;
@@ -622,13 +641,14 @@ const Game = {
             return; 
         }
 
-        S.pop.max = (S.b.hovel*5) + (S.b.house*10) + 5;
         let work = 0; for(let k in S.w) work += S.w[k];
         let sold = 0; for(let k in S.units) sold += S.units[k];
         let idle = S.pop.curr - sold - work;
 
+        // POP GROWTH FIX
         if(S.pop.hap > 60 && S.pop.curr < S.pop.max && Math.random()>0.5) {
-            S.pop.curr++; Game.autoAssign();
+            S.pop.curr++; 
+            Game.autoAssign();
         } else if(S.pop.hap < 20 && S.pop.curr > 0) {
             S.pop.curr--; UI.log("Bürger geflohen", "warn");
             for(let k in S.w) if(S.w[k]>0){S.w[k]--; break;}
@@ -682,6 +702,7 @@ const Game = {
         if(S.res.gold >= (b.cost.g||0) && S.res.wood >= (b.cost.w||0) && S.res.stone >= (b.cost.s||0)) {
             S.res.gold -= (b.cost.g||0); S.res.wood -= (b.cost.w||0); S.res.stone -= (b.cost.s||0);
             S.b[key]++;
+            Game.recalcStats(); // UPDATE LIMITS IMMEDIATELY
             Game.autoAssign();
             UI.addMapIcon(key);
             UI.renderBuild();
@@ -769,8 +790,8 @@ const Game = {
         S.paused = !S.paused; 
         if(!S.paused) lastTickTime = Date.now();
     },
-    save: function() { localStorage.setItem('sh_v22', JSON.stringify(S)); UI.log("Gespeichert", "prod"); },
-    reset: function() { localStorage.removeItem('sh_v22'); location.reload(); }
+    save: function() { localStorage.setItem('sh_v23', JSON.stringify(S)); UI.log("Gespeichert", "prod"); },
+    reset: function() { localStorage.removeItem('sh_v23'); location.reload(); }
 };
 
 const UI = {
