@@ -336,7 +336,8 @@
                 <button class="btn" onclick="UI.openMarket()">⚖️</button>
             </div>
             <div style="background:rgba(255,255,255,0.5); padding:3px; border-radius:4px; font-size:0.7rem; margin:5px 0; text-align:center;">
-                Steuer: <strong id="tax-name">Keine</strong>
+                Steuer: <strong id="tax-name">Keine</strong><br>
+                <span id="tax-impact" style="font-size:0.65rem; font-weight:bold;"></span>
                 <div>
                     <button onclick="Game.tax(-1)" style="padding:2px 8px;cursor:pointer">➖</button> 
                     <button onclick="Game.tax(1)" style="padding:2px 8px;cursor:pointer">➕</button>
@@ -461,10 +462,8 @@ const Game = {
         if(localStorage.getItem('sh_v24_fix')) {
             try {
                 let load = JSON.parse(localStorage.getItem('sh_v24_fix'));
-                // Merge mit Default falls neue Felder
                 if(load) S = load;
                 else this.startLevel(1);
-                
                 Game.recalcStats(); 
                 UI.init();
                 UI.showModal("Willkommen zurück", "Dein Lehen erwartet dich.", "Weiter");
@@ -472,7 +471,6 @@ const Game = {
         } else {
             this.startLevel(1);
         }
-        
         setInterval(this.tick, Config.tick);
         lastTickTime = Date.now();
         requestAnimationFrame(UI.animateTick);
@@ -493,10 +491,9 @@ const Game = {
         };
         for(let k in l.start) S.res[k] = l.start[k];
         for(let k in Config.b) { S.b[k]=0; S.w[k]=0; }
-        
         S.b.stock = 1; S.b.gran = 1;
         Game.recalcStats(); 
-        Game.autoAssign(); // Initial verteilen
+        Game.autoAssign(); 
 
         UI.init();
         UI.showModal("Level " + id + ": " + l.t, l.msg, "Starten");
@@ -514,11 +511,8 @@ const Game = {
 
     clickGather: function(type, e) {
         if(S.paused) return;
-        
         let maxS = (S.b.stock || 1) * 50;
         let maxF = (S.b.gran || 1) * 50;
-        
-        // Limits Check
         let curS = 0; ['wood','stone','iron','wheat','flour'].forEach(k=>curS+=S.res[k]);
         let curF = 0; ['bread','meat','apple','cheese'].forEach(k=>curF+=S.res[k]);
 
@@ -531,7 +525,6 @@ const Game = {
 
         S.res[type]++;
         UI.update();
-        
         UI.showFloatingText(type, "+1", "pos");
         UI.showMapClickEffect(e.currentTarget, type === 'apple' ? '🍎' : (type==='wood'?'🌲':'🧱'));
     },
@@ -540,46 +533,31 @@ const Game = {
         if(S.paused) { lastTickTime = Date.now(); return; }
         S.day++;
         lastTickTime = Date.now();
-        
         let startRes = JSON.parse(JSON.stringify(S.res));
         Game.recalcStats();
         
-        // --- 1. PRODUCITON & DELTAS (Keine direkte Zuweisung, erst Berechnung) ---
         let dRes = {}; for(let k in S.res) dRes[k] = 0;
-        
-        // Limits
         let maxS = (S.b.stock || 1) * 50;
         let maxF = (S.b.gran || 1) * 50; 
         
-        let curS = 0; ['wood','stone','iron','wheat','flour'].forEach(k=>curS+=(S.res[k]||0));
-        let curF = 0; ['bread','meat','apple','cheese'].forEach(k=>curF+=(S.res[k]||0));
-
-        // Gebäude Loop
         for(let k in Config.b) {
             let b = Config.b[k];
             let n = S.w[k];
             if(n <= 0) continue;
-
-            // Produzenten
             if(b.prod) {
-                // Check Needed Building (z.B. Ochsen)
                 let effN = n;
                 if(b.need && S.b[b.need] < n) effN = S.b[b.need]; 
-
                 dRes[b.prod] = (dRes[b.prod]||0) + (effN * (b.amt||1));
             }
-            // Verarbeiter (Wheat -> Flour)
             if(b.proc) {
-                let avail = S.res[b.proc] + (dRes[b.proc]||0); // Verfügbar inkl. neuer Produktion?
+                let avail = S.res[b.proc] + (dRes[b.proc]||0); 
                 let maxProc = n;
                 let actual = Math.min(avail, maxProc);
-                
                 if(actual > 0) {
                     dRes[b.proc] -= actual;
                     dRes[b.out] = (dRes[b.out]||0) + (actual * (b.r||1));
                 }
             }
-            // Nutzer (Iron -> Sword)
             if(b.use) {
                 let avail = S.res[b.use] + (dRes[b.use]||0);
                 let actual = Math.min(avail, n);
@@ -590,14 +568,10 @@ const Game = {
             }
         }
 
-        // --- 2. KONSUM (Priorität vor Limit) ---
         let eat = S.pop.curr;
         let foods = ['bread','meat','cheese','apple'];
         let ateTypes = 0;
-        
-        // Sortiere Foods nach Bestand um Resteverwertung zu machen
         foods.sort((a,b) => (S.res[b]||0) - (S.res[a]||0));
-
         for(let f of foods) {
             if(eat <= 0) break;
             let avail = (S.res[f]||0) + (dRes[f]||0);
@@ -612,23 +586,19 @@ const Game = {
         let hChg = 0;
         if(eat > 0) { 
             UI.log(`${eat} hungern!`, 'warn'); 
-            hChg -= 5; 
-            S.factors.food = -5; 
+            hChg -= 5; S.factors.food = -5; 
             if(Math.random() < 0.2) {
                 S.pop.curr--;
                 UI.log("Ein Bürger verhungert.", "death");
-                Game.unassignWorker(); // Entferne einen Arbeiter
+                Game.unassignWorker(); 
             }
-        }
-        else { hChg += 1; S.factors.food = 1; }
+        } else { hChg += 1; S.factors.food = 1; }
 
-        // Steuern
         let tx = Config.taxes[S.tax];
         hChg += tx.h;
         dRes.gold = (dRes.gold||0) + (S.pop.curr * tx.g);
         S.factors.tax = tx.h;
 
-        // Bier
         let availBeer = (S.res.beer||0) + (dRes.beer||0);
         if(availBeer >= S.pop.curr && S.pop.curr > 0) {
             dRes.beer -= S.pop.curr;
@@ -639,65 +609,50 @@ const Game = {
         let diffHapp = Math.max(-5, Math.min(5, hChg));
         S.pop.hap = Math.max(0, Math.min(100, S.pop.hap + diffHapp));
 
-        // --- 3. APPLY & LIMITS ---
         for(let k in dRes) {
             S.res[k] = (S.res[k]||0) + dRes[k];
             if(S.res[k] < 0) S.res[k] = 0;
         }
 
-        // Check Storage Limits NOW
-        curS = 0; ['wood','stone','iron','wheat','flour'].forEach(k=>curS+=S.res[k]);
-        curF = 0; ['bread','meat','apple','cheese'].forEach(k=>curF+=S.res[k]);
+        let curS = 0; ['wood','stone','iron','wheat','flour'].forEach(k=>curS+=S.res[k]);
+        let curF = 0; ['bread','meat','apple','cheese'].forEach(k=>curF+=S.res[k]);
 
         if(curS > maxS) {
-            // Cut random mats
             let types = ['wood','stone','iron','wheat','flour'];
             let over = curS - maxS;
             while(over > 0) {
-                for(let t of types) {
-                    if(S.res[t] > 0 && over > 0) { S.res[t]--; over--; }
-                }
+                for(let t of types) { if(S.res[t] > 0 && over > 0) { S.res[t]--; over--; } }
             }
         }
         if(curF > maxF) {
             let types = ['bread','meat','apple','cheese'];
             let over = curF - maxF;
             while(over > 0) {
-                for(let t of types) {
-                    if(S.res[t] > 0 && over > 0) { S.res[t]--; over--; }
-                }
+                for(let t of types) { if(S.res[t] > 0 && over > 0) { S.res[t]--; over--; } }
             }
         }
 
-        // --- 4. GAME OVER & POP GROWTH ---
         if(S.pop.curr <= 0) {
-            S.pop.curr = 0; 
-            S.paused = true;
-            UI.update();
+            S.pop.curr = 0; S.paused = true; UI.update();
             UI.showModal("GAME OVER", "Das Dorf ist ausgestorben.", "Neustart", Game.reset);
             return; 
         }
 
-        // Auto Assign Check (Smart)
         Game.autoAssign();
 
-        // Growth
         if(S.pop.hap > 70 && S.pop.curr < S.pop.max && Math.random()>0.6) {
-            S.pop.curr++; 
-            Game.autoAssign();
+            S.pop.curr++; Game.autoAssign();
         } else if(S.pop.hap < 20 && S.pop.curr > 0) {
             S.pop.curr--; UI.log("Bürger geflohen", "warn");
             Game.unassignWorker();
         }
 
-        // --- 5. RATES ---
         S.rates = {};
         for(let k in S.res) {
             let diff = S.res[k] - startRes[k];
             if(diff !== 0) S.rates[k] = diff;
         }
 
-        // --- 6. WIN CHECK ---
         let l = Levels.find(x => x.id == S.lvl);
         let win = true;
         let sold = 0; for(let k in S.units) sold += S.units[k];
@@ -712,62 +667,39 @@ const Game = {
             S.paused = true;
             UI.showModal("SIEG!", "Level geschafft!", "Nächstes Level", () => Game.startLevel(S.lvl+1));
         }
-
         UI.update();
     },
 
-    // INTELLIGENTE ZUWEISUNG (Reparatur)
     autoAssign: function() {
         let work = 0; for(let k in S.w) work += S.w[k];
         let sold = 0; for(let k in S.units) sold += S.units[k];
         let available = S.pop.curr - sold;
-        
-        // Reset Workers (Virtuell) und verteile neu nach Priorität
-        // Wir machen das Inkrementell um nicht bestehende Jobs zu killen, aber wir füllen Lücken
         let idle = available - work;
         if(idle <= 0) return;
 
-        // Prioritätsliste
-        // 1. Nahrung (wenn wenig Essen)
-        // 2. Grundstoffe (Holz/Stein)
-        // 3. Verarbeitung
-        
         let priority = [];
         let curF = 0; ['bread','meat','apple','cheese'].forEach(k=>curF+=S.res[k]);
-        let lowFood = curF < S.pop.curr * 3; // Weniger als 3 Tage Essen
+        let lowFood = curF < S.pop.curr * 3; 
 
         for(let k in Config.b) {
             let b = Config.b[k];
             if(!b.prod && !b.proc && !b.use) continue;
-            
-            let p = 2; // Normal
-            if(lowFood && (b.type === 'food' || b.out === 'bread')) p = 1; // High Prio
+            let p = 2; 
+            if(lowFood && (b.type === 'food' || b.out === 'bread')) p = 1; 
             if(b.prod === 'wood') p = 1.5;
-            
             priority.push({k:k, p:p});
         }
-        
         priority.sort((a,b) => a.p - b.p);
 
-        // Fülle auf
         for(let item of priority) {
             if(idle <= 0) break;
             let k = item.k;
-            // Max Kapazität checken (Annahme: 1 Gebäude = 2-5 Worker je nach Typ, hier vereinfacht: Anzahl Gebäude = Anzahl Worker Slots)
-            // Im Original war es S.b[k] > S.w[k]. Also 1 Gebäude = 1 Worker Slot.
-            if(S.b[k] > S.w[k]) {
-                S.w[k]++;
-                idle--;
-            }
+            if(S.b[k] > S.w[k]) { S.w[k]++; idle--; }
         }
     },
 
     unassignWorker: function() {
-        // Entferne von geringster Prio (z.B. Gold/Waffen) zuerst
-        // Einfachheitshalber: Der erste der gefunden wird
-        for(let k in S.w) {
-            if(S.w[k] > 0) { S.w[k]--; return; }
-        }
+        for(let k in S.w) { if(S.w[k] > 0) { S.w[k]--; return; } }
     },
 
     build: function(key) {
@@ -775,8 +707,7 @@ const Game = {
         if(S.res.gold >= (b.cost.g||0) && S.res.wood >= (b.cost.w||0) && S.res.stone >= (b.cost.s||0)) {
             S.res.gold -= (b.cost.g||0); S.res.wood -= (b.cost.w||0); S.res.stone -= (b.cost.s||0);
             S.b[key] = (S.b[key]||0) + 1;
-            Game.recalcStats(); 
-            Game.autoAssign(); // Sofort besetzen
+            Game.recalcStats(); Game.autoAssign(); 
             UI.addMapIcon(key);
             UI.renderBuild();
             UI.update();
@@ -794,14 +725,8 @@ const Game = {
             if(S.res.gold >= 50) { S.res.gold-=50; S.units.merc++; UI.log("Söldner angeheuert", "prod"); }
         } else {
             if((S.b.barrack||0) < 1) return;
-            
-            // Wenn kein Idle, ziehe Arbeiter ab (Priorität Militär)
-            if(idle < 1) {
-                Game.unassignWorker();
-                work--; // Update calc
-                idle++;
-            }
-            if(idle < 1) return; // Immer noch keiner da
+            if(idle < 1) { Game.unassignWorker(); work--; idle++; }
+            if(idle < 1) return; 
 
             if(S.res.gold >= u.cost && S.res[u.res] >= 1) {
                 if(u.arm && S.res[u.arm] < 1) return;
@@ -818,12 +743,9 @@ const Game = {
     launchWar: function(idx) {
         let m = Missions[idx];
         let str = Game.getArmyStr();
-        
         let rng = (Math.random() * 0.4) + 0.8; 
         let enemyRoll = m.str * rng;
-        let playerRoll = str;
-        
-        let win = playerRoll >= enemyRoll;
+        let win = str >= enemyRoll;
         
         let lossRate = win ? 0.1 : 0.3;
         let lostUnits = [];
@@ -848,9 +770,7 @@ const Game = {
         } else {
             UI.log(`Niederlage gegen ${m.n}.`, 'warn');
         }
-        
         if(lostUnits.length) UI.log(`Verluste: ${lostUnits.join(', ')}`, 'death');
-        
         UI.update();
         UI.closeWar();
     },
@@ -917,6 +837,15 @@ const UI = {
         
         let tIdx = Config.taxes[S.tax];
         document.getElementById('tax-name').innerText = tIdx.n;
+
+        // FIXED TAX DISPLAY HERE
+        let taxGold = S.pop.curr * tIdx.g;
+        let taxHap = tIdx.h;
+        let impactEl = document.getElementById('tax-impact');
+        if(impactEl) {
+            impactEl.innerHTML = `+${taxGold}💰 / ${taxHap}❤️`;
+            impactEl.style.color = taxHap < 0 ? '#b71c1c' : '#2e7d32';
+        }
 
         document.getElementById('hap-breakdown').innerHTML = `
             <div class="tt-row"><span>Essen:</span><span>${S.factors.food > 0 ? '+'+S.factors.food : S.factors.food}</span></div>
