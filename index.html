@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Burgherr V3.0 - Deep Systems</title>
+    <title>Burgherr V3.1 - Realismus</title>
     <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=MedievalSharp&display=swap" rel="stylesheet">
     
     <style>
@@ -170,12 +170,16 @@
         .b-card.can-build { background: var(--can-build); border-color: var(--can-build-border); box-shadow: 0 2px 4px rgba(46, 125, 50, 0.2); }
         .b-count { position: absolute; top: -5px; right: -5px; background: var(--accent); color: #fff; font-size: 0.7rem; padding: 2px 6px; border-radius: 10px; font-weight: bold; box-shadow: 1px 1px 2px rgba(0,0,0,0.5); }
         
-        .b-worker-info { 
-            width: 100%; border-top: 1px solid rgba(0,0,0,0.1); margin-top: 4px; padding-top: 2px;
-            font-size: 0.65rem; text-align: center; color: #555; font-weight: bold;
+        /* WORKER CONTROL ON CARD */
+        .b-worker-box { 
+            width: 100%; border-top: 1px solid rgba(0,0,0,0.1); margin-top: 2px;
+            display: flex; justify-content: space-between; align-items: center; padding: 2px 4px;
+            background: rgba(255,255,255,0.3); border-radius: 0 0 6px 6px;
         }
-        .w-empty { color: var(--danger); }
-        .w-full { color: var(--success); }
+        .w-btn { width: 18px; height: 18px; background: #fff; border: 1px solid #999; border-radius: 3px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.8rem; cursor: pointer; }
+        .w-btn:active { background: #ccc; }
+        .w-disp { font-size: 0.7rem; font-weight: bold; color: #333; }
+        .w-empty .w-disp { color: var(--danger); }
 
         /* MODALS */
         .modal-mask { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 5000; justify-content: center; align-items: center; backdrop-filter: blur(4px); }
@@ -278,6 +282,7 @@
                 <span class="res-item" title="Holz">🌲<span id="r-wood">0</span><span id="d-wood" class="rate-ind"></span></span>
                 <span class="res-item" title="Stein">🧱<span id="r-stone">0</span><span id="d-stone" class="rate-ind"></span></span>
                 <span class="res-item" title="Weizen">🌾<span id="r-wheat">0</span><span id="d-wheat" class="rate-ind"></span></span>
+                <span class="res-item" title="Mehl">🥡<span id="r-flour">0</span><span id="d-flour" class="rate-ind"></span></span>
                 <span class="res-item" title="Hopfen">🌿<span id="r-hops">0</span><span id="d-hops" class="rate-ind"></span></span>
             </div>
         </div>
@@ -460,9 +465,9 @@ let lastTickTime = 0;
 
 const Game = {
     init: function() {
-        if(localStorage.getItem('sh_v30_sys')) {
+        if(localStorage.getItem('sh_v31_real')) {
             try {
-                let load = JSON.parse(localStorage.getItem('sh_v30_sys'));
+                let load = JSON.parse(localStorage.getItem('sh_v31_real'));
                 if(load) S = load;
                 else this.startLevel(1);
                 Game.recalcStats(); 
@@ -494,6 +499,8 @@ const Game = {
         for(let k in Config.b) { S.b[k]=0; S.w[k]=0; }
         S.b.stock = 1; S.b.gran = 1;
         Game.recalcStats(); 
+        
+        // Einmaliges Auto-Assign beim Start
         Game.autoAssign(); 
 
         UI.init();
@@ -510,7 +517,6 @@ const Game = {
         return s;
     },
 
-    // Helfer für Bau-Logik
     countWorkers: function() {
         let work = 0; for (let k in S.w) work += S.w[k];
         let sold = 0; for (let k in S.units) sold += S.units[k];
@@ -530,7 +536,6 @@ const Game = {
         let curS = 0; Rules.storeTypes.forEach(k=>curS+=S.res[k]);
         let curF = 0; Rules.foodTypes.forEach(k=>curF+=S.res[k]);
 
-        // Primitiver Check für Klick (nur Holz/Stein/Apfel)
         if(type === 'wood' || type === 'stone') {
             if(curS >= maxS) { UI.showFloatingText(type, "Lager Voll!", "neg"); return; }
         }
@@ -600,10 +605,9 @@ const Game = {
             }
         }
 
-        // 3. HAPPINESS SYSTEM (Deep)
+        // 3. HAPPINESS SYSTEM
         let h = { hunger:0, variety:0, tax:0, beer:0, religion:0, overcrowd:0, idle:0, total:0 };
 
-        // Hunger
         if(eat > 0) { 
             UI.log(`${eat} hungern!`, 'warn'); 
             h.hunger = -8; 
@@ -614,15 +618,12 @@ const Game = {
             }
         } else { h.hunger = +2; }
 
-        // Variety
         h.variety = (ateTypes >= 3) ? +2 : (ateTypes === 2 ? +1 : 0);
 
-        // Tax
         let tx = Config.taxes[S.tax];
         h.tax = tx.h;
         dRes.gold = (dRes.gold||0) + (S.pop.curr * tx.g);
 
-        // Bier (Proportional)
         let availBeer = (S.res.beer||0) + (dRes.beer||0);
         if(S.pop.curr > 0) {
             if(availBeer >= S.pop.curr) {
@@ -635,17 +636,14 @@ const Game = {
             }
         }
 
-        // Religion
         h.religion = (S.b.church||0) * 3;
 
-        // Overcrowding
         if(S.pop.max > 0) {
             let fill = S.pop.curr / S.pop.max;
             if(fill > 0.95) h.overcrowd = -2;
             if(fill > 1.00) h.overcrowd = -6; 
         }
 
-        // Idle
         let cw = Game.countWorkers();
         if(cw.available > 0) {
             let idleRatio = cw.idle / cw.available;
@@ -655,8 +653,6 @@ const Game = {
         h.total = h.hunger + h.variety + h.tax + h.beer + h.religion + h.overcrowd + h.idle;
         let delta = Math.max(-6, Math.min(6, h.total));
         S.pop.hap = Math.max(0, Math.min(100, S.pop.hap + delta));
-        
-        // Save for UI
         S.factors = { ...h, total: delta };
 
         // 4. Apply & Limits
@@ -693,10 +689,12 @@ const Game = {
             return; 
         }
 
-        Game.autoAssign();
+        // HIER KEIN AUTO ASSIGN MEHR - MANUELLE KONTROLLE!
 
         if(S.pop.hap > 70 && S.pop.curr < S.pop.max && Math.random()>0.6) {
-            S.pop.curr++; Game.autoAssign();
+            S.pop.curr++; 
+            // Neue Bürger suchen nicht automatisch Jobs, sie sind "idle"
+            UI.log("Neuer Bürger", "prod");
         } else if(S.pop.hap < 20 && S.pop.curr > 0) {
             S.pop.curr--; UI.log("Bürger geflohen", "warn");
             Game.unassignWorker(true);
@@ -725,6 +723,7 @@ const Game = {
         UI.update();
     },
 
+    // Nur noch einmalig beim Start/Bau, nicht mehr im Tick
     autoAssign: function() {
         let cw = Game.countWorkers();
         if(cw.idle <= 0) return;
@@ -750,6 +749,32 @@ const Game = {
         }
     },
 
+    // Manuelle Zuweisung per Button
+    assign: function(key, dir) {
+        if(!S.b[key]) return;
+        let b = Config.b[key];
+        // Nicht-Produktionsgebäude brauchen keine Worker
+        if(!Game.isProductionBuilding(b)) return;
+
+        let cw = Game.countWorkers();
+        
+        if(dir > 0) {
+            // Einstellen
+            if(cw.idle > 0 && S.w[key] < S.b[key]) {
+                S.w[key]++;
+            } else if(cw.idle <= 0) {
+                UI.showFloatingText('r-idle', "Keine Bürger!", "neg");
+            }
+        } else {
+            // Feuern
+            if(S.w[key] > 0) {
+                S.w[key]--;
+            }
+        }
+        UI.update();
+        UI.renderBuild(); // Cards neu malen für Zahlen
+    },
+
     unassignWorker: function(protectFood) {
         const fireOrder = ['merc','smith','armor','fletch','pole','iron','gold','quarry','wood','brew','mill','bake','dairy','hunter','apple','wheat','hops'];
         for(let key of fireOrder) {
@@ -761,27 +786,19 @@ const Game = {
 
     build: function(key) {
         let b = Config.b[key];
-        // Cost Check
         if(!(S.res.gold >= (b.cost.g||0) && S.res.wood >= (b.cost.w||0) && S.res.stone >= (b.cost.s||0))) return;
 
-        // Worker Check: Nur für Produktionsgebäude
-        if(Game.isProductionBuilding(b)) {
-            let cw = Game.countWorkers();
-            if(cw.idle < 1) {
-                let freed = Game.unassignWorker(true);
-                if(!freed) {
-                    UI.showModal("Keine Arbeiter", "Kein freier Bürger verfügbar. Baue mehr Häuser oder feuere jemanden.", "OK");
-                    return;
-                }
-            }
-        }
-
+        // In V3.1: Bauen immer erlaubt, auch ohne Worker. Man muss sie danach zuweisen.
+        
         S.res.gold -= (b.cost.g||0); S.res.wood -= (b.cost.w||0); S.res.stone -= (b.cost.s||0);
         S.b[key] = (S.b[key]||0) + 1;
         
-        // Auto-assign direkt beim Bau
+        // Convenience: Wenn jemand frei ist, steck ihn rein. Wenn nicht, bleibt es leer.
         if(Game.isProductionBuilding(b)) {
-            if(S.w[key] < S.b[key]) S.w[key] = (S.w[key]||0) + 1;
+            let cw = Game.countWorkers();
+            if(cw.idle > 0) {
+                if(S.w[key] < S.b[key]) S.w[key] = (S.w[key]||0) + 1;
+            }
         }
 
         Game.recalcStats(); 
@@ -800,11 +817,9 @@ const Game = {
         } else {
             if((S.b.barrack||0) < 1) return;
             if(cw.idle < 1) { 
-                let fired = Game.unassignWorker(true);
-                if(!fired) {
-                    UI.showModal("Rekrutierung fehlgeschlagen", "Keine Bürger für die Armee verfügbar.", "OK");
-                    return; 
-                }
+                // In V3.1 feuern wir NICHT automatisch. Der Spieler muss selbst Platz machen.
+                UI.showModal("Keine Rekruten", "Du hast keine untätigen Bürger. Feuere jemanden aus einem Betrieb.", "OK");
+                return;
             }
 
             if(S.res.gold >= u.cost && S.res[u.res] >= 1) {
@@ -866,8 +881,8 @@ const Game = {
         UI.update(); UI.renderMarket();
     },
 
-    save: function() { localStorage.setItem('sh_v30_sys', JSON.stringify(S)); UI.log("Gespeichert", "prod"); },
-    reset: function() { localStorage.removeItem('sh_v30_sys'); location.reload(); }
+    save: function() { localStorage.setItem('sh_v31_real', JSON.stringify(S)); UI.log("Gespeichert", "prod"); },
+    reset: function() { localStorage.removeItem('sh_v31_real'); location.reload(); }
 };
 
 const UI = {
@@ -915,7 +930,6 @@ const UI = {
         document.getElementById('day-disp').innerText = S.day;
         document.getElementById('lvl-disp').innerText = S.lvl;
         
-        // TREND DISPLAY
         let trEl = document.getElementById('hap-trend');
         let change = S.factors.total || 0;
         if(trEl) {
@@ -935,6 +949,12 @@ const UI = {
             impactEl.style.color = taxHap < 0 ? '#b71c1c' : '#2e7d32';
         }
         
+        let maxS = (S.b.stock||1)*50;
+        let curS = 0; Rules.storeTypes.forEach(k=>curS+=(S.res[k]||0));
+        
+        let maxF = (S.b.gran||1)*50;
+        let curF = 0; Rules.foodTypes.forEach(k=>curF+=(S.res[k]||0));
+
         let l = Levels.find(x => x.id == S.lvl);
         if(l) {
             let h = "";
@@ -971,7 +991,7 @@ const UI = {
         let html = `<div style="text-align:left; margin:10px 20px;">`;
 
         for(let [name,val] of rows) {
-            if(val === 0) continue; // Nur relevante anzeigen
+            if(val === 0) continue; 
             html += `
                 <div style="display:flex;justify-content:space-between; border-bottom:1px solid #ccc; padding:5px 0;">
                     <span>${name}:</span>
@@ -984,10 +1004,7 @@ const UI = {
                 <span>Δ pro Tick:</span>
                 <span style="color:${c(f.total)}">${(f.total)>0?'+':''}${Math.round(f.total*10)/10}</span>
             </div>
-        </div>
-        <p style="font-size:0.8rem; color:#666; margin-top:10px; text-align:center">
-            (Das ist die Veränderung beim letzten Tick)
-        </p>`;
+        </div>`;
 
         UI.showModal("Volkslaune (Details)", "", "Schließen");
         document.getElementById('m-body').innerHTML = html;
@@ -1081,15 +1098,21 @@ const UI = {
             
             let el = document.createElement('div'); el.className = "b-card";
             el.setAttribute('data-key', k);
-            el.onclick = () => Game.build(k);
+            el.onclick = (e) => { if(!e.target.classList.contains('w-btn')) Game.build(k); };
             
-            // Worker Visualizer
+            // MANUAL WORKER CONTROL
             let workerHtml = "";
             if(S.b[k] > 0 && Game.isProductionBuilding(b)) {
                 let w = S.w[k];
                 let max = S.b[k]; 
                 let wClass = w < max ? 'w-empty' : 'w-full';
-                workerHtml = `<div class="b-worker-info ${wClass}">Arbeiter: ${w} / ${max}</div>`;
+                workerHtml = `
+                    <div class="b-worker-box">
+                        <div class="w-btn" onclick="Game.assign('${k}', -1)">-</div>
+                        <div class="w-disp ${wClass}">${w}/${max}</div>
+                        <div class="w-btn" onclick="Game.assign('${k}', 1)">+</div>
+                    </div>
+                `;
             }
 
             el.innerHTML = `
