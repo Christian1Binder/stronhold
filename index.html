@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Der Text-Burgherr</title>
+    <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-color: #2c241b; /* Dunkler Hintergrund außen */
+            --parchment: #f4e4bc; /* Pergament-Farbe */
+            --wood: #5c4033; /* Holz-Farbe für Ränder */
+            --text-color: #3e2723; /* Dunkelbraune Schrift */
+            --accent-red: #8a0303; /* Für Warnungen/Angriffe */
+            --gold: #d4af37; /* Goldfarbe */
+        }
+
+        body {
+            font-family: 'MedievalSharp', cursive;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            height: 100vh;
+            box-sizing: border-box;
+        }
+
+        /* Der Hauptcontainer (Das "Blatt Papier") */
+        #game-container {
+            background-color: var(--parchment);
+            width: 100%;
+            max-width: 1200px;
+            border: 8px solid var(--wood);
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.8);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* --- KOPFZEILE (RESSOURCEN) --- */
+        header {
+            background-color: var(--wood);
+            color: var(--parchment);
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 4px solid #3e2723;
+        }
+
+        h1 { margin: 0; font-size: 1.5rem; text-shadow: 2px 2px 0 #000; }
+
+        .resource-bar {
+            display: flex;
+            gap: 20px;
+            font-size: 1.1rem;
+        }
+
+        .res-item { display: flex; align-items: center; gap: 5px; }
+
+        /* --- HAUPTBEREICH (3 SPALTEN) --- */
+        main {
+            display: flex;
+            flex: 1;
+            overflow: hidden; /* Damit nur das Log scrollt */
+        }
+
+        /* Spalte 1: Aktionen */
+        #controls {
+            width: 250px;
+            background-color: rgba(0,0,0,0.05);
+            padding: 20px;
+            border-right: 2px solid var(--wood);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .category-title {
+            font-weight: bold;
+            margin-top: 15px;
+            border-bottom: 1px solid var(--text-color);
+            padding-bottom: 5px;
+        }
+
+        button {
+            background-color: var(--wood);
+            color: var(--parchment);
+            border: 2px solid #3e2723;
+            padding: 10px;
+            font-family: 'MedievalSharp', cursive;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: left;
+        }
+
+        button:hover {
+            background-color: var(--accent-red);
+            transform: translateX(5px);
+        }
+
+        /* Spalte 2: Das Logbuch (Mitte) */
+        #log-area {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto; /* Scrollbar wenn voll */
+            background-image: radial-gradient(#f4e4bc 20%, #e0d0a0 80%);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end; /* Text startet unten */
+        }
+
+        .log-entry {
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px dashed rgba(62, 39, 35, 0.3);
+            line-height: 1.4;
+        }
+
+        .log-entry.important { color: var(--accent-red); font-weight: bold; }
+        .log-entry.speech { font-style: italic; color: #555; }
+
+        /* Spalte 3: Status (Rechts) */
+        #status-panel {
+            width: 250px;
+            background-color: rgba(0,0,0,0.05);
+            padding: 20px;
+            border-left: 2px solid var(--wood);
+        }
+
+        .status-box {
+            background: rgba(255,255,255,0.3);
+            border: 1px solid var(--wood);
+            padding: 10px;
+            margin-bottom: 15px;
+        }
+
+        /* Scrollbar Styling (für Webkit Browser) */
+        ::-webkit-scrollbar { width: 10px; }
+        ::-webkit-scrollbar-track { background: var(--parchment); }
+        ::-webkit-scrollbar-thumb { background: var(--wood); }
+
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <header>
+        <h1>🏰 Der Text-Burgherr</h1>
+        <div class="resource-bar">
+            <div class="res-item">💰 <span id="res-gold">100</span></div>
+            <div class="res-item">🌲 <span id="res-wood">50</span></div>
+            <div class="res-item">🧱 <span id="res-stone">0</span></div>
+            <div class="res-item">🍎 <span id="res-food">20</span></div>
+            <div class="res-item">😊 <span id="res-pop">100</span></div>
+        </div>
+    </header>
+
+    <main>
+        <section id="controls">
+            <div class="category-title">Wirtschaft</div>
+            <button onclick="gameAction('wood')">Holzfäller bauen (10 💰)</button>
+            <button onclick="gameAction('farm')">Apfelgarten bauen (20 💰)</button>
+            
+            <div class="category-title">Verwaltung</div>
+            <button onclick="gameAction('tax')">Steuern erhöhen</button>
+            <button onclick="gameAction('rations')">Rationen ändern</button>
+
+            <div class="category-title">Militär</div>
+            <button onclick="gameAction('recruit')">Bogenmacher bauen (50 💰)</button>
+        </section>
+
+        <section id="log-area" id="game-log">
+            <div class="log-entry speech">"Willkommen, Sire! Eure Burg wartet auf Befehle."</div>
+            <div class="log-entry">Die Vorräte sind gefüllt. Das Volk ist zufrieden.</div>
+        </section>
+
+        <section id="status-panel">
+            <h3>Statusbericht</h3>
+            <div class="status-box">
+                <strong>Bevölkerung:</strong><br>
+                8/10 Bauern<br>
+                0 Soldaten
+            </div>
+            <div class="status-box">
+                <strong>Gebäude:</strong><br>
+                1x Bergfried<br>
+                0x Holzfäller
+            </div>
+            <div class="status-box">
+                <strong>Nachrichten:</strong><br>
+                Keine Feinde in Sicht.
+            </div>
+        </section>
+    </main>
+</div>
+
+<script>
+    // Kleines Dummy-Skript, damit was passiert
+    const logArea = document.getElementById('log-area');
+
+    function addToLog(text, type = 'normal') {
+        const div = document.createElement('div');
+        div.className = 'log-entry ' + type;
+        
+        // Fügt Zeitstempel hinzu (nur simuliert)
+        div.innerHTML = `> ${text}`;
+        
+        logArea.appendChild(div);
+        
+        // Automatisch nach unten scrollen
+        logArea.scrollTop = logArea.scrollHeight;
+    }
+
+    function gameAction(action) {
+        // Hier kommt später die echte Logik rein.
+        // Jetzt simulieren wir nur die Antworten.
+        
+        if(action === 'wood') {
+            addToLog("Ihr platziert eine Holzfällerhütte am Waldrand.");
+            // Simulierter Abzug von Gold (nur optisch)
+            updateRes('res-gold', -10);
+        }
+        else if(action === 'farm') {
+            addToLog("Ein Apfelgarten wurde angelegt. Die Bauern freuen sich.");
+            updateRes('res-gold', -20);
+        }
+        else if(action === 'tax') {
+            addToLog("Das Volk murrt! 'Wir schuften uns schon zu Tode, Mylord!'", "speech");
+            updateRes('res-pop', -5);
+        }
+        else if(action === 'recruit') {
+            addToLog("Wir benötigen mehr Holz für den Bogenmacher, Sire!", "important");
+        }
+        else {
+            addToLog("Dafür fehlen euch die Mittel, Euer Gnaden.");
+        }
+    }
+
+    function updateRes(id, amount) {
+        const el = document.getElementById(id);
+        let current = parseInt(el.innerText);
+        el.innerText = current + amount;
+    }
+</script>
+
+</body>
+</html>
