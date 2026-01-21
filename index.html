@@ -258,7 +258,7 @@
 // --- ÜBERSETZUNGSTABELLE FÜR ZIELE ---
 const Labels = {
     gold: "Gold", wood: "Holz", stone: "Stein", iron: "Eisen", 
-    bread: "Brot", food: "Nahrung", wheat: "Weizen", flour: "Mehl", hops: "Hopfen", beer: "Bier",
+    bread: "Brot", food: "Nahrung", apple:"Apfel", meat:"Fleisch", wheat: "Weizen", flour: "Mehl", hops: "Hopfen", beer: "Bier",
     pop: "Einwohner", soldiers: "Soldaten", mercs: "Söldner",
     tower: "Wachturm", cathedral: "Kathedrale", church: "Kirche"
 };
@@ -378,7 +378,8 @@ const Game = {
                     if(State.res[type] > 0) {
                         let take = Math.min(State.res[type], pop);
                         State.res[type] -= take; pop -= take;
-                        if(take > 0) { report.eaten.push(`${take} ${Labels[type]}`); foodDiversity++; }
+                        // Das "|| type" sorgt dafür, dass im Notfall der englische ID-Name genutzt wird
+                        if(take > 0) { report.eaten.push(`${take} ${Labels[type] || type}`); foodDiversity++; }
                     }
                 };
                 eat('bread'); eat('meat'); eat('apple');
@@ -400,8 +401,15 @@ const Game = {
                 State.factors.tax = tax.pop;
             }
 
-            let sum = State.factors.food + State.factors.tax + State.factors.events + State.factors.beer + State.factors.religion;
-            State.pop.happiness = Math.max(0, Math.min(100, State.pop.happiness + sum));
+            // Wir addieren einfach alle Faktoren (Negative Zahlen ziehen automatisch ab)
+            let change = State.factors.food + State.factors.tax + State.factors.events + State.factors.beer + State.factors.religion;
+            
+            // Die neue Beliebtheit ergibt sich aus dem alten Wert + der Veränderung
+            State.pop.happiness = State.pop.happiness + change;
+    
+            // Begrenzung: Nicht unter 0 und nicht über 100
+            if (State.pop.happiness > 100) State.pop.happiness = 100;
+            if (State.pop.happiness < 0) State.pop.happiness = 0;
             
             this.handleMigration();
             this.checkCombat();
