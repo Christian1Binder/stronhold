@@ -3,18 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Burgherr WebApp - Advanced</title>
-    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=MedievalSharp&display=swap" rel="stylesheet">
+    <title>Burgherr WebApp - Optimized UI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=MedievalSharp&display=swap" rel="stylesheet">
     
     <style>
         :root {
             --bg-body: #2b2b2b;
-            --bg-panel: #fdf6e3;
-            --primary: #8b5e3c;
+            --bg-panel: #fdf6e3; /* Solarized Light Creme */
+            --primary: #8b5e3c;   /* Leder */
             --primary-dark: #5d4037;
-            --accent: #d32f2f;
+            --secondary: #37474f; /* Dunkles Blau-Grau für Panels */
+            --accent: #d32f2f;    /* Rot */
+            --highlight: #f9a825; /* Goldgelb */
             --text-main: #333333;
-            --text-light: #fdf6e3;
+            --text-light: #f1f1f1;
             --border-radius: 8px;
         }
 
@@ -34,52 +36,106 @@
         #app {
             background-color: var(--bg-panel);
             width: 100%;
-            max-width: 1300px; /* Breiter für mehr Infos */
+            max-width: 1400px;
             border-radius: var(--border-radius);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
             display: flex;
             flex-direction: column;
             overflow: hidden;
             position: relative;
         }
 
-        /* --- HEADER --- */
+        /* --- NEUER HEADER (DASHBOARD STYLE) --- */
         header {
-            background-color: var(--primary);
+            background-color: var(--secondary);
             color: var(--text-light);
             padding: 10px 20px;
             display: flex;
-            justify-content: space-between;
+            flex-wrap: wrap;
             align-items: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            justify-content: space-between;
+            border-bottom: 4px solid var(--primary);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
             z-index: 10;
         }
 
-        h1 { font-family: 'MedievalSharp', cursive; margin: 0; font-size: 1.5rem; }
+        .header-title h1 {
+            font-family: 'MedievalSharp', cursive;
+            margin: 0;
+            font-size: 1.6rem;
+            color: var(--highlight);
+            text-shadow: 2px 2px 0 #000;
+            margin-right: 20px;
+        }
 
-        .resource-bar {
+        /* Ressourcen Container */
+        .res-container {
             display: flex;
             gap: 15px;
-            font-size: 0.95rem;
             flex-wrap: wrap;
+            flex: 1;
+            justify-content: flex-end;
         }
+
+        /* Einzelne Gruppe (z.B. Lager) */
         .res-group {
-            background: rgba(0,0,0,0.2);
-            padding: 4px 8px;
-            border-radius: 4px;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 6px;
+            padding: 5px 10px;
             display: flex;
+            flex-direction: column;
+            min-width: 140px;
+        }
+
+        .res-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            opacity: 0.7;
+            margin-bottom: 4px;
+            letter-spacing: 1px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 2px;
+        }
+
+        .res-items {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
             gap: 10px;
         }
+
+        .res-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+
+        .res-icon { font-size: 1.2rem; margin-bottom: -2px; }
+        .res-val { 
+            font-weight: 900; 
+            font-size: 1.1rem;
+            color: #fff;
+        }
+        
+        /* Spezifische Farben für Zahlen */
+        .gold-val { color: var(--highlight); }
+        .pop-val { color: #81c784; }
 
         /* --- MAIN LAYOUT --- */
         main { display: flex; flex: 1; overflow: hidden; }
 
+        /* SIDEBARS */
         aside {
-            width: 280px;
+            width: 300px;
             background-color: #f4ecd8;
             padding: 15px;
             overflow-y: auto;
             border-right: 1px solid #dccbb1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
         }
 
         aside.right { border-right: none; border-left: 1px solid #dccbb1; }
@@ -88,45 +144,48 @@
             font-family: 'MedievalSharp', cursive;
             color: var(--primary-dark);
             border-bottom: 2px solid var(--primary);
-            font-size: 1.2rem;
-            margin-top: 20px;
-            margin-bottom: 10px;
+            font-size: 1.3rem;
+            margin: 0 0 10px 0;
+            padding-bottom: 5px;
         }
-        h2:first-child { margin-top: 0; }
 
-        /* Buttons */
-        .btn-group { display: flex; flex-direction: column; gap: 6px; }
+        /* BUTTONS */
+        .btn-group { display: flex; flex-direction: column; gap: 8px; }
 
         button {
             background-color: #fff;
-            border: 1px solid #bbb;
-            border-left: 4px solid var(--primary);
+            border: 1px solid #cbb092;
+            border-left: 5px solid var(--primary);
             color: var(--text-main);
-            padding: 8px 12px;
+            padding: 10px 14px;
             border-radius: 4px;
             font-family: 'Lato', sans-serif;
-            font-weight: bold;
+            font-weight: 700;
             cursor: pointer;
-            transition: all 0.1s;
+            transition: all 0.15s;
             text-align: left;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
 
         button:hover:not(:disabled) {
             background-color: var(--primary);
             color: white;
-            transform: translateX(3px);
+            transform: translateX(4px);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.15);
         }
         
-        button:disabled { opacity: 0.6; cursor: not-allowed; border-left-color: #555; }
+        button:disabled { opacity: 0.5; cursor: not-allowed; border-left-color: #777; background: #eee; }
         
         button.military { border-left-color: var(--accent); }
+        button.food { border-left-color: #2e7d32; }
 
-        .cost { font-size: 0.8rem; font-weight: normal; opacity: 0.8; }
+        .cost { font-size: 0.75rem; font-weight: normal; opacity: 0.8; }
+        button:hover .cost { opacity: 1; color: #eee; }
 
-        /* Log Area */
+        /* LOG AREA */
         #log-area {
             flex: 1;
             padding: 20px;
@@ -134,44 +193,72 @@
             background-color: #fff;
             display: flex;
             flex-direction: column;
-            gap: 6px;
+            gap: 8px;
+            /* Hintergrund Muster leicht angedeutet */
+            background-image: radial-gradient(#f4e4bc 10%, transparent 10%), radial-gradient(#f4e4bc 10%, transparent 10%);
+            background-size: 20px 20px;
+            background-position: 0 0, 10px 10px;
+            background-color: #ffffff;
         }
 
         .log-entry {
-            padding: 6px 10px;
-            border-radius: 4px;
+            padding: 10px 15px;
+            border-radius: 6px;
             font-size: 0.95rem;
-            border-left: 3px solid #ccc;
-            background: #f9f9f9;
+            border-left: 4px solid #ccc;
+            background: #fcfcfc;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            line-height: 1.4;
         }
-        .log-entry.combat { border-left-color: var(--accent); background-color: #ffebee; font-weight: bold; }
-        .log-entry.economy { border-left-color: #2e7d32; background-color: #e8f5e9; font-size: 0.85rem; color: #555; }
-        .log-entry.important { border-left-color: #f57f17; background-color: #fffde7; }
-
-        /* Status & Tooltips */
-        .stat-row { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid #eee; font-size: 0.9rem;}
+        .log-entry strong { color: var(--primary-dark); }
         
-        /* --- MODAL (TUTORIAL) --- */
+        /* Log Typen */
+        .log-entry.combat { border-left-color: var(--accent); background-color: #ffebee; color: #b71c1c; }
+        .log-entry.economy { border-left-color: #2e7d32; background-color: #e8f5e9; font-size: 0.9rem; color: #1b5e20; }
+        .log-entry.important { border-left-color: #f9a825; background-color: #fffde7; border: 1px solid #fff9c4; border-left-width: 4px; }
+
+        /* MODAL */
         #modal-overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.7);
-            display: none; /* Versteckt am Anfang */
+            background: rgba(0,0,0,0.85);
+            display: none;
             justify-content: center;
             align-items: center;
             z-index: 100;
+            backdrop-filter: blur(2px);
         }
         #modal-box {
-            background: var(--bg-panel);
+            background: #fdf6e3;
             width: 500px;
-            padding: 20px;
-            border: 4px solid var(--primary);
-            border-radius: 8px;
+            padding: 30px;
+            border: 2px solid var(--primary);
+            border-radius: 12px;
             text-align: center;
-            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            box-shadow: 0 0 30px rgba(0,0,0,0.8);
         }
-        #modal-title { font-family: 'MedievalSharp'; font-size: 1.5rem; color: var(--accent); margin-bottom: 10px; }
+        #modal-title { font-family: 'MedievalSharp'; font-size: 2rem; color: var(--accent); margin-bottom: 15px; }
+        #modal-text { font-size: 1.1rem; line-height: 1.6; margin-bottom: 25px; }
         #modal-btn {
-            margin-top: 20px; background: var(--primary); color: white; border: none; padding: 10px 20px; font-size: 1rem;
+            background: var(--primary); color: white; border: none; padding: 12px 30px; font-size: 1.1rem; 
+            border-radius: 6px; cursor: pointer; transition: background 0.2s;
+        }
+        #modal-btn:hover { background: var(--primary-dark); }
+        
+        /* Tooltip-Hilfe für Icons (simpel) */
+        .res-item:hover::after {
+            content: attr(title);
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #333;
+            color: #fff;
+            padding: 4px 8px;
+            font-size: 0.7rem;
+            border-radius: 4px;
+            white-space: nowrap;
+            z-index: 20;
+            margin-top: 5px;
         }
 
     </style>
@@ -188,25 +275,75 @@
 
 <div id="app">
     <header>
-        <h1>🏰 Advanced Burgherr</h1>
-        <div class="resource-bar">
+        <div class="header-title">
+            <h1>🏰 Der Burgherr</h1>
+        </div>
+        
+        <div class="res-container">
             <div class="res-group">
-                <span>💰 <span id="res-gold">0</span></span>
-                <span>🌲 <span id="res-wood">0</span></span>
-                <span>🧱 <span id="res-stone">0</span></span>
-                <span>⛓️ <span id="res-iron">0</span></span>
+                <div class="res-label">Lager & Schatz</div>
+                <div class="res-items">
+                    <div class="res-item" title="Gold">
+                        <span class="res-icon">💰</span>
+                        <span class="res-val gold-val" id="res-gold">0</span>
+                    </div>
+                    <div class="res-item" title="Holz">
+                        <span class="res-icon">🌲</span>
+                        <span class="res-val" id="res-wood">0</span>
+                    </div>
+                    <div class="res-item" title="Stein">
+                        <span class="res-icon">🧱</span>
+                        <span class="res-val" id="res-stone">0</span>
+                    </div>
+                    <div class="res-item" title="Eisen">
+                        <span class="res-icon">⛓️</span>
+                        <span class="res-val" id="res-iron">0</span>
+                    </div>
+                </div>
             </div>
+
             <div class="res-group">
-                <span>🌾 <span id="res-wheat">0</span></span>
-                <span>🥡 <span id="res-flour">0</span></span>
-                <span>🍞 <span id="res-bread">0</span></span>
-                <span>🥩 <span id="res-meat">0</span></span>
-                <span>🍎 <span id="res-apple">0</span></span>
+                <div class="res-label">Kornspeicher</div>
+                <div class="res-items">
+                    <div class="res-item" title="Getreide">
+                        <span class="res-icon">🌾</span>
+                        <span class="res-val" id="res-wheat">0</span>
+                    </div>
+                    <div class="res-item" title="Mehl">
+                        <span class="res-icon">🥡</span>
+                        <span class="res-val" id="res-flour">0</span>
+                    </div>
+                    <div class="res-item" title="Brot (Sehr nahrhaft)">
+                        <span class="res-icon">🍞</span>
+                        <span class="res-val" id="res-bread">0</span>
+                    </div>
+                    <div class="res-item" title="Fleisch">
+                        <span class="res-icon">🥩</span>
+                        <span class="res-val" id="res-meat">0</span>
+                    </div>
+                    <div class="res-item" title="Äpfel">
+                        <span class="res-icon">🍎</span>
+                        <span class="res-val" id="res-apple">0</span>
+                    </div>
+                </div>
             </div>
+
             <div class="res-group">
-                <span>⚔️ <span id="res-weapon">0</span></span>
-                <span>🛡️ <span id="res-soldier">0</span></span>
-                <span>❤️ <span id="res-pop">0</span></span>
+                <div class="res-label">Das Reich</div>
+                <div class="res-items">
+                    <div class="res-item" title="Waffen">
+                        <span class="res-icon">⚔️</span>
+                        <span class="res-val" id="res-weapon">0</span>
+                    </div>
+                    <div class="res-item" title="Soldaten">
+                        <span class="res-icon">🛡️</span>
+                        <span class="res-val" id="res-soldier">0</span>
+                    </div>
+                    <div class="res-item" title="Beliebtheit">
+                        <span class="res-icon">❤️</span>
+                        <span class="res-val pop-val" id="res-pop">0</span>
+                    </div>
+                </div>
             </div>
         </div>
     </header>
@@ -223,39 +360,41 @@
 
             <h2>Nahrungskette</h2>
             <div class="btn-group">
-                <button onclick="Game.build('farm_apple')">Apfelgarten <span class="cost">30💰 10🌲</span></button>
-                <button onclick="Game.build('hunter')">Jägerstand <span class="cost">20💰 5🌲</span></button>
-                <button onclick="Game.build('farm_wheat')">Getreidefarm <span class="cost">40💰 10🌲</span></button>
-                <button onclick="Game.build('mill')">Mühle <span class="cost">80💰 30🌲 10🧱</span></button>
-                <button onclick="Game.build('bakery')">Bäckerei <span class="cost">60💰 20🌲</span></button>
+                <button onclick="Game.build('farm_apple')" class="food">Apfelgarten <span class="cost">30💰 10🌲</span></button>
+                <button onclick="Game.build('hunter')" class="food">Jägerstand <span class="cost">20💰 5🌲</span></button>
+                <button onclick="Game.build('farm_wheat')" class="food">Getreidefarm <span class="cost">40💰 10🌲</span></button>
+                <button onclick="Game.build('mill')" class="food">Mühle <span class="cost">80💰 30🌲 10🧱</span></button>
+                <button onclick="Game.build('bakery')" class="food">Bäckerei <span class="cost">60💰 20🌲</span></button>
             </div>
 
             <h2>Militär & Waffen</h2>
             <div class="btn-group">
                 <button onclick="Game.build('weaponsmith')" class="military">Waffenschmiede <span class="cost">100💰 20🧱</span></button>
                 <button onclick="Game.build('barracks')" class="military">Kaserne <span class="cost">150💰 50🧱</span></button>
-                <button onclick="Game.recruit()" class="military" id="btn-recruit">Soldat ausbilden <span class="cost">10💰 1⚔️ 1🧑</span></button>
+                <button onclick="Game.recruit()" class="military" id="btn-recruit">Soldat <span class="cost">10💰 1⚔️</span></button>
             </div>
         </aside>
 
         <section id="log-area"></section>
 
         <aside class="right">
-            <h2>Status</h2>
-            <div class="stat-row"><strong>Tag:</strong> <span id="stat-day">1</span></div>
-            <div class="stat-row"><strong>Bevölkerung:</strong> <span id="stat-pop">0/0</span></div>
-            <div class="stat-row"><strong>Beliebtheit:</strong> <span id="stat-popularity">100</span></div>
+            <h2>Statusbericht</h2>
+            <div class="stat-row"><strong>Tag:</strong> <span id="stat-day" style="font-size:1.2rem; font-weight:bold;">1</span></div>
+            <div class="stat-row"><strong>Bewohner:</strong> <span id="stat-pop">0/0</span></div>
+            <div class="stat-row"><strong>Steuersatz:</strong> <span id="stat-tax">0</span></div>
             
+            <br>
             <h2>Gebäude</h2>
             <div class="stat-row">Holz/Stein/Eisen: <span id="count-basic">0/0/0</span></div>
             <div class="stat-row">Nahrungsbetriebe: <span id="count-food">0</span></div>
             <div class="stat-row">Militärgebäude: <span id="count-mil">0</span></div>
 
             <br>
-            <div style="background: #ddd; height: 1px; margin: 10px 0;"></div>
-            <button onclick="Game.changeTax(1)">Steuern +</button>
-            <div style="text-align:center; margin: 5px;">Satz: <span id="stat-tax">0</span></div>
-            <button onclick="Game.changeTax(-1)">Steuern -</button>
+            <h2>Verwaltung</h2>
+            <div class="btn-group">
+                <button onclick="Game.changeTax(1)">Steuern erhöhen</button>
+                <button onclick="Game.changeTax(-1)">Steuern senken</button>
+            </div>
         </aside>
     </main>
 </div>
@@ -263,8 +402,8 @@
 <script>
 /* --- KONFIGURATION --- */
 const Config = {
-    tickRate: 2000, 
-    combatStartDay: 15, // Ab Tag 15 können Angriffe passieren
+    tickRate: 5000, // JETZT: 5 Sekunden pro Tag (langsamer)
+    combatStartDay: 15,
     buildings: {
         woodcutter: { costG: 15, costW: 0, costS: 0, name: "Holzfäller" },
         quarry:     { costG: 50, costW: 20, costS: 0, name: "Steinbruch" },
@@ -303,153 +442,130 @@ const State = {
         weaponsmith: 0, barracks: 0
     },
 
-    // Tutorial Flags
     flags: { seenCombat: false, seenStarvation: false }
 };
 
 /* --- LOGIK --- */
 const Game = {
     init: function() {
-        UI.log("Euer Gnaden, die Burg ist bereit. Baut die Wirtschaft auf!", "important");
+        UI.log("Willkommen, Sire! Das Tempo ist nun gemächlich (5s pro Tag).", "important");
         UI.update();
+        // Loop Start
         setInterval(() => { if(!State.paused) this.tick(); }, Config.tickRate);
     },
 
     tick: function() {
         State.day++;
 
-        // 1. BASIS PRODUKTION (Rohstoffe)
-        const woodAdd = State.b.woodcutter * 2;
-        const stoneAdd = State.b.quarry * 1;
-        const ironAdd = State.b.ironmine * 1;
-        
-        State.wood += woodAdd;
-        State.stone += stoneAdd;
-        State.iron += ironAdd;
+        // 1. Produktion
+        State.wood += State.b.woodcutter * 2;
+        State.stone += State.b.quarry * 1;
+        State.iron += State.b.ironmine * 1;
 
-        // 2. NAHRUNGSKETTEN (Verarbeitung)
-        // Apfel & Fleisch (Direkt)
+        // 2. Nahrungskette
         State.apple += State.b.farm_apple * 3;
         State.meat += State.b.hunter * 2;
-        
-        // Weizen -> Mehl -> Brot
-        State.wheat += State.b.farm_wheat * 2; // Weizen produzieren
+        State.wheat += State.b.farm_wheat * 2;
 
-        // Mühle: Wandelt Weizen in Mehl (Ratio 1:2)
+        // Mühle
         let millCapacity = State.b.mill * 2; 
         let wheatProcessed = Math.min(State.wheat, millCapacity);
         State.wheat -= wheatProcessed;
         State.flour += (wheatProcessed * 2);
 
-        // Bäcker: Wandelt Mehl in Brot (Ratio 1:3 - sehr effizient!)
+        // Bäcker
         let bakeCapacity = State.b.bakery * 2;
         let flourProcessed = Math.min(State.flour, bakeCapacity);
         State.flour -= flourProcessed;
         let breadBaked = flourProcessed * 3;
         State.bread += breadBaked;
 
-        if(breadBaked > 0) UI.log(`Bäcker haben ${flourProcessed} Mehl zu ${breadBaked} Brot gebacken.`, "economy");
+        if(breadBaked > 0) UI.log(`Bäcker backen ${breadBaked} Brot aus Mehl.`, "economy");
 
-        // 3. WAFFENKETTE
-        // Schmiede: Eisen -> Waffen (Ratio 1:1)
+        // 3. Waffen
         let smithCapacity = State.b.weaponsmith;
         let ironProcessed = Math.min(State.iron, smithCapacity);
         State.iron -= ironProcessed;
         State.weapons += ironProcessed;
-        if(ironProcessed > 0) UI.log(`Schmiede haben ${ironProcessed} Waffen hergestellt.`, "economy");
+        if(ironProcessed > 0) UI.log(`Schmiede fertigen ${ironProcessed} Waffen.`, "economy");
 
-        // 4. VERBRAUCH & BEVÖLKERUNG
+        // 4. Verbrauch
         this.handleConsumption();
 
-        // 5. STEUERN
+        // 5. Steuern
         if(State.tax > 0) {
             State.gold += (State.population * State.tax);
             State.popularity -= (State.tax * 2);
         }
 
-        // 6. KAMPF (Zufall)
+        // 6. Kampf
         this.checkCombat();
 
         UI.update();
     },
 
     handleConsumption: function() {
-        let needed = State.population; // Jeder isst 1 Einheit
+        let needed = State.population;
         let eaten = 0;
         
-        // Priorität beim Essen: Brot (bringt Bonus) > Fleisch > Apfel
-        // Einfache Logik: Erst Brot essen, dann Fleisch, dann Äpfel
-        
-        // Brot essen
+        // Reihenfolge: Brot -> Fleisch -> Apfel
         let breadEat = Math.min(State.bread, needed);
-        State.bread -= breadEat;
-        needed -= breadEat;
-        eaten += breadEat;
+        State.bread -= breadEat; needed -= breadEat; eaten += breadEat;
 
-        // Fleisch essen
         let meatEat = Math.min(State.meat, needed);
-        State.meat -= meatEat;
-        needed -= meatEat;
-        eaten += meatEat;
+        State.meat -= meatEat; needed -= meatEat; eaten += meatEat;
 
-        // Äpfel essen
         let appleEat = Math.min(State.apple, needed);
-        State.apple -= appleEat;
-        needed -= appleEat;
-        eaten += appleEat;
+        State.apple -= appleEat; needed -= appleEat; eaten += appleEat;
 
-        // Hunger?
         if (needed > 0) {
-            UI.log(`Hungersnot! ${needed} Bürger haben nichts gegessen!`, "combat");
+            UI.log(`Hunger! ${needed} Siedler essen nichts.`, "combat");
             State.popularity -= 10;
-            // Tutorial Check
             if(!State.flags.seenStarvation) {
-                UI.showModal("Hungersnot!", "Sire, Euer Volk hungert! Baut Äpfelgärten für schnelle Nahrung oder Mühlen für effizientes Brot.");
+                UI.showModal("Hungersnot!", "Sire, Euer Volk verhungert! Baut Äpfelgärten (schnell) oder Getreidefarmen (effizient).");
                 State.flags.seenStarvation = true;
             }
         } else {
-            // Wenn alle satt sind und Brot dabei war -> Bonus
+            // Brot Bonus
             if (breadEat > 0) State.popularity += 1; 
         }
 
-        // Wachstum
+        // Bevölkerungswachstum
         if (State.popularity > 70 && State.population < State.maxPop && eaten >= State.population) {
-            if(Math.random() > 0.7) {
+            if(Math.random() > 0.6) { // Etwas höhere Chance wegen langsamerem Tick
                 State.population++;
-                UI.log("Ein neuer Siedler zieht in die Burg.", "important");
+                UI.log("Ein neuer Siedler ist angekommen.", "important");
             }
         }
-        // Tod durch Unbeliebtheit
+        
         if (State.popularity < 20 && State.population > 0) {
             State.population--;
-            UI.log("Ein Bürger verlässt wütend die Burg.", "combat");
-            State.popularity = 30; // Reset damit nicht alle sofort gehen
+            UI.log("Ein Bürger flieht vor Eurer Herrschaft.", "combat");
+            State.popularity = 30;
         }
     },
 
     checkCombat: function() {
         if(State.day < Config.combatStartDay) return;
         
-        // 10% Chance pro Tag
-        if(Math.random() < 0.1) {
-            // Tutorial beim ersten Mal
+        // Da Tage länger sind, leicht erhöhte Chance pro Tag (15%)
+        if(Math.random() < 0.15) {
             if(!State.flags.seenCombat) {
                 State.paused = true;
-                UI.showModal("Zu den Waffen!", "Feinde wurden gesichtet! Eure Soldaten werden die Burg automatisch verteidigen. Wenn Ihr verliert, plündern sie Euer Gold und Vorräte.");
+                UI.showModal("Zu den Waffen!", "Feinde wurden gesichtet! Eure Soldaten werden die Burg automatisch verteidigen. Verliert ihr, wird geplündert.");
                 State.flags.seenCombat = true;
             }
 
             const enemyStrength = Math.floor(State.day * 1.5) + 5;
-            const myStrength = State.soldiers * 10; // Jeder Soldat hat 10 Stärke
+            const myStrength = State.soldiers * 10;
             
-            UI.log(`ANGRIFF! Banditen (Stärke ${enemyStrength}) greifen an!`, "combat");
+            UI.log(`ANGRIFF! Banditen (Stärke ${enemyStrength})!`, "combat");
             
             if (myStrength >= enemyStrength) {
-                UI.log(`SIEG! Eure ${State.soldiers} Soldaten haben die Feinde zurückgeschlagen.`, "important");
+                UI.log(`SIEG! Eure Truppen haben gesiegt.`, "important");
                 State.popularity += 5;
             } else {
-                UI.log(`NIEDERLAGE! Die Banditen durchbrechen die Wälle!`, "combat");
-                // Plünderung
+                UI.log(`NIEDERLAGE! Wir wurden geplündert!`, "combat");
                 State.gold = Math.floor(State.gold / 2);
                 State.bread = 0;
                 State.meat = 0;
@@ -467,30 +583,24 @@ const Game = {
             State.stone -= b.costS;
             State.b[type]++;
             if(b.capacity) State.maxPop += b.capacity;
-            UI.log(`${b.name} wurde errichtet.`, "important");
+            UI.log(`${b.name} errichtet.`, "important");
             UI.update();
         } else {
-            UI.log("Nicht genug Rohstoffe!", "combat");
+            UI.log("Zu wenig Ressourcen!", "combat");
         }
     },
 
     recruit: function() {
-        if (State.b.barracks === 0) {
-            UI.log("Ihr braucht eine Kaserne!", "combat");
-            return;
-        }
-        // Kosten: 10 Gold, 1 Waffe, 1 freier Bauer (Pop > Soldiers + WorkerPlaceholder)
-        // Wir vereinfachen: Man braucht nur "Population"
+        if (State.b.barracks === 0) { UI.log("Kaserne benötigt!", "combat"); return; }
+        
         if (State.gold >= 10 && State.weapons >= 1 && State.population > State.soldiers + 1) {
             State.gold -= 10;
             State.weapons -= 1;
             State.soldiers++;
-            // Ein Bauer wird zum Soldat (wir ziehen Population nicht ab, aber er arbeitet nicht mehr? 
-            // In diesem einfachen Modell bleibt er Pop, zählt aber als Verteidiger)
-            UI.log("Ein neuer Soldat steht bereit!", "important");
+            UI.log("Soldat rekrutiert.", "important");
             UI.update();
         } else {
-            UI.log("Fehlende Mittel (Gold, Waffen oder freie Bauern).", "combat");
+            UI.log("Fehlt: Gold, Waffen oder Siedler.", "combat");
         }
     },
 
@@ -507,36 +617,37 @@ const UI = {
         const area = document.getElementById('log-area');
         const div = document.createElement('div');
         div.className = `log-entry ${type}`;
-        div.innerText = `Tag ${State.day}: ${text}`;
+        div.innerHTML = `<strong>Tag ${State.day}:</strong> ${text}`;
         area.appendChild(div);
         area.scrollTop = area.scrollHeight;
     },
 
     update: function() {
         const s = State;
-        // Ressourcen
-        document.getElementById('res-gold').innerText = Math.floor(s.gold);
-        document.getElementById('res-wood').innerText = Math.floor(s.wood);
-        document.getElementById('res-stone').innerText = Math.floor(s.stone);
-        document.getElementById('res-iron').innerText = Math.floor(s.iron);
-        
-        document.getElementById('res-wheat').innerText = Math.floor(s.wheat);
-        document.getElementById('res-flour').innerText = Math.floor(s.flour);
-        document.getElementById('res-bread').innerText = Math.floor(s.bread);
-        document.getElementById('res-meat').innerText = Math.floor(s.meat);
-        document.getElementById('res-apple').innerText = Math.floor(s.apple);
-        
-        document.getElementById('res-weapon').innerText = Math.floor(s.weapons);
-        document.getElementById('res-soldier').innerText = s.soldiers;
-        document.getElementById('res-pop').innerText = Math.floor(s.popularity);
+        // Helper Funktion für DOM Updates
+        const set = (id, val) => document.getElementById(id).innerText = Math.floor(val);
 
-        // Status Sidebar
+        set('res-gold', s.gold);
+        set('res-wood', s.wood);
+        set('res-stone', s.stone);
+        set('res-iron', s.iron);
+        
+        set('res-wheat', s.wheat);
+        set('res-flour', s.flour);
+        set('res-bread', s.bread);
+        set('res-meat', s.meat);
+        set('res-apple', s.apple);
+        
+        set('res-weapon', s.weapons);
+        set('res-soldier', s.soldiers);
+        set('res-pop', s.popularity);
+
+        // Sidebar Status
         document.getElementById('stat-day').innerText = s.day;
         document.getElementById('stat-pop').innerText = `${s.population} / ${s.maxPop}`;
-        document.getElementById('stat-popularity').innerText = s.popularity;
         document.getElementById('stat-tax').innerText = s.tax;
 
-        // Gebäude Counts
+        // Counts
         document.getElementById('count-basic').innerText = `${s.b.woodcutter} / ${s.b.quarry} / ${s.b.ironmine}`;
         document.getElementById('count-food').innerText = (s.b.farm_apple + s.b.hunter + s.b.farm_wheat + s.b.bakery);
         document.getElementById('count-mil').innerText = (s.b.weaponsmith + s.b.barracks);
