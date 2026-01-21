@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Burgherr V7 - Fixed & Polished</title>
+    <title>Burgherr V8 - Final Fix</title>
     <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=MedievalSharp&display=swap" rel="stylesheet">
     
     <style>
         :root {
             --bg-body: #1a1a1a; 
             --scroll-bg: #fdf5e6;
-            --scroll-border: #8b5a2b;
-            --primary: #5d4037; 
+            --scroll-border: #5d4037;
+            --primary: #3e2723; 
             --accent: #d32f2f; 
             --highlight: #ffb300;
             --text-dark: #3e2723;
@@ -20,39 +20,41 @@
         * { box-sizing: border-box; user-select: none; }
         body { font-family: 'Lato', sans-serif; background: var(--bg-body); color: #fff; margin: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
 
-        /* --- HEADER --- */
+        /* HEADER */
         header { 
-            background: #2d2d2d; height: 100px; flex-shrink: 0;
+            background: #222; height: 100px; flex-shrink: 0;
             display: flex; align-items: center; justify-content: space-between; 
-            padding: 0 15px; border-bottom: 2px solid #444;
+            padding: 0 20px; border-bottom: 2px solid #444;
         }
         
-        .header-info { display: flex; flex-direction: column; width: 250px; }
-        .level-display { font-family: 'MedievalSharp'; font-size: 1.4rem; color: var(--highlight); margin-bottom: 2px; }
-        .objective { font-size: 0.75rem; color: #ccc; background: rgba(0,0,0,0.3); padding: 4px; border-radius: 4px; border-left: 3px solid var(--highlight); }
-        .obj-item { display: inline-block; margin-right: 8px; }
+        .header-info { width: 300px; }
+        .level-title { font-family: 'MedievalSharp'; font-size: 1.5rem; color: var(--highlight); margin-bottom: 5px; }
+        .objective-box { 
+            background: rgba(255,255,255,0.1); padding: 5px 10px; border-radius: 4px; 
+            border-left: 3px solid var(--highlight); font-size: 0.8rem; color: #ddd;
+        }
         .obj-done { color: #81c784; text-decoration: line-through; opacity: 0.6; }
 
-        .res-bar { display: flex; gap: 8px; flex:1; justify-content: flex-end; }
+        .res-bar { display: flex; gap: 10px; flex:1; justify-content: flex-end; }
         .res-box { 
-            background: rgba(0,0,0,0.5); border: 1px solid #555; border-radius: 4px; 
-            padding: 3px 6px; min-width: 60px; text-align: center; position: relative;
+            background: #333; border: 1px solid #555; border-radius: 4px; 
+            padding: 4px 8px; min-width: 70px; text-align: center; position: relative;
         }
-        .res-label { font-size: 0.55rem; text-transform: uppercase; color: #999; border-bottom: 1px solid #444; display: block; margin-bottom: 2px;}
-        .res-row { font-size: 0.85rem; font-weight: bold; display: flex; gap: 8px; justify-content: center; }
+        .res-label { font-size: 0.6rem; text-transform: uppercase; color: #aaa; border-bottom: 1px solid #555; display: block; margin-bottom: 3px;}
+        .res-row { font-size: 0.9rem; font-weight: bold; display: flex; gap: 10px; justify-content: center; }
         
-        /* HOVER TOOLTIP (Wieder da!) */
+        /* TOOLTIP */
         .tooltip { 
-            visibility: hidden; opacity: 0; position: absolute; top: 100%; right: 0; 
-            background: #222; border: 1px solid #666; padding: 10px; border-radius: 4px; 
-            width: 180px; z-index: 100; text-align: left; transition: 0.2s; pointer-events: none;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.5); margin-top: 5px;
+            visibility: hidden; opacity: 0; position: absolute; top: 100%; right: 0; margin-top:5px;
+            background: #222; border: 1px solid #777; padding: 10px; border-radius: 4px; 
+            width: 200px; z-index: 999; text-align: left; transition: 0.2s; pointer-events: none;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.8);
         }
         .res-box:hover .tooltip { visibility: visible; opacity: 1; }
         .tt-row { display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 2px; }
-        .tt-val.pos { color: #81c784; } .tt-val.neg { color: #e57373; }
+        .val-pos { color: #81c784; } .val-neg { color: #e57373; }
 
-        /* --- MAIN --- */
+        /* MAIN */
         main { display: flex; flex: 1; overflow: hidden; position: relative; }
 
         #village-map {
@@ -60,85 +62,121 @@
             position: relative; overflow: hidden; display: flex; flex-wrap: wrap; align-content: flex-start; gap: 5px; padding: 20px;
             box-shadow: inset 0 0 100px rgba(0,0,0,0.8);
         }
-        .map-icon { font-size: 1.8rem; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.1); border-radius: 5px; animation: pop 0.3s; cursor: default; }
-        .map-icon:hover { background: rgba(255,255,255,0.3); transform: scale(1.1); }
+        .map-icon { 
+            font-size: 2rem; width: 60px; height: 60px; 
+            display: flex; align-items: center; justify-content: center; 
+            background: rgba(255,255,255,0.15); border-radius: 8px; 
+            border: 1px solid rgba(255,255,255,0.2);
+            animation: pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: default; 
+        }
         @keyframes pop { from{transform:scale(0)} to{transform:scale(1)} }
 
         aside.right { 
-            width: 320px; background: #d7ccc8; color: var(--text-dark);
-            border-left: 4px solid var(--scroll-border); display: flex; flex-direction: column; 
+            width: 340px; background: #d7ccc8; color: var(--text-dark);
+            border-left: 5px solid var(--scroll-border); display: flex; flex-direction: column; 
         }
         
-        .log-area { flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 5px; background: rgba(255,255,255,0.3); }
-        .log-card { background: #fff; padding: 6px; border-radius: 4px; font-size: 0.8rem; border-left: 4px solid #aaa; box-shadow: 0 1px 2px rgba(0,0,0,0.1); flex-shrink: 0; }
+        .log-area { flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 6px; background: rgba(0,0,0,0.05); }
+        
+        .log-card { 
+            background: #fff; padding: 8px; border-radius: 4px; font-size: 0.85rem; 
+            border-left: 4px solid #aaa; box-shadow: 0 1px 2px rgba(0,0,0,0.1); flex-shrink: 0; 
+        }
         .log-card.report { border-color: #558b2f; background: #f1f8e9; }
         .log-card.error { border-color: #d32f2f; background: #ffebee; font-weight: bold; }
         .log-card.info { border-color: #ffb300; }
+        
+        .log-header { font-size: 0.7rem; color: #666; border-bottom: 1px dashed #ccc; margin-bottom: 4px; display: flex; justify-content: space-between; }
+        .log-line { display: flex; justify-content: space-between; margin-bottom: 2px; }
+        .log-val { font-weight: bold; }
+        .c-green { color: #2e7d32; } .c-red { color: #c62828; }
 
         .controls-area { padding: 10px; background: #bcaaa4; border-top: 2px solid var(--primary); }
         .btn-row { display: flex; gap: 5px; margin-bottom: 5px; }
-        .ctrl-btn { flex: 1; padding: 8px; border: 1px solid #5d4037; background: #efebe9; font-weight: bold; cursor: pointer; border-radius: 3px; font-size: 0.8rem; }
+        .ctrl-btn { flex: 1; padding: 10px; border: 1px solid #5d4037; background: #efebe9; font-weight: bold; cursor: pointer; border-radius: 4px; font-size: 0.85rem; box-shadow: 0 2px 0 #8d6e63; }
+        .ctrl-btn:active { transform: translateY(2px); box-shadow: none; }
         .ctrl-btn:hover { background: #fff; }
 
-        /* --- FOOTER --- */
+        /* FOOTER (STRONGHOLD STYLE) */
         footer {
-            height: 150px; background: var(--scroll-bg); border-top: 5px solid var(--scroll-border);
+            height: 160px; background: var(--scroll-bg); border-top: 6px solid var(--scroll-border);
             display: flex; align-items: center; padding: 0 15px; flex-shrink: 0; z-index: 20;
             background-image: url('https://www.transparenttextures.com/patterns/aged-paper.png');
             color: var(--text-dark);
         }
 
-        .category-bar { display: flex; gap: 5px; padding-right: 15px; border-right: 2px solid #c5afa0; margin-right: 10px; flex-wrap: wrap; width: 130px; justify-content: center; }
-        .cat-icon { width: 35px; height: 35px; background: #8d6e63; color: #fff; border: 2px solid #5d4037; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; cursor: pointer; }
-        .cat-icon:hover { transform: translateY(-2px); background: #a1887f; }
-        .cat-icon.selected { background: var(--highlight); color: #000; border-color: #fff; }
-
-        .building-scroll { display: flex; overflow-x: auto; gap: 10px; align-items: center; height: 100%; padding-bottom: 5px; flex: 1; }
-        .build-item {
-            min-width: 75px; height: 95px; display: flex; flex-direction: column; align-items: center; 
-            justify-content: center; cursor: pointer; position: relative;
-            background: rgba(0,0,0,0.05); border-radius: 6px; padding: 4px; transition: 0.2s; border: 1px solid transparent;
+        .cat-bar { 
+            display: flex; gap: 5px; padding-right: 20px; border-right: 2px solid #c5afa0; 
+            margin-right: 15px; flex-wrap: wrap; width: 150px; justify-content: center; 
         }
-        .build-item:hover { background: rgba(0,0,0,0.1); transform: scale(1.05); border-color: #8b5a2b; }
-        .build-count { position: absolute; top: -5px; right: -5px; background: var(--accent); color: #fff; font-size: 0.7rem; padding: 1px 5px; border-radius: 10px; font-weight: bold; box-shadow: 1px 1px 2px rgba(0,0,0,0.3); }
-        
+        .cat-icon { 
+            width: 40px; height: 40px; background: #8d6e63; color: #fff; 
+            border: 2px solid #5d4037; border-radius: 4px; display: flex; 
+            align-items: center; justify-content: center; font-size: 1.2rem; 
+            cursor: pointer; box-shadow: 2px 2px 0 rgba(0,0,0,0.3);
+        }
+        .cat-icon:hover { transform: translateY(-2px); background: #a1887f; }
+        .cat-icon.active { background: var(--highlight); color: #000; border-color: #fff; }
+
+        .build-bar { display: flex; overflow-x: auto; gap: 10px; align-items: center; height: 100%; padding-bottom: 5px; flex: 1; }
+        .b-item {
+            min-width: 85px; height: 110px; display: flex; flex-direction: column; align-items: center; 
+            justify-content: center; cursor: pointer; position: relative;
+            background: rgba(0,0,0,0.05); border-radius: 6px; padding: 4px; 
+            transition: 0.2s; border: 1px solid transparent;
+        }
+        .b-item:hover { background: rgba(0,0,0,0.1); transform: scale(1.05); border-color: #8b5a2b; }
+        .b-count { position: absolute; top: 0; right: 0; background: var(--accent); color: #fff; font-size: 0.75rem; padding: 1px 6px; border-radius: 4px; font-weight: bold; box-shadow: 1px 1px 2px rgba(0,0,0,0.3); }
+        .b-ico { font-size: 2rem; margin-bottom: 2px; }
+        .b-name { font-size: 0.7rem; font-weight: bold; text-align: center; line-height: 1.1; margin-bottom: 2px;}
+        .b-cost { font-size: 0.65rem; color: #666; text-align: center; }
+
+        /* MODALS */
         .modal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.85); z-index: 100; justify-content: center; align-items: center; }
-        .modal-box { background: var(--scroll-bg); padding: 20px; width: 500px; border: 4px solid var(--scroll-border); border-radius: 8px; text-align: center; color: var(--text-dark); }
+        .modal-box { background: var(--scroll-bg); padding: 25px; width: 500px; border: 4px solid var(--scroll-border); border-radius: 8px; text-align: center; color: var(--text-dark); position:relative; max-height: 90vh; overflow-y:auto;}
         
-        .list-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; text-align: left; max-height: 400px; overflow-y: auto; margin-top: 10px; }
-        .trade-row { background: rgba(255,255,255,0.6); padding: 5px; border: 1px solid #ccc; display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; }
+        .list-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; text-align: left; margin-top: 15px; }
+        .trade-row { background: rgba(255,255,255,0.6); padding: 6px; border: 1px solid #ccc; display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem; border-radius: 4px;}
+        
+        .trade-btn { background: #eee; border: 1px solid #999; cursor: pointer; padding: 2px 8px; font-weight: bold; border-radius: 3px; font-size: 0.8rem;}
+        .trade-btn:hover { background: var(--highlight); }
+
+        #pause-overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 5rem; color: rgba(255,255,255,0.2); font-family: 'MedievalSharp'; pointer-events: none; z-index: 50; display: none; transform: rotate(-10deg); text-shadow: 0 0 20px #000; }
     </style>
 </head>
 <body>
 
-<div id="recruit-modal" class="modal">
+<div id="particles"></div>
+<div id="pause-overlay">PAUSIERT</div>
+
+<div id="modal-info" class="modal">
     <div class="modal-box">
-        <h2 style="margin:0">Rekrutierung</h2>
-        <div id="recruit-list" class="list-grid"></div>
-        <button onclick="UI.toggleRecruit(false)" class="ctrl-btn" style="margin-top:15px;">Schließen</button>
+        <h2 id="info-title" style="margin:0 0 10px 0; font-family:'MedievalSharp'">Nachricht</h2>
+        <p id="info-text" style="font-size:1.1rem">Text</p>
+        <button onclick="UI.closeInfo()" class="ctrl-btn" style="margin-top:20px; width:100%; background:var(--highlight);">Verstanden</button>
     </div>
 </div>
 
-<div id="market-modal" class="modal">
+<div id="modal-market" class="modal">
     <div class="modal-box">
-        <h2 style="margin:0">Marktplatz</h2>
+        <h2 style="margin:0; font-family:'MedievalSharp'">Marktplatz</h2>
         <div id="market-list" class="list-grid"></div>
-        <button onclick="UI.toggleMarket(false)" class="ctrl-btn" style="margin-top:15px;">Schließen</button>
+        <button onclick="UI.toggleMarket(false)" class="ctrl-btn" style="margin-top:20px; width:100%;">Schließen</button>
     </div>
 </div>
 
-<div id="msg-modal" class="modal">
+<div id="modal-recruit" class="modal">
     <div class="modal-box">
-        <h2 id="msg-title">Titel</h2>
-        <p id="msg-text">Text</p>
-        <button onclick="Game.closeMsg()" class="ctrl-btn" style="margin-top:15px; background:var(--highlight);">Weiter</button>
+        <h2 style="margin:0; font-family:'MedievalSharp'">Kaserne</h2>
+        <div id="recruit-list" class="list-grid"></div>
+        <button onclick="UI.toggleRecruit(false)" class="ctrl-btn" style="margin-top:20px; width:100%;">Schließen</button>
     </div>
 </div>
 
 <header>
     <div class="header-info">
-        <div class="level-display" id="level-title">Level 1</div>
-        <div class="objective" id="objective-text">Lade Daten...</div>
+        <div class="level-title" id="level-title">Level 1</div>
+        <div class="objective-box" id="objective-text">Lade Ziele...</div>
     </div>
     
     <div class="res-bar">
@@ -147,7 +185,7 @@
             <div class="res-row">💰 <span id="r-gold">0</span></div>
         </div>
         <div class="res-box">
-            <span class="res-label">Material</span>
+            <span class="res-label">Lager</span>
             <div class="res-row">
                 <span title="Holz">🌲<span id="r-wood">0</span></span>
                 <span title="Stein">🧱<span id="r-stone">0</span></span>
@@ -168,17 +206,16 @@
                 <span title="Brot">🍞<span id="r-bread">0</span></span>
                 <span title="Fleisch">🥩<span id="r-meat">0</span></span>
                 <span title="Äpfel">🍎<span id="r-apple">0</span></span>
+                <span title="Käse">🧀<span id="r-cheese">0</span></span>
             </div>
         </div>
         <div class="res-box">
             <span class="res-label">Volk & Moral</span>
             <div class="res-row">
                 <span title="Bürger">👨‍🌾 <span id="r-pop">0</span></span>
-                <span title="Beliebtheit" style="cursor:help">❤️ <span id="r-hap">0</span></span>
+                <span title="Beliebtheit">❤️ <span id="r-hap">0</span></span>
             </div>
-            <div class="tooltip" id="hap-tooltip">
-                Lade Details...
-            </div>
+            <div class="tooltip" id="hap-tooltip">Lade Details...</div>
         </div>
     </div>
 </header>
@@ -187,76 +224,84 @@
     <div id="village-map"></div>
 
     <aside class="right">
-        <div style="background:#bcaaa4; padding:5px; font-weight:bold; text-align:center; font-size:0.8rem;">
-            Tag <span id="game-day">1</span> <span id="pause-indicator" style="color:red; display:none;">(PAUSIERT)</span>
+        <div style="background:#bcaaa4; padding:5px; font-weight:bold; text-align:center; font-size:0.8rem; border-bottom:1px solid #8d6e63;">
+            Tag <span id="game-day">1</span>
         </div>
         <div class="log-area" id="game-log"></div>
         
         <div class="controls-area">
             <div class="btn-row">
-                <button class="ctrl-btn" onclick="UI.toggleRecruit(true)">🛡️ Armee</button>
+                <button class="ctrl-btn" onclick="UI.toggleRecruit(true)">🛡️ Rekrutieren</button>
                 <button class="ctrl-btn" onclick="UI.toggleMarket(true)">⚖️ Markt</button>
             </div>
             
-            <div style="font-size:0.8rem; margin:5px 0; background:rgba(255,255,255,0.5); padding:4px;">
+            <div style="font-size:0.8rem; margin:5px 0; background:rgba(255,255,255,0.5); padding:4px; border-radius:4px;">
                 <strong>Steuern:</strong> <span id="tax-disp">Keine</span>
-                <div style="display:flex; gap:5px; margin-top:2px;">
-                    <button class="ctrl-btn" style="padding:2px;" onclick="Game.tax(-1)">-</button>
-                    <button class="ctrl-btn" style="padding:2px;" onclick="Game.tax(1)">+</button>
+                <div style="display:flex; gap:5px; margin-top:4px;">
+                    <button class="ctrl-btn" style="padding:4px;" onclick="Game.tax(-1)">-</button>
+                    <button class="ctrl-btn" style="padding:4px;" onclick="Game.tax(1)">+</button>
                 </div>
             </div>
 
-            <div style="border-top:1px dashed #555; padding-top:5px; margin-top:5px; font-size:0.75rem;">System</div>
+            <div style="border-top:1px dashed #555; padding-top:5px; margin-top:5px; font-size:0.75rem; color:#555;">System</div>
             <div class="btn-row">
                 <button class="ctrl-btn" onclick="Game.togglePause()">⏯️</button>
                 <button class="ctrl-btn" onclick="Game.save()">💾</button>
                 <button class="ctrl-btn" onclick="Game.load()">📂</button>
-                <button class="ctrl-btn" onclick="Game.reset()" style="background:#ffcdd2;">❌</button>
+                <button class="ctrl-btn" onclick="Game.reset()" style="background:#ffcdd2;">Reset</button>
             </div>
         </div>
     </aside>
 </main>
 
 <footer>
-    <div class="category-bar">
+    <div class="cat-bar">
         <div class="cat-icon selected" onclick="UI.setCat('burg')" title="Burg">🏰</div>
-        <div class="cat-icon" onclick="UI.setCat('werk')" title="Industrie">🔨</div>
+        <div class="cat-icon" onclick="UI.setCat('werk')" title="Werkstätten">🔨</div>
         <div class="cat-icon" onclick="UI.setCat('farm')" title="Farmen">🍎</div>
         <div class="cat-icon" onclick="UI.setCat('stadt')" title="Stadt">🏠</div>
         <div class="cat-icon" onclick="UI.setCat('waffen')" title="Waffen">⚔️</div>
-        <div class="cat-icon" onclick="UI.setCat('nahrung')" title="Verarbeitung">🍞</div>
+        <div class="cat-icon" onclick="UI.setCat('nahrung')" title="Nahrung">🍞</div>
     </div>
-
-    <div class="building-scroll" id="build-list"></div>
+    <div class="build-bar" id="build-list"></div>
 </footer>
 
 <script>
 /* DATEN */
+// Übersetzungen (Safe List)
 const Labels = {
-    wood:"Holz", stone:"Stein", iron:"Eisen", pitch:"Pech", wheat:"Weizen", flour:"Mehl", hops:"Hopfen",
-    meat:"Fleisch", apple:"Äpfel", cheese:"Käse", bread:"Brot", beer:"Bier",
+    gold:"Gold", wood:"Holz", stone:"Stein", iron:"Eisen", pitch:"Pech",
+    wheat:"Weizen", flour:"Mehl", hops:"Hopfen",
+    bread:"Brot", meat:"Fleisch", apple:"Äpfel", cheese:"Käse", beer:"Bier",
     bow:"Bogen", spear:"Speer", sword:"Schwert", armor:"Rüstung", leather:"Harnisch",
-    gold:"Gold", pop:"Einwohner", soldiers:"Soldaten", cath:"Kathedrale", tower:"Wachturm"
+    pop:"Einwohner", soldiers:"Soldaten", mercs:"Söldner",
+    cath:"Kathedrale", tower:"Wachturm"
 };
 
+// Fallback Helper um "undefined" zu vermeiden
+const T = (key) => Labels[key] || key;
+
 const Levels = [
-    { id: 1, title: "Die Gründung", intro: "Willkommen, Sire! Baut Holzfäller und Hütten.", goal: { wood: 50, pop: 10 }, start: { gold:100, wood:20, food:20 } },
-    { id: 2, title: "Stein & Brot", intro: "Wir brauchen Steinbrüche (mit Ochsen) und Brot.", goal: { bread: 30, stone: 20 }, start: { gold:150, wood:50, food:30 } },
-    { id: 3, title: "Aufrüstung", intro: "Produziert Waffen für die kommende Schlacht.", goal: { bow: 5, spear: 5 }, start: { gold:200, wood:100, stone:50, food:50 } },
-    { id: 4, title: "Krieg", intro: "Bildet 10 Soldaten aus.", goal: { soldiers: 10 }, start: { gold:300, wood:100, stone:100, iron:20, food:100 } },
-    { id: 5, title: "Die Kathedrale", intro: "Das Meisterwerk.", goal: { cath: 1 }, start: { gold:1000, wood:500, stone:500, iron:100, food:200 } }
+    { id: 1, title: "Die Gründung", intro: "Willkommen, Sire! Sichert das Überleben. Baut Hütten für Einwohner und Holzfäller für Rohstoffe.", goal: { wood: 50, pop: 10 }, start: { gold:100, wood:20, food:20 } },
+    { id: 2, title: "Brot & Stein", intro: "Wir brauchen Stein für Mauern. Baut Steinbrüche (brauchen Ochsenjoch!) und eine Nahrungskette.", goal: { bread: 30, stone: 20 }, start: { gold:150, wood:50, food:30 } },
+    { id: 3, title: "Aufrüstung", intro: "Der Feind rückt näher. Produziert Bögen in der Werkstatt.", goal: { bow: 5, spear: 5 }, start: { gold:200, wood:100, stone:50, food:50 } },
+    { id: 4, title: "Krieg", intro: "Bildet 10 Soldaten in der Kaserne aus.", goal: { soldiers: 10 }, start: { gold:300, wood:100, stone:100, iron:20, food:100 } },
+    { id: 5, title: "Die Kathedrale", intro: "Das Meisterwerk. Baut die Kathedrale!", goal: { cath: 1 }, start: { gold:1000, wood:500, stone:500, iron:100, food:200 } }
 ];
 
 const Units = {
     archer: { name: "Bogenschütze", cost: 10, res: "bow", str: 5 },
     spear: { name: "Pikenier", cost: 15, res: "spear", str: 8 },
     sword: { name: "Schwertkämpfer", cost: 30, res: "sword", armor: "armor", str: 15 },
-    merc: { name: "Söldner", cost: 50, str: 10 } // Nur Gold
+    merc: { name: "Söldner", cost: 50, str: 10 }
 };
 
 const Config = {
     tick: 5000,
-    taxes: ["Keine", "Niedrig", "Mittel", "Hoch", "Grausam"],
+    taxes: [
+        {n:"Keine",g:0,h:1}, {n:"Niedrig",g:2,h:-2}, {n:"Mittel",g:4,h:-5}, 
+        {n:"Hoch",g:8,h:-12}, {n:"Grausam",g:15,h:-20}
+    ],
     buildings: {
         // BURG
         wall_w: { name:"Holzwall", cat:"burg", icon:"🪵", cost:{g:10,w:20}, def:10 },
@@ -266,7 +311,7 @@ const Config = {
         barracks: { name:"Kaserne", cat:"burg", icon:"⛺", cost:{g:150,s:20}, desc:"Rekrutierung" },
         merc_post: { name:"Söldnerlager", cat:"burg", icon:"🎪", cost:{g:500,w:100}, desc:"Söldner" },
 
-        // WERKSTATT (Hier ist jetzt das Vorratslager!)
+        // WERKSTATT (Hier ist das Vorratslager!)
         stock:  { name:"Vorratslager", cat:"werk", icon:"📦", cost:{w:20}, desc:"+50 Lager" },
         wood:   { name:"Holzfäller", cat:"werk", icon:"🪓", cost:{g:10}, prod:"wood", amt:3 },
         ox:     { name:"Ochsenjoch", cat:"werk", icon:"🐂", cost:{g:20,w:20} },
@@ -309,8 +354,8 @@ let State = {};
 
 const Game = {
     init: function() {
-        // Neuer Save-Slot "v7" erzwingt Neustart bei alten Bug-Saves
-        if(localStorage.getItem('burgherr_v7')) this.load();
+        // ZWANGSWEISE NEUER SAVE SLOT "v8" um Absturz durch alte Daten zu verhindern
+        if(localStorage.getItem('burgherr_v8')) this.load();
         else this.startLevel(1);
         
         UI.init();
@@ -321,7 +366,7 @@ const Game = {
 
     startLevel: function(lvlId) {
         let l = Levels.find(x => x.id == lvlId);
-        if(!l) return alert("Alle Level geschafft!");
+        if(!l) return UI.showMsg("ENDE", "Alle Level geschafft!");
         
         State = {
             level: lvlId, day: 1, paused: true, lastTick: Date.now(),
@@ -331,79 +376,104 @@ const Game = {
             factors: { food:0, tax:0, other:0 }
         };
         for(let k in Config.buildings) { State.b[k]=0; State.w[k]=0; }
-        // Start Buildings
-        State.b.stock = 1; State.b.granary = 1;
+        State.b.stock=1; State.b.granary=1; // Startlager
         
-        UI.showMsg(`Level ${lvlId}`, l.intro);
+        UI.showMsg(`Level ${lvlId}: ${l.title}`, l.intro);
         UI.renderMap();
         UI.update();
     },
 
     tick: function() {
         if(State.paused) return;
+        
+        // --- SAFE TICK EXECUTION ---
         try {
             State.day++;
             State.lastTick = Date.now();
-            let log = [];
+            let prodLog = [];
+            let eatLog = [];
 
-            // 1. Prod
+            // 1. LIMITS
+            let maxStock = State.b.stock * 50;
+            let maxFood = State.b.granary * 50;
+            let curStock = State.res.wood + State.res.stone + State.res.iron + State.res.wheat + State.res.flour;
+            let curFood = State.res.bread + State.res.meat + State.res.apple + State.res.cheese;
+            let fullS = curStock >= maxStock;
+            let fullF = curFood >= maxFood;
+
+            // 2. PROD
             for(let k in Config.buildings) {
                 let b = Config.buildings[k];
                 let n = State.w[k];
                 if(n <= 0) continue;
 
-                // Dependencies
                 if(b.need && State.b[b.need] < n) n = State.b[b.need]; 
 
-                // Prod
-                if(b.prod) { State.res[b.prod] += (n * (b.amt||1)); }
-                // Proc
+                // Simple Prod
+                if(b.prod) {
+                    if((['wood','stone','iron'].includes(b.prod) && !fullS) || (!['wood','stone','iron'].includes(b.prod) && !fullF)) {
+                        let amt = n * (b.amt||1);
+                        State.res[b.prod] += amt;
+                        prodLog.push(`${amt} ${T(b.prod)}`);
+                    }
+                }
+                // Processing
                 if(b.proc) {
                     let take = Math.min(State.res[b.proc], n);
-                    if(take > 0) { State.res[b.proc]-=take; State.res[b.out]+=(take*(b.ratio||1)); }
+                    if(take > 0 && !fullF) {
+                        State.res[b.proc] -= take;
+                        State.res[b.out] += (take * (b.ratio||1));
+                        prodLog.push(`${take*(b.ratio||1)} ${T(b.out)}`);
+                    }
                 }
                 // Craft
                 if(b.use) {
-                    if(State.res[b.use] >= n) { State.res[b.use]-=n; State.res[b.out]+=(n*(b.amt||1)); }
+                    if(State.res[b.use] >= n && !fullS) {
+                        State.res[b.use] -= n;
+                        State.res[b.out] += (n * (b.amt||1));
+                    }
                 }
             }
 
-            // 2. Food
+            // 3. EAT
             let eat = State.pop.curr;
             let foods = ['bread','meat','cheese','apple'];
-            let ateCount = 0;
+            let ate = 0;
             foods.forEach(f => {
-                if(eat>0 && State.res[f]>0) {
+                if(eat > 0 && State.res[f] > 0) {
                     let take = Math.min(eat, State.res[f]);
-                    State.res[f]-=take; eat-=take; ateCount++;
+                    State.res[f] -= take; eat -= take; ate += take;
+                    eatLog.push(T(f));
                 }
             });
             
             let hapChg = 0;
-            if(eat > 0) { UI.log(`${eat} hungern!`, 'error'); hapChg -= 20; }
-            else hapChg += (ateCount + 1);
-            State.factors.food = eat > 0 ? -20 : (ateCount + 1);
+            if(eat > 0) { 
+                UI.log(`${eat} Bürger hungern!`, 'error'); hapChg -= 20; 
+                State.factors.food = -20;
+            } else { 
+                hapChg += 2; 
+                State.factors.food = 2;
+            }
 
-            // 3. Tax & Beer
-            let taxVals = [2, 0, -2, -5, -15];
-            let taxGold = [-2, 0, 2, 4, 8];
-            hapChg += taxVals[State.tax];
-            State.res.gold += (State.pop.curr * taxGold[State.tax]);
-            State.factors.tax = taxVals[State.tax];
+            // Tax & Beer
+            let tConf = Config.taxes[State.tax];
+            hapChg += tConf.h;
+            State.res.gold += (State.pop.curr * tConf.g);
+            State.factors.tax = tConf.h;
 
             if(State.res.beer >= State.pop.curr && State.pop.curr > 0) {
                 State.res.beer -= State.pop.curr;
                 hapChg += 5;
-            }
+                State.factors.other = 5;
+            } else { State.factors.other = 0; }
 
-            // Church & Misc
-            let bonus = (State.b.church * 5) + (State.b.well * 2) + (State.b.inn * 3);
-            hapChg += bonus;
-            State.factors.other = bonus + (State.res.beer>=State.pop.curr ? 5 : 0);
+            // Church
+            hapChg += (State.b.church * 5);
 
             State.pop.hap = Math.max(0, Math.min(100, State.pop.hap + hapChg));
 
-            // 4. Pop
+            // 4. Pop Growth
             State.pop.max = (State.b.hovel*5) + (State.b.house*10) + 5;
             let work = 0; for(let k in State.w) work += State.w[k];
             let idle = State.pop.curr - State.pop.sold - State.pop.merc - work;
@@ -412,29 +482,35 @@ const Game = {
                 State.pop.curr++; UI.log("Bürger zugewandert", "success"); Game.autoAssign();
             } else if(State.pop.hap < 20 && State.pop.curr > 0) {
                 State.pop.curr--; UI.log("Bürger geflohen", "error");
-                // Remove random worker
                 for(let k in State.w) if(State.w[k]>0){State.w[k]--; break;}
             }
 
-            // 5. Win
+            // Log entry
+            let html = `<div class="log-header">Tag ${State.day} | Beliebtheit ${Math.floor(State.pop.hap)}</div>`;
+            if(prodLog.length) html += `<div class="log-line"><span class="c-green">Prod:</span> <span>${prodLog.join(', ')}</span></div>`;
+            if(eatLog.length) html += `<div class="log-line"><span class="c-red">Essen:</span> <span>${eatLog.length} Rationen</span></div>`;
+            UI.logHtml(html, "report");
+
+            // 5. Win Check
             let l = Levels.find(x => x.id == State.level);
             let win = true;
             for(let k in l.goal) {
                 let val = 0;
-                if(k=='pop') val = State.pop.curr;
-                else if(k=='soldiers') val = State.pop.sold + State.pop.merc;
+                if(k=='pop') val=State.pop.curr;
+                else if(k=='soldiers') val=State.pop.sold + State.pop.merc;
                 else val = State.res[k] || State.b[k] || 0;
-                
                 if(val < l.goal[k]) win = false;
             }
             if(win) {
                 State.paused = true;
-                UI.showMsg("SIEG!", "Level geschafft!", () => Game.startLevel(State.level+1));
+                UI.showMsg("SIEG!", "Ziele erreicht!", () => Game.startLevel(State.level+1));
             }
 
             UI.update();
         } catch(e) {
-            console.error(e); State.paused = true; alert("Fehler im Spielablauf. Neustart empfohlen.");
+            console.error(e);
+            State.paused = true;
+            alert("Fehler im Spielablauf! Reset empfohlen.");
         }
     },
 
@@ -480,7 +556,7 @@ const Game = {
             let u = Units[type];
             if(!u) return;
             if(State.res.gold < u.cost) return UI.log("Zu wenig Gold", "error");
-            if(u.res && State.res[u.res] < 1) return UI.log(Labels[u.res] + " fehlt!", "error");
+            if(u.res && State.res[u.res] < 1) return UI.log(T(u.res) + " fehlt!", "error");
             if(u.armor && State.res[u.armor] < 1) return UI.log("Rüstung fehlt!", "error");
 
             State.res.gold -= u.cost;
@@ -506,18 +582,18 @@ const Game = {
     },
 
     togglePause: function() { State.paused = !State.paused; UI.update(); },
-    save: function() { localStorage.setItem('burgherr_v7', JSON.stringify(State)); UI.log("Gespeichert", "info"); },
+    save: function() { localStorage.setItem('burgherr_v8', JSON.stringify(State)); UI.log("Gespeichert", "info"); },
     load: function() { 
-        let d = localStorage.getItem('burgherr_v7'); 
+        let d = localStorage.getItem('burgherr_v8'); 
         if(d) { State = JSON.parse(d); State.paused = true; UI.renderMap(); UI.update(); UI.showMsg("Geladen","Willkommen zurück"); }
     },
-    reset: function() { localStorage.removeItem('burgherr_v7'); location.reload(); },
+    reset: function() { localStorage.removeItem('burgherr_v8'); location.reload(); },
     closeMsg: function() { document.getElementById('msg-modal').style.display = 'none'; State.paused = false; State.lastTick = Date.now(); },
     
     startRaid: function() {
         let army = State.pop.sold + State.pop.merc;
         if(army < 5) return UI.log("Min. 5 Mann nötig", "error");
-        UI.log("Raubzug gestartet (Dauer: kurz)...", "info");
+        UI.log("Raubzug gestartet...", "info");
         setTimeout(()=>{
             if(Math.random()>0.3) {
                 let g = Math.floor(Math.random()*100)+50;
@@ -535,8 +611,8 @@ const UI = {
     init: function() { this.renderBuild(); },
     setCat: function(c) { 
         this.cat = c; this.renderBuild(); 
-        document.querySelectorAll('.cat-icon').forEach(e => e.classList.remove('selected'));
-        event.target.classList.add('selected');
+        document.querySelectorAll('.cat-icon').forEach(e => e.classList.remove('active'));
+        event.target.classList.add('active');
     },
     renderBuild: function() {
         const d = document.getElementById('build-list'); d.innerHTML = "";
@@ -546,13 +622,13 @@ const UI = {
             let cost = [];
             if(b.cost.g) cost.push(b.cost.g+"💰"); if(b.cost.w) cost.push(b.cost.w+"🌲"); if(b.cost.s) cost.push(b.cost.s+"🧱");
             
-            let el = document.createElement('div'); el.className = "build-item";
+            let el = document.createElement('div'); el.className = "b-item";
             el.onclick = () => Game.build(k);
             el.innerHTML = `
-                ${State.b[k]>0 ? `<div class="build-count">${State.b[k]}</div>`:''}
-                <div class="build-ico">${b.icon}</div>
-                <div class="build-name">${b.name}</div>
-                <div class="build-cost">${cost.join(' ')}</div>
+                ${State.b[k]>0 ? `<div class="b-count">${State.b[k]}</div>`:''}
+                <div class="b-ico">${b.icon}</div>
+                <div class="b-name">${b.name}</div>
+                <div class="b-cost">${cost.join(' ')}</div>
             `;
             d.appendChild(el);
         }
@@ -567,9 +643,11 @@ const UI = {
         let d = document.createElement('div'); d.className='map-icon'; d.innerText=ico;
         document.getElementById('village-map').appendChild(d);
     },
-    log: function(txt, type) {
-        let d = document.createElement('div'); d.className=`log-card ${type}`; d.innerText = `T${State.day}: ${txt}`;
+    log: function(txt, type) { this.logHtml(`<div>${txt}</div>`, type); },
+    logHtml: function(html, type) {
+        let d = document.createElement('div'); d.className=`log-card ${type}`; d.innerHTML = html;
         let c = document.getElementById('game-log'); c.prepend(d);
+        if(c.children.length > 20) c.lastChild.remove();
     },
     update: function() {
         const r = State.res;
@@ -581,18 +659,18 @@ const UI = {
         document.getElementById('r-sold').innerText = State.pop.sold + State.pop.merc;
         document.getElementById('game-day').innerText = State.day;
         document.getElementById('level-title').innerText = "Level " + State.level;
-        document.getElementById('tax-disp').innerText = Config.taxes[State.tax];
-        document.getElementById('pause-indicator').style.display = State.paused ? 'inline' : 'none';
+        document.getElementById('tax-disp').innerText = Config.taxes[State.tax].n;
+        document.getElementById('pause-overlay').style.display = State.paused ? 'block' : 'none';
 
-        // Hover Tooltip Update
+        // Hover Tooltip
         let f = State.factors;
         document.getElementById('hap-tooltip').innerHTML = `
-            <div class="tt-row"><span>Essen:</span><span class="tt-val ${f.food>=0?'pos':'neg'}">${f.food}</span></div>
-            <div class="tt-row"><span>Steuern:</span><span class="tt-val ${f.tax>=0?'pos':'neg'}">${f.tax}</span></div>
-            <div class="tt-row"><span>Boni:</span><span class="tt-val pos">+${f.other}</span></div>
+            <div class="tt-row"><span>Essen:</span><span class="val-${f.food>=0?'pos':'neg'}">${f.food}</span></div>
+            <div class="tt-row"><span>Steuer:</span><span class="val-${f.tax>=0?'pos':'neg'}">${f.tax}</span></div>
+            <div class="tt-row"><span>Andere:</span><span class="val-pos">${f.other}</span></div>
         `;
 
-        // Objective Update (KLARTEXT!)
+        // Objective
         let l = Levels.find(x => x.id == State.level);
         if(l) {
             let html = "";
@@ -601,48 +679,49 @@ const UI = {
                 if(k=='pop') val=State.pop.curr;
                 else if(k=='soldiers') val=State.pop.sold + State.pop.merc;
                 else val = State.res[k] || State.b[k] || 0;
-                
-                let label = Labels[k] || k;
                 let done = val >= l.goal[k] ? "obj-done" : "";
-                html += `<span class="obj-item ${done}">${label}: ${Math.floor(val)}/${l.goal[k]}</span>`;
+                html += `<span class="obj-item ${done}">${T(k)}: ${Math.floor(val)}/${l.goal[k]}</span>`;
             }
             document.getElementById('objective-text').innerHTML = html;
         }
         
         this.renderBuild();
-    },
-    toggleMarket: function(s) { 
-        document.getElementById('market-modal').style.display=s?'flex':'none'; 
-        if(s){ this.renderList('market-list', Object.keys(State.res).filter(k=>k!='gold'), 'trade'); }
-    },
-    toggleRecruit: function(s) {
-        document.getElementById('recruit-modal').style.display=s?'flex':'none';
-        if(s){ 
-            let list = document.getElementById('recruit-list'); list.innerHTML = "";
-            ['archer','spear','sword'].forEach(u => {
-                let unit = Units[u];
-                let cost = `${unit.cost}💰 + ${Labels[unit.res]}`;
-                let d = document.createElement('div'); d.className='trade-row';
-                d.innerHTML = `<span>${unit.name} (${unit.str}⚔️)</span><button class="trade-btn" onclick="Game.recruit('${u}')">Ausbilden (${cost})</button>`;
-                list.appendChild(d);
-            });
-        }
-    },
-    renderList: function(id, items, type) {
-        let list = document.getElementById(id); list.innerHTML = "";
-        items.forEach(k => {
-            let d = document.createElement('div'); d.className='trade-row';
-            if(type=='trade') d.innerHTML = `<span>${Labels[k]||k} (${Math.floor(State.res[k])})</span><div><button class="trade-btn" onclick="Game.trade('${k}',1)">Kauf</button><button class="trade-btn" onclick="Game.trade('${k}',0)">Verk</button></div>`;
-            list.appendChild(d);
-        });
+        if(document.getElementById('modal-market').style.display === 'flex') this.renderMarket();
     },
     showMsg: function(t, b, cb) {
-        document.getElementById('msg-title').innerText=t; document.getElementById('msg-text').innerText=b;
-        document.getElementById('msg-modal').style.display='flex';
-        let btn = document.querySelector('#msg-modal button');
+        document.getElementById('info-title').innerText=t; document.getElementById('info-text').innerText=b;
+        document.getElementById('modal-info').style.display='flex';
+        let btn = document.querySelector('#modal-info button');
         btn.onclick = cb ? () => { cb(); Game.closeMsg(); } : Game.closeMsg;
     },
-    updateBar: function() {} // Nicht mehr benötigt
+    closeMsg: function() { document.getElementById('modal-info').style.display = 'none'; State.paused = false; State.lastTick = Date.now(); },
+    toggleMarket: function(s) { 
+        document.getElementById('modal-market').style.display=s?'flex':'none'; 
+        if(s){ State.paused=true; this.renderMarket(); } else { State.paused=false; }
+    },
+    toggleRecruit: function(s) {
+        document.getElementById('modal-recruit').style.display=s?'flex':'none';
+        if(s){ 
+            State.paused=true; 
+            let list = document.getElementById('recruit-list'); list.innerHTML = "";
+            for(let k in Units) {
+                let u = Units[k];
+                let cost = `${u.cost}💰 ` + (u.res ? `+1 ${T(u.res)}` : "");
+                let d = document.createElement('div'); d.className='trade-row';
+                d.innerHTML = `<span>${u.name} (${u.str}⚔️)</span><button class="trade-btn" onclick="Game.recruit('${k}')">Ausbilden (${cost})</button>`;
+                list.appendChild(d);
+            }
+        } else { State.paused=false; }
+    },
+    renderMarket: function() {
+        const list = document.getElementById('market-list'); list.innerHTML = "";
+        let items = ['wood','stone','iron','wheat','flour','bread','meat','apple','cheese','hops','beer','bow','spear','sword','armor'];
+        items.forEach(k => {
+            let d = document.createElement('div'); d.className='trade-row';
+            d.innerHTML = `<span>${T(k)} (${Math.floor(State.res[k])})</span><div><button class="trade-btn" onclick="Game.trade('${k}',1)">Kauf</button><button class="trade-btn" onclick="Game.trade('${k}',0)">Verk</button></div>`;
+            list.appendChild(d);
+        });
+    }
 };
 
 Game.init();
