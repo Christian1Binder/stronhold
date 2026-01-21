@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Burgherr V23 - Mobile King</title>
+    <title>Burgherr V24 - Stable Mobile</title>
     <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=MedievalSharp&display=swap" rel="stylesheet">
     
     <style>
@@ -22,10 +22,9 @@
 
         * { box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
         
-        /* 100dvh fix for mobile browsers */
         body { 
             font-family: 'Lato', sans-serif; background: var(--bg-body); color: #ccc; margin: 0; 
-            height: 100vh; height: 100dvh; 
+            height: 100vh; height: 100dvh; /* Mobile Fix */
             display: flex; flex-direction: column; overflow: hidden; 
         }
 
@@ -39,21 +38,19 @@
             display: flex; align-items: center; justify-content: space-between; padding: 0 10px; z-index: 100; position: relative;
         }
 
-        .header-info { width: 160px; flex-shrink: 0; }
+        .header-info { width: 140px; flex-shrink: 0; }
         .game-title { font-family: 'MedievalSharp'; font-size: 1.4rem; color: var(--highlight); margin: 0; line-height: 1; text-shadow: 2px 2px 0 #000; }
         .objective { font-size: 0.65rem; background: rgba(255,255,255,0.05); padding: 3px; border-left: 3px solid var(--highlight); margin-top: 3px; color: #bbb; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .obj-done { text-decoration: line-through; color: var(--success); opacity: 0.7; }
 
         /* Scrollable Resources */
         .res-container { display: flex; gap: 6px; flex: 1; justify-content: flex-end; overflow-x: auto; padding-bottom: 5px; -webkit-overflow-scrolling: touch; }
-        .res-container::-webkit-scrollbar { height: 0px; } /* Hide scrollbar */
+        .res-container::-webkit-scrollbar { height: 0px; } 
 
         .res-group { 
             background: #2d2d2d; border: 1px solid #444; border-radius: 4px; padding: 4px 8px; 
             min-width: 65px; text-align: center; display: flex; flex-direction: column; justify-content: center;
             position: relative; cursor: help; transition: background 0.2s; flex-shrink: 0;
         }
-        .res-group:active { background: #444; }
         
         .res-label { font-size: 0.55rem; text-transform: uppercase; color: #888; border-bottom: 1px solid #444; margin-bottom: 2px; }
         .res-values { display: flex; gap: 10px; justify-content: center; font-weight: bold; font-size: 0.85rem; color: #eee; position: relative; }
@@ -82,6 +79,7 @@
             background: #e0e0e0; color: #000; padding: 10px; border: 2px solid var(--border); border-radius: 4px;
             width: 240px; text-align: left; box-shadow: 0 5px 15px rgba(0,0,0,0.5); pointer-events: none;
         }
+        /* Mobile Tooltip Fix */
         @media (max-width: 600px) {
             .tooltip { right: auto; left: 50%; transform: translateX(-50%); width: 280px; }
             .float-txt { top: -60px; animation: floatUpMobile 1.5s forwards; } 
@@ -186,10 +184,9 @@
         /* MODALS */
         .modal-mask { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 5000; justify-content: center; align-items: center; backdrop-filter: blur(4px); }
         
-        /* FIX MODAL WIDTH */
         .modal-win { 
             background: var(--panel-bg); 
-            width: 95%; max-width: 500px; /* Responsive Width */
+            width: 95%; max-width: 500px; 
             max-height: 90vh; overflow-y: auto; 
             padding: 20px; border: 4px solid var(--border); border-radius: 8px; text-align: center; color: var(--text); box-shadow: 0 0 50px #000; position: relative; 
         }
@@ -461,11 +458,11 @@ let lastTickTime = 0;
 
 const Game = {
     init: function() {
-        if(localStorage.getItem('sh_v23')) {
+        if(localStorage.getItem('sh_v24')) {
             try {
-                S = JSON.parse(localStorage.getItem('sh_v23'));
+                S = JSON.parse(localStorage.getItem('sh_v24'));
                 if(!S.b.gran && S.b.granary) { S.b.gran = S.b.granary; delete S.b.granary; }
-                Game.recalcStats(); // Fix limits immediately on load
+                Game.recalcStats(); 
                 UI.init();
                 UI.showModal("Willkommen zurück", "Dein Lehen erwartet dich.", "Weiter");
             } catch(e) { this.reset(); }
@@ -495,7 +492,7 @@ const Game = {
         for(let k in Config.b) { S.b[k]=0; S.w[k]=0; }
         
         S.b.stock = 1; S.b.gran = 1;
-        Game.recalcStats(); // Fix limits immediately on start
+        Game.recalcStats(); 
 
         UI.init();
         UI.showModal("Level " + id + ": " + l.t, l.msg, "Starten");
@@ -539,11 +536,12 @@ const Game = {
         lastTickTime = Date.now();
         
         let startRes = JSON.parse(JSON.stringify(S.res));
-        Game.recalcStats(); // Ensure limits are always correct
+        Game.recalcStats();
         
-        // 1. LIMITS & SPACE
+        // 1. LIMITS & SPACE (FIXED LOGIC)
         let maxS = (S.b.stock || 1) * 50;
         let maxF = (S.b.gran || 1) * 50; 
+        
         let curS = S.res.wood + S.res.stone + S.res.iron + S.res.wheat + S.res.flour;
         let curF = S.res.bread + S.res.meat + S.res.apple + S.res.cheese;
         
@@ -576,6 +574,8 @@ const Game = {
             if(b.proc) {
                 let take = Math.min(S.res[b.proc]||0, n);
                 let outAmt = take * (b.r||1);
+                
+                // Logic check: only produce if we have space
                 let canProd = true;
                 if(['bread'].includes(b.out) && spaceF < outAmt) canProd = false;
                 if(['flour'].includes(b.out) && spaceS < outAmt) canProd = false;
@@ -645,7 +645,6 @@ const Game = {
         let sold = 0; for(let k in S.units) sold += S.units[k];
         let idle = S.pop.curr - sold - work;
 
-        // POP GROWTH FIX
         if(S.pop.hap > 60 && S.pop.curr < S.pop.max && Math.random()>0.5) {
             S.pop.curr++; 
             Game.autoAssign();
@@ -790,8 +789,8 @@ const Game = {
         S.paused = !S.paused; 
         if(!S.paused) lastTickTime = Date.now();
     },
-    save: function() { localStorage.setItem('sh_v23', JSON.stringify(S)); UI.log("Gespeichert", "prod"); },
-    reset: function() { localStorage.removeItem('sh_v23'); location.reload(); }
+    save: function() { localStorage.setItem('sh_v24', JSON.stringify(S)); UI.log("Gespeichert", "prod"); },
+    reset: function() { localStorage.removeItem('sh_v24'); location.reload(); }
 };
 
 const UI = {
