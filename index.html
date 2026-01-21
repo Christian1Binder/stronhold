@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Burgherr V13 - Final Fixed</title>
+    <title>Burgherr V14 - Alive Update</title>
     <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=MedievalSharp&display=swap" rel="stylesheet">
     
     <style>
@@ -16,15 +16,27 @@
             --success: #2e7d32;
             --danger: #c62828;
             --accent: #d84315;
+            --can-build: #e8f5e9; /* Hellgrün für leistbare Gebäude */
+            --can-build-border: #2e7d32;
         }
 
         * { box-sizing: border-box; user-select: none; }
         body { font-family: 'Lato', sans-serif; background: var(--bg-body); color: #ccc; margin: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
 
+        /* --- TICK BAR --- */
+        #tick-container {
+            height: 6px; background: #000; width: 100%; position: relative; z-index: 200;
+        }
+        #tick-bar {
+            height: 100%; background: var(--highlight); width: 0%; transition: width 0.1s linear;
+            box-shadow: 0 0 10px var(--highlight);
+        }
+
         /* --- HEADER --- */
         header { 
             background: #222; height: 120px; flex-shrink: 0; border-bottom: 3px solid var(--border);
             display: flex; align-items: center; justify-content: space-between; padding: 0 15px; z-index: 100;
+            position: relative;
         }
 
         .header-info { width: 220px; }
@@ -36,20 +48,43 @@
         .res-group { 
             background: #333; border: 1px solid #555; border-radius: 4px; padding: 4px 8px; 
             min-width: 70px; text-align: center; display: flex; flex-direction: column; justify-content: center;
-            position: relative; cursor: help;
+            position: relative; cursor: help; transition: background 0.2s;
         }
         .res-group:hover .tooltip { display: block; }
         
         .res-label { font-size: 0.6rem; text-transform: uppercase; color: #aaa; border-bottom: 1px solid #555; margin-bottom: 2px; }
-        .res-values { display: flex; gap: 10px; justify-content: center; font-weight: bold; font-size: 0.9rem; color: #fff; }
         
+        /* Values & Rates */
+        .res-values { display: flex; gap: 10px; justify-content: center; font-weight: bold; font-size: 0.9rem; color: #fff; position: relative; }
+        .res-item { position: relative; display: inline-block; }
+        .rate-ind { font-size: 0.65rem; position: relative; top: -5px; margin-left: 2px; opacity: 0.8; }
+        .rate-pos { color: #66bb6a; }
+        .rate-neg { color: #ef5350; }
+
+        /* FLOATING TEXT ANIMATION */
+        .float-txt {
+            position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
+            font-size: 0.9rem; font-weight: bold; pointer-events: none;
+            animation: floatUp 1.5s forwards; text-shadow: 1px 1px 0 #000; z-index: 3000;
+        }
+        @keyframes floatUp {
+            0% { opacity: 1; top: -10px; transform: translateX(-50%) scale(1); }
+            100% { opacity: 0; top: -40px; transform: translateX(-50%) scale(1.2); }
+        }
+
         /* TOOLTIP */
         .tooltip { 
             display: none; position: absolute; top: 100%; right: 0; margin-top: 5px; z-index: 2000;
             background: #e0e0e0; color: #000; padding: 10px; border: 2px solid var(--border); border-radius: 4px;
-            width: 200px; text-align: left; box-shadow: 0 5px 15px rgba(0,0,0,0.5); pointer-events: none;
+            width: 220px; text-align: left; box-shadow: 0 5px 15px rgba(0,0,0,0.5); pointer-events: none;
         }
         .tt-row { display: flex; justify-content: space-between; font-size: 0.8rem; border-bottom: 1px dashed #ccc; padding: 2px 0; }
+
+        /* IDLE ICON */
+        .idle-alert {
+            display: none; color: var(--highlight); font-size: 1.2rem; animation: pulse 1s infinite; margin-left: 5px;
+        }
+        @keyframes pulse { 0% { opacity: 0.5; transform: scale(0.9); } 50% { opacity: 1; transform: scale(1.1); } 100% { opacity: 0.5; transform: scale(0.9); } }
 
         /* --- MAIN --- */
         main { display: flex; flex: 1; overflow: hidden; position: relative; }
@@ -60,15 +95,14 @@
             background: radial-gradient(#558b2f, #1b5e20); 
             display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 2px;
         }
-        .zone { position: relative; border: 1px dashed rgba(255,255,255,0.1); display: flex; align-content: flex-start; flex-wrap: wrap; padding: 10px; overflow: hidden; }
+        .zone { position: relative; border: 1px dashed rgba(255,255,255,0.1); display: flex; align-content: flex-start; flex-wrap: wrap; padding: 10px; overflow: hidden; transition: background 0.5s; }
         .zone-label { position: absolute; bottom: 5px; right: 5px; font-family: 'MedievalSharp'; font-size: 2rem; color: rgba(255,255,255,0.2); pointer-events: none; }
         
-        /* Gebäude Icons auf Karte */
         .map-b { 
             display: inline-flex; width: 40px; height: 40px; font-size: 1.5rem; 
             align-items: center; justify-content: center; background: rgba(255,255,255,0.2); 
             border-radius: 4px; margin: 2px; box-shadow: 1px 1px 2px rgba(0,0,0,0.3);
-            animation: popIn 0.3s; cursor: default;
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: default;
         }
         @keyframes popIn { from { transform: scale(0); } to { transform: scale(1); } }
 
@@ -78,11 +112,26 @@
             display: flex; flex-direction: column; color: var(--text); z-index: 50;
         }
         
+        /* LOG: Newest at Top */
         .log-box { 
-            flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column-reverse; gap: 5px; 
-            background: rgba(0,0,0,0.05); font-size: 0.85rem;
+            flex: 1; overflow-y: hidden; padding: 10px; display: flex; flex-direction: column; gap: 5px; 
+            background: rgba(0,0,0,0.05); font-size: 0.85rem; position: relative;
         }
-        .log-entry { background: #fff; padding: 5px 8px; border-radius: 4px; border-left: 4px solid #999; box-shadow: 0 1px 2px rgba(0,0,0,0.1); flex-shrink: 0; }
+        /* Fade effect at bottom */
+        .log-box::after {
+            content:''; position: absolute; bottom:0; left:0; width:100%; height: 40px;
+            background: linear-gradient(transparent, rgba(0,0,0,0.1)); pointer-events: none;
+        }
+
+        .log-entry { 
+            background: #fff; padding: 6px 10px; border-radius: 4px; border-left: 4px solid #999; 
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1); flex-shrink: 0; animation: slideIn 0.3s ease-out;
+        }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
+        
+        .log-entry:nth-child(1) { font-weight: bold; border-left-width: 6px; } /* Neueste Nachricht */
+        .log-entry:nth-child(n+10) { opacity: 0.5; } /* Ältere verblassen */
+
         .log-entry.prod { border-color: var(--success); }
         .log-entry.warn { border-color: var(--danger); background: #ffebee; }
         
@@ -90,39 +139,46 @@
         .c-row { display: flex; gap: 5px; margin-bottom: 5px; }
         .btn { 
             flex: 1; padding: 8px; border: 1px solid var(--border); background: #efebe9; 
-            font-weight: bold; cursor: pointer; border-radius: 4px; color: var(--text);
+            font-weight: bold; cursor: pointer; border-radius: 4px; color: var(--text); transition: 0.1s;
         }
-        .btn:hover { background: #fff; }
-        .btn:active { transform: translateY(2px); }
+        .btn:hover { background: #fff; transform: translateY(-1px); }
+        .btn:active { transform: translateY(1px); }
 
         /* --- FOOTER (BUILDING) --- */
         footer { 
-            height: 160px; background: #fdf5e6; border-top: 5px solid var(--border); flex-shrink: 0;
+            height: 160px; background: #d7ccc8; border-top: 5px solid var(--border); flex-shrink: 0;
             display: flex; padding: 0 10px; align-items: center; 
             background-image: url('https://www.transparenttextures.com/patterns/aged-paper.png');
-            background-color: #d7ccc8; /* Fallback */
             z-index: 60;
         }
         
         .cat-bar { width: 140px; display: flex; flex-wrap: wrap; gap: 5px; border-right: 2px solid #ccc; padding-right: 10px; justify-content: center; }
-        .cat-btn { width: 40px; height: 40px; background: var(--border); color: #fff; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; cursor: pointer; border: 2px solid transparent; }
-        .cat-btn.active { background: var(--highlight); color: #000; border-color: #fff; }
+        .cat-btn { width: 40px; height: 40px; background: var(--border); color: #fff; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; cursor: pointer; border: 2px solid transparent; transition: 0.2s; }
+        .cat-btn:hover { transform: scale(1.1); }
+        .cat-btn.active { background: var(--highlight); color: #000; border-color: #fff; transform: scale(1.1); box-shadow: 0 0 10px var(--highlight); }
 
         .build-bar { flex: 1; display: flex; gap: 10px; overflow-x: auto; padding: 5px; height: 100%; align-items: center; }
         .b-card { 
             min-width: 80px; height: 110px; background: rgba(0,0,0,0.05); border-radius: 6px; 
             display: flex; flex-direction: column; align-items: center; justify-content: center; 
-            cursor: pointer; position: relative; border: 1px solid transparent; transition: 0.1s;
+            cursor: pointer; position: relative; border: 2px solid transparent; transition: 0.2s;
         }
-        .b-card:hover { background: rgba(0,0,0,0.1); border-color: var(--border); transform: scale(1.05); }
-        .b-count { position: absolute; top: 0; right: 0; background: var(--accent); color: #fff; font-size: 0.7rem; padding: 2px 6px; border-radius: 10px; font-weight: bold; }
+        .b-card:hover { background: rgba(0,0,0,0.1); border-color: #999; }
+        
+        /* AFFORDABILITY HIGHLIGHT */
+        .b-card.can-build { background: var(--can-build); border-color: var(--can-build-border); box-shadow: 0 4px 6px rgba(46, 125, 50, 0.2); }
+        .b-card.can-build:hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 6px 10px rgba(46, 125, 50, 0.3); }
+
+        .b-count { position: absolute; top: -5px; right: -5px; background: var(--accent); color: #fff; font-size: 0.7rem; padding: 2px 6px; border-radius: 10px; font-weight: bold; box-shadow: 1px 1px 2px rgba(0,0,0,0.5); }
         
         /* MODALS */
-        .modal-mask { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 5000; justify-content: center; align-items: center; }
-        .modal-win { background: var(--panel-bg); width: 500px; padding: 25px; border: 4px solid var(--border); border-radius: 8px; text-align: center; color: var(--text); box-shadow: 0 0 50px #000; }
+        .modal-mask { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 5000; justify-content: center; align-items: center; backdrop-filter: blur(2px); }
+        .modal-win { background: var(--panel-bg); width: 500px; padding: 25px; border: 4px solid var(--border); border-radius: 8px; text-align: center; color: var(--text); box-shadow: 0 0 50px #000; position: relative; }
         
         .list-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; max-height: 400px; overflow-y: auto; text-align: left; margin: 15px 0; }
         .list-item { background: rgba(255,255,255,0.5); padding: 5px; border: 1px solid #999; display: flex; justify-content: space-between; align-items: center; border-radius: 4px; font-size: 0.9rem; }
+
+        .missing-res { color: var(--danger); font-weight: bold; }
     </style>
 </head>
 <body>
@@ -151,35 +207,37 @@
     </div>
 </div>
 
+<div id="tick-container"><div id="tick-bar"></div></div>
+
 <header>
     <div class="header-info">
-        <div class="game-title">Burgherr</div>
+        <div class="game-title">Burgherr V14</div>
         <div class="objective" id="obj-disp">Lade...</div>
     </div>
 
     <div class="res-container">
-        <div class="res-group">
+        <div class="res-group" id="rg-gold">
             <span class="res-label">Schatz</span>
             <div class="res-values">💰 <span id="r-gold">0</span></div>
         </div>
         
-        <div class="res-group">
+        <div class="res-group" id="rg-store">
             <span class="res-label">Lager</span>
             <div class="res-values">
-                <span title="Holz">🌲<span id="r-wood">0</span></span>
-                <span title="Stein">🧱<span id="r-stone">0</span></span>
-                <span title="Eisen">⛓️<span id="r-iron">0</span></span>
+                <span class="res-item" title="Holz">🌲<span id="r-wood">0</span><span id="d-wood" class="rate-ind"></span></span>
+                <span class="res-item" title="Stein">🧱<span id="r-stone">0</span><span id="d-stone" class="rate-ind"></span></span>
+                <span class="res-item" title="Eisen">⛓️<span id="r-iron">0</span><span id="d-iron" class="rate-ind"></span></span>
             </div>
             <div class="tooltip">Limit: <span id="tt-stock">100</span> (Vorratslager bauen)</div>
         </div>
 
-        <div class="res-group">
+        <div class="res-group" id="rg-food">
             <span class="res-label">Nahrung</span>
             <div class="res-values">
-                <span title="Brot">🍞<span id="r-bread">0</span></span>
-                <span title="Fleisch">🥩<span id="r-meat">0</span></span>
-                <span title="Äpfel">🍎<span id="r-apple">0</span></span>
-                <span title="Käse">🧀<span id="r-cheese">0</span></span>
+                <span class="res-item" title="Brot">🍞<span id="r-bread">0</span><span id="d-bread" class="rate-ind"></span></span>
+                <span class="res-item" title="Fleisch">🥩<span id="r-meat">0</span><span id="d-meat" class="rate-ind"></span></span>
+                <span class="res-item" title="Äpfel">🍎<span id="r-apple">0</span><span id="d-apple" class="rate-ind"></span></span>
+                <span class="res-item" title="Käse">🧀<span id="r-cheese">0</span><span id="d-cheese" class="rate-ind"></span></span>
             </div>
             <div class="tooltip">Limit: <span id="tt-food">100</span> (Kornspeicher bauen)</div>
         </div>
@@ -199,6 +257,7 @@
             <div class="res-values">
                 <span title="Bürger">👨‍🌾 <span id="r-pop">0</span></span>
                 <span title="Beliebtheit">❤️ <span id="r-hap">0</span></span>
+                <span id="idle-icon" class="idle-alert" title="Untätige Arbeiter!">💤</span>
             </div>
             <div class="tooltip">
                 <div class="tt-row"><span>Untätig:</span><span id="tt-idle" style="font-weight:bold">0</span></div>
@@ -228,11 +287,16 @@
                 <button class="btn" onclick="UI.openMarket()">⚖️ Markt</button>
             </div>
             <div style="background:rgba(255,255,255,0.5); padding:5px; border-radius:4px; font-size:0.8rem; margin:5px 0;">
-                Steuern: <strong id="tax-name">Keine</strong>
-                <span style="float:right">
-                    <button onclick="Game.tax(-1)" style="cursor:pointer">➖</button> 
-                    <button onclick="Game.tax(1)" style="cursor:pointer">➕</button>
-                </span>
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span>Steuern: <strong id="tax-name">Keine</strong></span>
+                    <span>
+                        <button onclick="Game.tax(-1)" style="cursor:pointer">➖</button> 
+                        <button onclick="Game.tax(1)" style="cursor:pointer">➕</button>
+                    </span>
+                </div>
+                <div id="tax-impact" style="font-size:0.7rem; color:#555; margin-top:3px; text-align:center;">
+                    0💰 / -1❤️
+                </div>
             </div>
             <div style="border-top:1px dashed #777; margin-top:5px; padding-top:5px; font-size:0.75rem;">
                 System: 
@@ -268,8 +332,8 @@ const T = {
 const SafeT = (k) => T[k] || k; // Fallback
 
 const Levels = [
-    {id:1, t:"Gründung", msg:"Baut Hütten (Stadt) und Holzfäller (Wald).", goal:{wood:50, pop:10}, start:{gold:100, wood:20, food:20}},
-    {id:2, t:"Stein & Brot", msg:"Baut Steinbrüche (Berge, brauchen Ochsen!) & Brot.", goal:{stone:20, bread:30}, start:{gold:150, wood:50, food:30}},
+    {id:1, t:"Gründung", msg:"Baut Hütten (Stadt) und Holzfäller (Wald). Achte auf deine Nahrung!", goal:{wood:50, pop:10}, start:{gold:100, wood:20, food:20}},
+    {id:2, t:"Stein & Brot", msg:"Baut Steinbrüche (Berge, brauchen Ochsen!) & Brotproduktion.", goal:{stone:20, bread:30}, start:{gold:150, wood:50, food:30}},
     {id:3, t:"Waffen", msg:"Stellt Bögen und Speere her.", goal:{bow:5, spear:5}, start:{gold:200, wood:100, stone:50, food:50}},
     {id:4, t:"Armee", msg:"Bildet 10 Soldaten aus.", goal:{soldier:10}, start:{gold:300, wood:100, stone:100, iron:20, food:100}},
     {id:5, t:"Kathedrale", msg:"Das Meisterwerk.", goal:{cath:1}, start:{gold:1000, wood:500, stone:500, iron:100, food:200}}
@@ -328,57 +392,63 @@ const Config = {
 
 /* LOGIC */
 let S = {}; // State
+let lastTickTime = 0;
 
 const Game = {
     init: function() {
-        if(localStorage.getItem('sh_v13_fixed')) {
+        if(localStorage.getItem('sh_v14')) {
             try {
-                S = JSON.parse(localStorage.getItem('sh_v13_fixed'));
-                // Sanity Check
-                if(!S.b.gran && S.b.granary) { S.b.gran = S.b.granary; delete S.b.granary; } // Migration fix
+                S = JSON.parse(localStorage.getItem('sh_v14'));
+                if(!S.b.gran && S.b.granary) { S.b.gran = S.b.granary; delete S.b.granary; }
                 UI.init();
-                UI.showModal("Willkommen zurück", "Spiel geladen.", "Weiter");
+                UI.showModal("Willkommen zurück", "Dein Lehen erwartet dich.", "Weiter");
             } catch(e) { this.reset(); }
         } else {
             this.startLevel(1);
         }
+        
+        // Tick Loop
         setInterval(this.tick, Config.tick);
+        
+        // Visual Loop (Progress Bar)
+        lastTickTime = Date.now();
+        requestAnimationFrame(UI.animateTick);
     },
 
     startLevel: function(id) {
         let l = Levels.find(x => x.id == id);
-        if(!l) return UI.showModal("Spielende", "Du bist der König der Welt!", "Hurra");
+        if(!l) return UI.showModal("Spielende", "Du bist der wahre Burgherr!", "Hurra");
         
-        // Default Clean State
         S = {
             lvl: id, day: 1, paused: true,
             res: { gold:0, wood:0, stone:0, iron:0, pitch:0, wheat:0, flour:0, bread:0, meat:0, cheese:0, apple:0, hops:0, beer:0, bow:0, spear:0, sword:0, armor:0, leather:0 },
             units: { archer:0, pikeman:0, swordsman:0, merc:0 },
             pop: { curr:5, max:0, hap:100 },
             b: {}, w: {}, tax: 0,
-            factors: { food:0, tax:0 }
+            factors: { food:0, tax:0 },
+            rates: {} // For tracking +5/-3 etc.
         };
         // Load Start Res
         for(let k in l.start) S.res[k] = l.start[k];
         for(let k in Config.b) { S.b[k]=0; S.w[k]=0; }
         
-        // INITIAL BUILDINGS (FIXED NAMES)
-        S.b.stock = 1; 
-        S.b.gran = 1; // FIX: War vorher granary, muss aber gran heißen
+        S.b.stock = 1; S.b.gran = 1;
 
         UI.init();
         UI.showModal("Level " + id + ": " + l.t, l.msg, "Starten");
     },
 
     tick: function() {
-        if(S.paused) return;
+        if(S.paused) { lastTickTime = Date.now(); return; }
         S.day++;
+        lastTickTime = Date.now();
         
-        let pLog = [], eLog = [];
+        // SNAPSHOT for Rate Calculation
+        let startRes = JSON.parse(JSON.stringify(S.res));
+        let pLog = []; // Prod Log
         
         // 1. LIMITS
         let maxS = (S.b.stock || 1) * 50;
-        // FIX: Zugriff auf S.b.gran statt S.b.granary
         let maxF = (S.b.gran || 1) * 50; 
         
         let curS = S.res.wood + S.res.stone + S.res.iron + S.res.wheat + S.res.flour;
@@ -392,7 +462,7 @@ const Game = {
             let n = S.w[k];
             if(n <= 0) continue;
 
-            if(b.need && S.b[b.need] < n) n = S.b[b.need]; // Ochsen check
+            if(b.need && S.b[b.need] < n) n = S.b[b.need]; 
 
             // Simple Prod
             if(b.prod) {
@@ -400,7 +470,6 @@ const Game = {
                 if((isFood && !fullF) || (!isFood && !fullS)) {
                     let amt = n * (b.amt||1);
                     S.res[b.prod] = (S.res[b.prod]||0) + amt;
-                    pLog.push(amt + " " + SafeT(b.prod));
                 }
             }
             // Process
@@ -410,7 +479,6 @@ const Game = {
                     S.res[b.proc] -= take;
                     let out = take * (b.r||1);
                     S.res[b.out] = (S.res[b.out]||0) + out;
-                    pLog.push(out + " " + SafeT(b.out));
                 }
             }
             // Craft
@@ -418,7 +486,6 @@ const Game = {
                 if((S.res[b.use]||0) >= n && !fullS) {
                     S.res[b.use] -= n;
                     S.res[b.out] = (S.res[b.out]||0) + (n*(b.amt||1));
-                    pLog.push(n + " " + SafeT(b.out));
                 }
             }
         }
@@ -431,7 +498,6 @@ const Game = {
             if(eat > 0 && S.res[f] > 0) {
                 let take = Math.min(eat, S.res[f]);
                 S.res[f] -= take; eat -= take; ateTypes++;
-                eLog.push(SafeT(f));
             }
         });
 
@@ -456,7 +522,7 @@ const Game = {
 
         S.pop.hap = Math.max(0, Math.min(100, S.pop.hap + hChg));
 
-        // 4. POPULATION
+        // 4. POPULATION & EVENTS
         S.pop.max = (S.b.hovel*5) + (S.b.house*10) + 5;
         let work = 0; for(let k in S.w) work += S.w[k];
         let sold = 0; for(let k in S.units) sold += S.units[k];
@@ -469,7 +535,25 @@ const Game = {
             for(let k in S.w) if(S.w[k]>0){S.w[k]--; break;}
         }
 
-        // 5. WIN CHECK
+        // 5. CALC RATES & LOG
+        S.rates = {};
+        for(let k in S.res) {
+            let diff = S.res[k] - startRes[k];
+            if(diff !== 0) {
+                S.rates[k] = diff;
+                if(diff > 0) UI.showFloatingText(k, `+${diff}`, 'pos');
+                // Keine Floating Text für Verbrauch, das nervt sonst bei Nahrung
+            }
+        }
+        
+        // Log Logic (Simplified)
+        let prodArr = [];
+        for(let k in S.rates) {
+            if(S.rates[k] > 0 && k !== 'gold') prodArr.push(`${S.rates[k]} ${SafeT(k)}`);
+        }
+        if(prodArr.length) UI.log("Produktion: " + prodArr.join(", "), 'prod');
+
+        // 6. WIN CHECK
         let l = Levels.find(x => x.id == S.lvl);
         let win = true;
         for(let k in l.goal) {
@@ -484,7 +568,6 @@ const Game = {
             UI.showModal("SIEG!", "Level geschafft!", "Nächstes Level", () => Game.startLevel(S.lvl+1));
         }
 
-        if(pLog.length) UI.log("Prod: " + pLog.join(", "), 'prod');
         UI.update();
     },
 
@@ -496,7 +579,6 @@ const Game = {
 
         for(let k in Config.b) {
             let b = Config.b[k];
-            // Nur Produktionsgebäude füllen
             if((b.prod || b.proc || b.use) && S.b[k] > S.w[k]) {
                 S.w[k]++; idle--;
                 if(idle<=0) break;
@@ -551,9 +633,12 @@ const Game = {
         UI.update(); UI.renderMarket();
     },
 
-    togglePause: function() { S.paused = !S.paused; },
-    save: function() { localStorage.setItem('sh_v13_fixed', JSON.stringify(S)); UI.log("Gespeichert", "prod"); },
-    reset: function() { localStorage.removeItem('sh_v13_fixed'); location.reload(); }
+    togglePause: function() { 
+        S.paused = !S.paused; 
+        if(!S.paused) lastTickTime = Date.now();
+    },
+    save: function() { localStorage.setItem('sh_v14', JSON.stringify(S)); UI.log("Gespeichert", "prod"); },
+    reset: function() { localStorage.removeItem('sh_v14'); location.reload(); }
 };
 
 const UI = {
@@ -564,13 +649,30 @@ const UI = {
         this.update();
     },
     
+    animateTick: function() {
+        if(!S.paused) {
+            let now = Date.now();
+            let diff = now - lastTickTime;
+            let pct = Math.min(100, (diff / Config.tick) * 100);
+            document.getElementById('tick-bar').style.width = pct + "%";
+        }
+        requestAnimationFrame(UI.animateTick);
+    },
+    
     update: function() {
         // Resources (Resourcen UND Units)
         ['gold','wood','stone','iron','bread','meat','apple','cheese','wheat','flour','hops','bow','spear','sword','merc'].forEach(k => {
             let el = document.getElementById('r-'+k);
-            // Nutze S.units für merc/truppen, S.res für rest
             let val = S.res[k] !== undefined ? S.res[k] : (S.units[k] !== undefined ? S.units[k] : 0);
             if(el) el.innerText = Math.floor(val); 
+            
+            // Rates (+/- Display)
+            let dEl = document.getElementById('d-'+k);
+            if(dEl) {
+                let r = S.rates[k] || 0;
+                dEl.innerText = r > 0 ? `+${r}` : (r < 0 ? r : "");
+                dEl.className = "rate-ind " + (r >= 0 ? "rate-pos" : "rate-neg");
+            }
         });
 
         // Pop & Info
@@ -583,15 +685,24 @@ const UI = {
         document.getElementById('r-hap').innerText = Math.floor(S.pop.hap);
         document.getElementById('day-disp').innerText = S.day;
         document.getElementById('lvl-disp').innerText = S.lvl;
-        document.getElementById('tax-name').innerText = Config.taxes[S.tax].n;
+        
+        // Idle Warning
+        document.getElementById('idle-icon').style.display = idle > 0 ? 'inline' : 'none';
 
-        // Tooltips
+        // Tax Info
+        let tIdx = Config.taxes[S.tax];
+        document.getElementById('tax-name').innerText = tIdx.n;
+        document.getElementById('tax-impact').innerText = `+${S.pop.curr * tIdx.g}💰 / ${tIdx.h}❤️`;
+        if(tIdx.h < 0) document.getElementById('tax-impact').style.color = 'var(--danger)';
+        else document.getElementById('tax-impact').style.color = 'var(--success)';
+
+        // Tooltips Breakdown
         document.getElementById('hap-breakdown').innerHTML = `
-            <div class="tt-row"><span>Essen:</span><span>${S.factors.food}</span></div>
+            <div class="tt-row"><span>Essen:</span><span>${S.factors.food > 0 ? '+'+S.factors.food : S.factors.food}</span></div>
             <div class="tt-row"><span>Steuer:</span><span>${S.factors.tax}</span></div>
+            <div class="tt-row"><span>Kirche:</span><span>+${(S.b.church||0)*5}</span></div>
         `;
         
-        // FIX: S.b.stock und S.b.gran statt granary
         let maxS = (S.b.stock||1)*50;
         let curS = S.res.wood+S.res.stone+S.res.iron+S.res.wheat+S.res.flour;
         document.getElementById('tt-stock').innerText = `${Math.floor(curS)}/${maxS}`;
@@ -615,7 +726,49 @@ const UI = {
             document.getElementById('obj-disp').innerHTML = h;
         }
 
-        this.renderBuild();
+        this.updateBuildState();
+    },
+
+    updateBuildState: function() {
+        // Prüft, ob Gebäude kaufbar sind und färbt sie grün
+        document.querySelectorAll('.b-card').forEach(card => {
+            let key = card.getAttribute('data-key');
+            if(!key) return;
+            let b = Config.b[key];
+            let can = S.res.gold >= (b.cost.g||0) && S.res.wood >= (b.cost.w||0) && S.res.stone >= (b.cost.s||0);
+            
+            if(can) card.classList.add('can-build');
+            else card.classList.remove('can-build');
+            
+            // Tooltip update mit fehlenden Res
+            let txt = [];
+            if(b.cost.g) txt.push(`<span class="${S.res.gold<b.cost.g?'missing-res':''}">${b.cost.g}💰</span>`);
+            if(b.cost.w) txt.push(`<span class="${S.res.wood<b.cost.w?'missing-res':''}">${b.cost.w}🌲</span>`);
+            if(b.cost.s) txt.push(`<span class="${S.res.stone<b.cost.s?'missing-res':''}">${b.cost.s}🧱</span>`);
+            
+            card.querySelector('.cost-disp').innerHTML = txt.join(' ');
+        });
+    },
+
+    showFloatingText: function(key, text, type) {
+        // Find position based on resource group ID in header
+        // Simple mapping based on known structure
+        let targetId = "";
+        if(['wood','stone','iron'].includes(key)) targetId = 'rg-store';
+        else if(['bread','meat','apple','cheese'].includes(key)) targetId = 'rg-food';
+        else if(key === 'gold') targetId = 'rg-gold';
+        else return; // Andere nicht anzeigen
+        
+        let target = document.getElementById(targetId);
+        if(!target) return;
+        
+        let el = document.createElement('div');
+        el.className = 'float-txt';
+        el.style.color = type === 'pos' ? '#4caf50' : '#f44336';
+        el.innerText = text;
+        target.appendChild(el);
+        
+        setTimeout(() => el.remove(), 1500);
     },
 
     log: function(t, c) {
@@ -623,7 +776,9 @@ const UI = {
         d.className = `log-entry ${c}`;
         d.innerText = `Tag ${S.day}: ${t}`;
         let log = document.getElementById('log');
-        log.appendChild(d); // Append statt Prepend für logische Leserichtung in flex-col-reverse
+        // REVERSED ORDER: Newest first
+        log.prepend(d);
+        if(log.childNodes.length > 20) log.removeChild(log.lastChild);
     },
 
     setCat: function(c) {
@@ -631,6 +786,7 @@ const UI = {
         document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
         if(event && event.currentTarget) event.currentTarget.classList.add('active');
         this.renderBuild();
+        this.updateBuildState();
     },
 
     renderBuild: function() {
@@ -638,18 +794,16 @@ const UI = {
         for(let k in Config.b) {
             let b = Config.b[k];
             if(b.c !== this.cat) continue;
-            let cost = [];
-            if(b.cost.g) cost.push(b.cost.g+"💰");
-            if(b.cost.w) cost.push(b.cost.w+"🌲");
-            if(b.cost.s) cost.push(b.cost.s+"🧱");
             
             let el = document.createElement('div'); el.className = "b-card";
+            el.setAttribute('data-key', k);
             el.onclick = () => Game.build(k);
+            
             el.innerHTML = `
                 ${S.b[k]>0 ? `<div class="b-count">${S.b[k]}</div>`:''}
                 <div style="font-size:2rem">${b.i}</div>
                 <div style="font-size:0.7rem;font-weight:bold">${b.n}</div>
-                <div style="font-size:0.6rem;color:#666">${cost.join(' ')}</div>
+                <div class="cost-disp" style="font-size:0.6rem;color:#666"></div>
             `;
             d.appendChild(el);
         }
@@ -659,7 +813,6 @@ const UI = {
         // Reset Map
         ['forest','mountain','town','farm'].forEach(z => {
             let el = document.getElementById('z-'+z);
-            // Keep label, remove icons
             while(el.childNodes.length > 1) el.removeChild(el.lastChild);
         });
         for(let k in S.b) {
@@ -672,25 +825,24 @@ const UI = {
         let zone = document.getElementById(b.z);
         if(zone) {
             let d = document.createElement('div'); d.className='map-b'; d.innerText = b.i;
-            d.title = b.n; // Tooltip on hover
+            d.title = b.n;
             zone.appendChild(d);
         }
     },
 
-    // ROBUSTES MODAL
     showModal: function(t, b, btnTxt, cb) {
         document.getElementById('m-title').innerText = t;
         document.getElementById('m-body').innerText = b;
         let btn = document.getElementById('m-btn');
         btn.innerText = btnTxt || "OK";
         
-        // Remove old listeners
         let newBtn = btn.cloneNode(true);
         btn.parentNode.replaceChild(newBtn, btn);
         
         newBtn.onclick = function() {
             document.getElementById('modal-mask').style.display = 'none';
             S.paused = false;
+            lastTickTime = Date.now(); // Reset Tick timer
             if(cb) cb();
         };
         
