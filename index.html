@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Burgherr V14 - Alive Update</title>
+    <title>Burgherr V15 - Tax Update</title>
     <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=MedievalSharp&display=swap" rel="stylesheet">
     
     <style>
@@ -16,7 +16,7 @@
             --success: #2e7d32;
             --danger: #c62828;
             --accent: #d84315;
-            --can-build: #e8f5e9; /* Hellgrün für leistbare Gebäude */
+            --can-build: #e8f5e9;
             --can-build-border: #2e7d32;
         }
 
@@ -117,7 +117,6 @@
             flex: 1; overflow-y: hidden; padding: 10px; display: flex; flex-direction: column; gap: 5px; 
             background: rgba(0,0,0,0.05); font-size: 0.85rem; position: relative;
         }
-        /* Fade effect at bottom */
         .log-box::after {
             content:''; position: absolute; bottom:0; left:0; width:100%; height: 40px;
             background: linear-gradient(transparent, rgba(0,0,0,0.1)); pointer-events: none;
@@ -129,8 +128,8 @@
         }
         @keyframes slideIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
         
-        .log-entry:nth-child(1) { font-weight: bold; border-left-width: 6px; } /* Neueste Nachricht */
-        .log-entry:nth-child(n+10) { opacity: 0.5; } /* Ältere verblassen */
+        .log-entry:nth-child(1) { font-weight: bold; border-left-width: 6px; } 
+        .log-entry:nth-child(n+10) { opacity: 0.5; } 
 
         .log-entry.prod { border-color: var(--success); }
         .log-entry.warn { border-color: var(--danger); background: #ffebee; }
@@ -165,7 +164,6 @@
         }
         .b-card:hover { background: rgba(0,0,0,0.1); border-color: #999; }
         
-        /* AFFORDABILITY HIGHLIGHT */
         .b-card.can-build { background: var(--can-build); border-color: var(--can-build-border); box-shadow: 0 4px 6px rgba(46, 125, 50, 0.2); }
         .b-card.can-build:hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 6px 10px rgba(46, 125, 50, 0.3); }
 
@@ -211,7 +209,7 @@
 
 <header>
     <div class="header-info">
-        <div class="game-title">Burgherr V14</div>
+        <div class="game-title">Burgherr V15</div>
         <div class="objective" id="obj-disp">Lade...</div>
     </div>
 
@@ -348,7 +346,14 @@ const Units = {
 
 const Config = {
     tick: 5000,
-    taxes: [{n:"Keine",g:0,h:1}, {n:"Niedrig",g:2,h:-2}, {n:"Mittel",g:4,h:-5}, {n:"Hoch",g:8,h:-12}, {n:"Grausam",g:15,h:-20}],
+    // NEUES STEUERSYSTEM
+    taxes: [
+        {n:"Keine",   g:0, h:1},    // Bonus
+        {n:"Gering",  g:1, h:-1},   // Nachhaltig
+        {n:"Normal",  g:2, h:-3},   // Erfordert Gegengewicht
+        {n:"Hoch",    g:4, h:-10},  // Aggressiv
+        {n:"Wucher",  g:8, h:-25}   // Notfall
+    ],
     b: {
         // BURG
         wall_w:{n:"Holzwall",c:"burg",i:"🪵",z:"z-town",cost:{g:10,w:20}},
@@ -396,9 +401,10 @@ let lastTickTime = 0;
 
 const Game = {
     init: function() {
-        if(localStorage.getItem('sh_v14')) {
+        if(localStorage.getItem('sh_v15')) {
             try {
-                S = JSON.parse(localStorage.getItem('sh_v14'));
+                S = JSON.parse(localStorage.getItem('sh_v15'));
+                // Migration fixes
                 if(!S.b.gran && S.b.granary) { S.b.gran = S.b.granary; delete S.b.granary; }
                 UI.init();
                 UI.showModal("Willkommen zurück", "Dein Lehen erwartet dich.", "Weiter");
@@ -542,7 +548,7 @@ const Game = {
             if(diff !== 0) {
                 S.rates[k] = diff;
                 if(diff > 0) UI.showFloatingText(k, `+${diff}`, 'pos');
-                // Keine Floating Text für Verbrauch, das nervt sonst bei Nahrung
+                // Keine Floating Text für Verbrauch
             }
         }
         
@@ -637,8 +643,8 @@ const Game = {
         S.paused = !S.paused; 
         if(!S.paused) lastTickTime = Date.now();
     },
-    save: function() { localStorage.setItem('sh_v14', JSON.stringify(S)); UI.log("Gespeichert", "prod"); },
-    reset: function() { localStorage.removeItem('sh_v14'); location.reload(); }
+    save: function() { localStorage.setItem('sh_v15', JSON.stringify(S)); UI.log("Gespeichert", "prod"); },
+    reset: function() { localStorage.removeItem('sh_v15'); location.reload(); }
 };
 
 const UI = {
@@ -752,12 +758,11 @@ const UI = {
 
     showFloatingText: function(key, text, type) {
         // Find position based on resource group ID in header
-        // Simple mapping based on known structure
         let targetId = "";
         if(['wood','stone','iron'].includes(key)) targetId = 'rg-store';
         else if(['bread','meat','apple','cheese'].includes(key)) targetId = 'rg-food';
         else if(key === 'gold') targetId = 'rg-gold';
-        else return; // Andere nicht anzeigen
+        else return; 
         
         let target = document.getElementById(targetId);
         if(!target) return;
@@ -776,7 +781,6 @@ const UI = {
         d.className = `log-entry ${c}`;
         d.innerText = `Tag ${S.day}: ${t}`;
         let log = document.getElementById('log');
-        // REVERSED ORDER: Newest first
         log.prepend(d);
         if(log.childNodes.length > 20) log.removeChild(log.lastChild);
     },
