@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Burgherr WebApp - Interactive</title>
+    <title>Burgherr WebApp - Workforce Logic</title>
     <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=MedievalSharp&display=swap" rel="stylesheet">
     
     <style>
@@ -20,7 +20,7 @@
             --border-radius: 8px;
         }
 
-        * { box-sizing: border-box; user-select: none; } /* User-select none verhindert Textmarkierung beim Klicken */
+        * { box-sizing: border-box; user-select: none; }
 
         body {
             font-family: 'Lato', sans-serif;
@@ -46,7 +46,7 @@
             position: relative;
         }
 
-        /* --- HEADER & CHATTER --- */
+        /* --- HEADER --- */
         header {
             background-color: var(--secondary);
             color: var(--text-light);
@@ -57,7 +57,7 @@
             border-bottom: 4px solid var(--primary);
             box-shadow: 0 4px 10px rgba(0,0,0,0.3);
             z-index: 10;
-            height: 110px; /* Feste Höhe für Layout */
+            height: 110px;
         }
 
         .header-left { display: flex; flex-direction: column; }
@@ -69,7 +69,6 @@
             text-shadow: 2px 2px 0 #000;
         }
 
-        /* Die Sprechblase des Volkes */
         #villager-chatter {
             background: #fff;
             color: #333;
@@ -82,9 +81,9 @@
             position: relative;
             margin-top: 5px;
             box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
-            animation: popIn 0.3s ease;
+            opacity: 0; 
+            transition: opacity 0.5s;
         }
-        @keyframes popIn { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
 
         .res-container {
             display: flex;
@@ -132,95 +131,67 @@
             margin: 0 0 5px 0;
         }
 
-        /* ACTION BUTTONS & MANUAL CLICKERS */
-        .clicker-area {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 10px;
-        }
+        /* CLICKER */
+        .clicker-area { display: flex; gap: 10px; margin-bottom: 5px; }
         .clicker-btn {
-            flex: 1;
-            background: #fff;
-            border: 2px solid var(--primary);
-            border-radius: 8px;
-            padding: 15px 5px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.1s;
-            box-shadow: 0 3px 0 var(--primary-dark);
-            position: relative;
-            overflow: hidden;
+            flex: 1; background: #fff; border: 2px solid var(--primary);
+            border-radius: 8px; padding: 10px 5px; text-align: center;
+            cursor: pointer; box-shadow: 0 3px 0 var(--primary-dark);
         }
-        .clicker-btn:active {
-            transform: translateY(3px);
-            box-shadow: 0 0 0 var(--primary-dark);
-        }
-        .clicker-btn:hover { background: #fff8e1; }
-        .clicker-icon { font-size: 1.5rem; display: block; margin-bottom: 5px; }
-        .clicker-label { font-size: 0.8rem; font-weight: bold; color: var(--primary-dark); }
+        .clicker-btn:active { transform: translateY(3px); box-shadow: none; }
+        .clicker-icon { font-size: 1.4rem; display: block; }
+        .clicker-label { font-size: 0.75rem; font-weight: bold; color: var(--primary-dark); }
 
-        /* Normal Build Buttons */
+        /* BUTTONS */
         .btn-group { display: flex; flex-direction: column; gap: 6px; }
         button.build-btn {
-            background-color: #fff;
-            border: 1px solid #cbb092;
-            border-left: 4px solid var(--primary);
-            padding: 8px 10px;
-            border-radius: 4px;
-            font-family: 'Lato', sans-serif;
-            font-weight: 700;
-            cursor: pointer;
-            display: flex; justify-content: space-between; align-items: center;
+            background-color: #fff; border: 1px solid #cbb092;
+            border-left: 4px solid var(--primary); padding: 8px 10px;
+            border-radius: 4px; font-family: 'Lato', sans-serif; font-weight: 700;
+            cursor: pointer; display: flex; justify-content: space-between; align-items: center;
             transition: transform 0.1s;
         }
         button.build-btn:hover:not(:disabled) { background-color: var(--primary); color: white; transform: translateX(3px); }
         button.build-btn:disabled { opacity: 0.5; background: #eee; cursor: not-allowed; }
         .cost { font-size: 0.7rem; font-weight: normal; opacity: 0.8; }
 
-        /* LOG AREA */
+        /* Steuer Buttons */
+        .tax-controls { display: flex; align-items: center; justify-content: space-between; background: #fff; padding: 10px; border-radius: 5px; border: 1px solid #ccc; }
+        .tax-btn { width: 30px; height: 30px; background: var(--secondary); color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; }
+        .tax-display { font-weight: bold; }
+
+        /* LOG */
         #log-area {
-            flex: 1;
-            padding: 20px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
+            flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px;
             background-image: radial-gradient(#f4e4bc 10%, transparent 10%), radial-gradient(#f4e4bc 10%, transparent 10%);
-            background-size: 20px 20px;
-            background-color: #ffffff;
+            background-size: 20px 20px; background-color: #ffffff;
         }
         .log-entry { padding: 8px 12px; border-radius: 5px; font-size: 0.9rem; border-left: 3px solid #ccc; background: #fcfcfc; }
         .log-entry.combat { border-left-color: var(--accent); background-color: #ffebee; color: #b71c1c; font-weight: bold;}
         .log-entry.important { border-left-color: var(--highlight); background-color: #fffde7; }
 
-        /* FLOATING TEXT ANIMATION */
+        /* FLOATING TEXT */
         .floating-text {
-            position: absolute;
-            font-weight: bold;
-            font-size: 1.2rem;
-            pointer-events: none;
-            animation: floatUp 1s ease-out forwards;
-            z-index: 1000;
-            text-shadow: 1px 1px 0 #fff;
+            position: absolute; font-weight: bold; font-size: 1.2rem; pointer-events: none;
+            animation: floatUp 1s ease-out forwards; z-index: 1000; text-shadow: 1px 1px 0 #fff;
         }
-        @keyframes floatUp {
-            0% { opacity: 1; transform: translateY(0) scale(1); }
-            100% { opacity: 0; transform: translateY(-30px) scale(1.2); }
-        }
+        @keyframes floatUp { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-30px); } }
 
-        /* PROGRESS BARS */
+        /* BARS & STATUS */
         .progress-wrapper { margin-bottom: 15px; }
         .progress-label { display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: bold; }
         .progress-bg { width: 100%; height: 10px; background: #ddd; border-radius: 5px; overflow: hidden; margin-top: 2px;}
         .progress-fill { height: 100%; width: 0%; transition: width 0.1s linear; }
         #bar-day { background-color: #2e7d32; }
         #bar-migration { background-color: #1976d2; }
+        
+        .efficiency-display { font-weight: bold; color: #2e7d32; }
+        .efficiency-display.low { color: var(--accent); }
 
         /* MODAL */
         #modal-overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.85);
-            display: none; justify-content: center; align-items: center; z-index: 200;
+            background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 200;
         }
         #modal-box {
             background: #fdf6e3; width: 450px; padding: 25px;
@@ -233,7 +204,6 @@
 <body>
 
 <div id="particles"></div>
-
 <div id="modal-overlay">
     <div id="modal-box">
         <div id="modal-title">Nachricht</div>
@@ -246,7 +216,7 @@
     <header>
         <div class="header-left">
             <h1>🏰 Der Burgherr</h1>
-            <div id="villager-chatter">"Mylord, die Sonne steht hoch."</div>
+            <div id="villager-chatter">"Mylord..."</div>
         </div>
         
         <div class="res-container">
@@ -276,15 +246,11 @@
 
     <main>
         <aside>
-            <h2>Manuelle Befehle</h2>
+            <h2>Manuelle Arbeit</h2>
             <div class="clicker-area">
                 <div class="clicker-btn" onclick="Game.manualGather('wood', event)">
                     <span class="clicker-icon">🌲</span>
                     <span class="clicker-label">Holz hacken</span>
-                </div>
-                <div class="clicker-btn" onclick="Game.manualGather('gold', event)">
-                    <span class="clicker-icon">💰</span>
-                    <span class="clicker-label">Steuern</span>
                 </div>
                 <div class="clicker-btn" onclick="Game.manualGather('food', event)">
                     <span class="clicker-icon">🍎</span>
@@ -321,7 +287,23 @@
             </div>
             
             <br>
-            <h2>Fortschritt</h2>
+            <h2>Verwaltung</h2>
+            <div style="margin-bottom:5px; font-size:0.9rem;">Steuern einstellen:</div>
+            <div class="tax-controls">
+                <button class="tax-btn" onclick="Game.setTax(-1)">-</button>
+                <span class="tax-display" id="display-tax">Keine Steuern</span>
+                <button class="tax-btn" onclick="Game.setTax(1)">+</button>
+            </div>
+
+            <br>
+            <h2>Status & Wirtschaft</h2>
+            <div style="font-size:0.9rem">
+                <strong>Tag:</strong> <span id="stat-day">1</span><br>
+                <strong>Bevölkerung:</strong> <span id="stat-pop">0/0</span><br>
+                <strong>Arbeitskraft:</strong> <span id="stat-workers" class="efficiency-display">100%</span>
+            </div>
+
+            <br>
             <div class="progress-wrapper">
                 <div class="progress-label"><span>Produktion (Tag)</span><span>5s</span></div>
                 <div class="progress-bg"><div class="progress-fill" id="bar-day"></div></div>
@@ -330,23 +312,15 @@
                 <div class="progress-label"><span>Zuzug</span><span id="text-migration">0%</span></div>
                 <div class="progress-bg"><div class="progress-fill" id="bar-migration" style="width: 0%"></div></div>
             </div>
-
-            <br>
-            <h2>Status</h2>
-            <div style="font-size:0.9rem">
-                <strong>Tag:</strong> <span id="stat-day">1</span><br>
-                <strong>Bevölkerung:</strong> <span id="stat-pop">0/0</span><br>
-                <strong>Gebäude:</strong> <span id="stat-buildings">0</span>
-            </div>
         </aside>
     </main>
 </div>
 
 <script>
-/* --- SETUP --- */
+/* --- KONFIGURATION --- */
 const Config = {
     tickRate: 5000, 
-    combatStartDay: 40, // VIEL SPÄTER!
+    combatStartDay: 40, 
     buildings: {
         woodcutter: { costG: 15, costW: 0, costS: 0, name: "Holzfäller" },
         quarry:     { costG: 50, costW: 20, costS: 0, name: "Steinbruch" },
@@ -359,61 +333,54 @@ const Config = {
         bakery:     { costG: 60, costW: 20, costS: 0, name: "Bäckerei" },
         weaponsmith:{ costG: 100, costW: 0, costS: 20, name: "Waffenschmiede" },
         barracks:   { costG: 150, costW: 0, costS: 50, name: "Kaserne" }
-    }
+    },
+    // Steuerraten: [Name, Gold pro Kopf, Beliebtheit Effekt]
+    taxes: [
+        { name: "Großzügige Bestechung", gold: -4, pop: +10 },
+        { name: "Kleine Bestechung", gold: -2, pop: +5 },
+        { name: "Keine Steuern", gold: 0, pop: +1 },
+        { name: "Niedrige Steuern", gold: 2, pop: -2 },
+        { name: "Hohe Steuern", gold: 4, pop: -6 },
+        { name: "Grausame Steuern", gold: 8, pop: -15 }
+    ]
 };
 
 const State = {
     day: 1, paused: false, lastTick: Date.now(),
-    // Start etwas großzügiger
     gold: 150, wood: 50, stone: 0, iron: 0,
     wheat: 0, flour: 0, bread: 0, meat: 5, apple: 5,
     weapons: 0, soldiers: 0,
-    population: 5, maxPop: 10, popularity: 100, tax: 0,
+    population: 5, maxPop: 10, popularity: 100, 
+    taxIndex: 2, // Start bei "Keine Steuern" (Index 2)
+    
     migrationProgress: 0,
     b: { woodcutter: 0, quarry: 0, ironmine: 0, house: 0, farm_apple: 0, hunter: 0, farm_wheat: 0, mill: 0, bakery: 0, weaponsmith: 0, barracks: 0 },
-    flags: { seenCombat: false, seenStarvation: false }
+    flags: { seenCombat: false, seenStarvation: false, seenNoWorkers: false }
 };
 
 const Phrases = {
-    happy: ["Das Volk liebt Euch!", "Ein herrlicher Tag, Sire.", "Die Vorräte wachsen.", "Wir arbeiten gern für Euch."],
-    neutral: ["Mehr Arbeit?", "Die Sonne brennt.", "Wir tun unser Bestes.", "Holz wird benötigt."],
-    angry: ["Wir hungern!", "Die Steuern sind zu hoch!", "Schluss mit der Tyrannei!", "Meine Kinder weinen."],
-    fear: ["Banditen im Wald...", "Habt Ihr das gehört?", "Die Wälle müssen höher sein."]
+    happy: ["Das Volk liebt Euch!", "Eure Gnaden sind weise.", "Die Speicher sind voll!"],
+    neutral: ["Noch mehr Arbeit?", "Es geht uns gut.", "Wir brauchen Holz."],
+    angry: ["Die Steuern erdrücken uns!", "Wir haben Hunger!", "Schluss mit der Tyrannei!"],
+    empty: ["Es ist so still...", "Wo sind alle hin?", "Geisterstadt..."]
 };
 
-/* --- LOGIK --- */
 const Game = {
     init: function() {
-        UI.log("Sire! Klickt auf 'Manuelle Befehle' um den Aufbau zu beschleunigen.", "important");
+        UI.log("Sire! Baut Hütten und besorgt Nahrung, damit das Volk arbeitet.", "important");
         UI.update();
         setInterval(() => { if(!State.paused) this.tick(); }, Config.tickRate);
         setInterval(() => { if(!State.paused) UI.updateBars(); }, 100);
-        setInterval(() => { if(!State.paused) this.updateChatter(); }, 8000); // Alle 8 sek neuer Spruch
+        setInterval(() => { if(!State.paused) this.updateChatter(); }, 8000);
     },
 
-    // INTERAKTIVITÄT: Manuelles Klicken
     manualGather: function(type, event) {
         if(State.paused) return;
-
-        let txt = "";
-        let color = "#fff";
-
         if(type === 'wood') {
-            State.wood += 1;
-            txt = "+1🌲";
-            color = "#8d6e63";
-        } else if(type === 'gold') {
-            State.gold += 1;
-            State.popularity -= 0.5; // Steuern per Hand nerven leicht
-            txt = "+1💰";
-            color = "#fbc02d";
+            State.wood += 1; UI.showFloaty(event.clientX, event.clientY, "+1🌲", "#8d6e63");
         } else if(type === 'food') {
-            State.apple += 1;
-            txt = "+1🍎";
-            color = "#ef5350";
+            State.apple += 1; UI.showFloaty(event.clientX, event.clientY, "+1🍎", "#ef5350");
         }
-
-        UI.showFloaty(event.clientX, event.clientY, txt, color);
         UI.update();
     },
 
@@ -421,135 +388,182 @@ const Game = {
         State.day++;
         State.lastTick = Date.now();
 
-        // Produktion
-        const woodProd = State.b.woodcutter * 2;
-        const stoneProd = State.b.quarry * 1;
+        // 1. ARBEITSKRAFT BERECHNEN
+        // Wie viele Jobs gibt es? (Summe aller Produktionsgebäude)
+        // (Hütten zählen nicht als Job, Kasernen auch nicht direkt, aber Soldaten fehlen als Arbeiter)
+        const jobs = State.b.woodcutter + State.b.quarry + State.b.ironmine + 
+                     State.b.farm_apple + State.b.hunter + State.b.farm_wheat + 
+                     State.b.mill + State.b.bakery + State.b.weaponsmith;
         
-        State.wood += woodProd;
-        State.stone += stoneProd;
-        State.iron += State.b.ironmine * 1;
+        // Verfügbare Bauern (Pop - Soldaten)
+        const peasants = Math.max(0, State.population - State.soldiers);
+        
+        let efficiency = 1.0;
+        
+        if (jobs > 0) {
+            if (peasants === 0) {
+                efficiency = 0; // Keiner da zum Arbeiten
+                if (!State.flags.seenNoWorkers && State.day > 2) {
+                    UI.showModal("Stillstand", "Sire, wir haben keine Arbeiter! Die Gebäude stehen still. Ihr müsst manuell sammeln oder Beliebtheit steigern.");
+                    State.flags.seenNoWorkers = true;
+                }
+            } else if (peasants < jobs) {
+                efficiency = peasants / jobs; // z.B. 5 Bauern auf 10 Jobs = 0.5 (50%)
+                UI.log("Zu wenig Arbeiter! Produktion läuft verlangsamt.", "combat");
+            }
+        }
 
-        // Nahrung
-        State.apple += State.b.farm_apple * 3;
-        State.meat += State.b.hunter * 2;
-        State.wheat += State.b.farm_wheat * 2;
+        // 2. PRODUKTION (Mit Effizienz multipliziert)
+        const prod = (base) => base * efficiency;
 
-        // Verarbeitungsketten
-        let millCap = State.b.mill * 2; 
+        State.wood += prod(State.b.woodcutter * 2);
+        State.stone += prod(State.b.quarry * 1);
+        State.iron += prod(State.b.ironmine * 1);
+
+        State.apple += prod(State.b.farm_apple * 3);
+        State.meat += prod(State.b.hunter * 2);
+        State.wheat += prod(State.b.farm_wheat * 2);
+
+        // Verarbeitungsketten (benötigen auch Effizienz der Betriebe)
+        let millCap = prod(State.b.mill * 2); 
         let wheatProc = Math.min(State.wheat, millCap);
         State.wheat -= wheatProc; State.flour += (wheatProc * 2);
 
-        let bakeCap = State.b.bakery * 2;
+        let bakeCap = prod(State.b.bakery * 2);
         let flourProc = Math.min(State.flour, bakeCap);
         State.flour -= flourProc; State.bread += (flourProc * 3);
 
-        let smithCap = State.b.weaponsmith;
+        let smithCap = prod(State.b.weaponsmith);
         let ironProc = Math.min(State.iron, smithCap);
         State.iron -= ironProc; State.weapons += ironProc;
 
-        // Verbrauch
-        this.handleConsumption();
+        // 3. STEUERN & VERBRAUCH
+        const taxInfo = Config.taxes[State.taxIndex];
+        
+        // Steuern berechnen (Nur wenn Leute da sind)
+        if (State.population > 0) {
+            State.gold += (State.population * taxInfo.gold);
+            State.popularity += taxInfo.pop; // Pop Effekt anwenden
+        }
 
-        // Kampflogik
+        this.handleConsumption();
         this.checkCombat();
         this.handleMigration();
 
-        UI.update();
+        UI.update(efficiency, jobs, peasants);
     },
 
     handleConsumption: function() {
+        if(State.population === 0) return; // Geister essen nicht
+
         let needed = State.population;
-        let eaten = 0;
         
-        const eat = (type, amount) => {
-            let take = Math.min(State[type], amount);
+        const eat = (type) => {
+            let take = Math.min(State[type], needed);
             State[type] -= take;
-            return take;
+            needed -= take;
         };
 
-        // Essen Reihenfolge
-        needed -= eat('bread', needed);
-        needed -= eat('meat', needed);
-        needed -= eat('apple', needed);
+        eat('bread'); eat('meat'); eat('apple');
 
         if (needed > 0) {
-            State.popularity -= 10;
+            State.popularity -= 20; // Starker Abzug bei Hunger
             if(!State.flags.seenStarvation) {
-                UI.showModal("Hungersnot", "Sire, die Leute verhungern! Baut schneller Nahrung an.");
+                UI.showModal("Hungersnot", "Sire, das Volk hungert! Ohne Essen keine Arbeit!");
                 State.flags.seenStarvation = true;
             }
         } else {
-            // Kleiner Bonus wenn alle satt
-            if(State.popularity < 100) State.popularity += 1;
+            // Kleiner Bonus nur wenn nicht gehungert wurde
+             if(State.popularity < 100) State.popularity += 1;
         }
+        
+        // Cap Popularity
+        if(State.popularity > 100) State.popularity = 100;
+        if(State.popularity < 0) State.popularity = 0;
     },
 
     handleMigration: function() {
-        // Wachstum
+        // Migration passiert nur wenn wir nicht schon Maximum haben
+        // UND wenn Beliebtheit hoch genug ist (>50)
         let growth = 0;
-        if(State.popularity > 50) growth = (State.popularity - 40) * 0.4;
+        if(State.popularity >= 50) {
+            growth = (State.popularity - 40) * 0.5; // Schnellerer Zuwachs
+        } else {
+            // Bei niedriger Beliebtheit verlieren wir Fortschritt oder Leute
+            State.migrationProgress = 0;
+        }
         
-        if(State.population < State.maxPop) {
+        if(State.population < State.maxPop && growth > 0) {
             State.migrationProgress += growth;
             if(State.migrationProgress >= 100) {
                 State.population++;
                 State.migrationProgress = 0;
-                UI.log("Ein Bürger zieht in die Burg.", "important");
-                // Visuelles Feedback oben beim Pop Icon
+                UI.log("Ein neuer Siedler ist eingezogen.", "important");
+                // Visual feedback
                 const rect = document.getElementById('res-pop').getBoundingClientRect();
                 UI.showFloaty(rect.left, rect.top, "+1😊", "#81c784");
             }
         }
 
-        if(State.popularity < 20 && State.population > 0) {
-            State.population--;
-            State.popularity = 30; 
-            UI.log("Ein Bürger flieht.", "combat");
+        // Wegzug (Passiert schneller als Zuzug!)
+        if(State.popularity < 30 && State.population > 0) {
+            // 20% Chance pro Tick dass einer geht
+            if(Math.random() < 0.3) {
+                State.population--;
+                State.popularity = 40; // Reset damit nicht alle sofort gehen
+                UI.log("Ein Bürger hat die Burg verlassen!", "combat");
+            }
         }
     },
 
     checkCombat: function() {
-        // Warnung 5 Tage vorher
-        if(State.day === Config.combatStartDay - 5) {
-            UI.log("Späher berichten: Banditen sammeln sich!", "combat");
-        }
-
         if(State.day < Config.combatStartDay) return;
-        
-        if(Math.random() < 0.1) {
-            if(!State.flags.seenCombat) {
-                State.paused = true;
-                UI.showModal("Angriff!", "Banditen greifen an! Eure Soldaten verteidigen die Burg automatisch.");
-                State.flags.seenCombat = true;
-            }
+        if(State.population === 0) return; // Geister werden nicht angegriffen
 
-            const enemyStr = Math.floor(State.day * 1.2);
-            const myStr = State.soldiers * 10; // Soldaten sind stark
+        if(Math.random() < 0.1) {
+            State.paused = true;
+            UI.showModal("Angriff!", "Banditen greifen an!");
+            State.flags.seenCombat = true;
+
+            const enemyStr = Math.floor(State.day * 1.5);
+            const myStr = State.soldiers * 12; // Soldaten stärker gemacht
             
-            UI.log(`Angriff! Feindstärke: ${enemyStr} vs Unsere: ${myStr}`, "combat");
+            UI.log(`Kampf! Feind: ${enemyStr} vs Wir: ${myStr}`, "combat");
             
             if (myStr >= enemyStr) {
-                UI.log("Sieg! Das Volk jubelt.", "important");
-                State.popularity += 10;
+                UI.log("Sieg! Die Ehre ist unser.", "important");
+                State.popularity += 15;
             } else {
-                UI.log("Niederlage! Plünderung!", "combat");
+                UI.log("Niederlage! Unsere Lager sind leer.", "combat");
                 State.gold = Math.floor(State.gold / 2);
                 State.apple = 0; State.meat = 0; State.bread = 0;
                 State.popularity -= 20;
+                // Soldaten sterben bei Niederlage evtl
+                if(State.soldiers > 0) State.soldiers--;
             }
         }
     },
 
+    setTax: function(dir) {
+        let newIndex = State.taxIndex + dir;
+        if (newIndex >= 0 && newIndex < Config.taxes.length) {
+            State.taxIndex = newIndex;
+            UI.update();
+        }
+    },
+
     updateChatter: function() {
+        if(State.population === 0) {
+            document.getElementById('villager-chatter').innerText = `"${Phrases.empty[0]}"`;
+            document.getElementById('villager-chatter').style.opacity = 1;
+            return;
+        }
         let pool = Phrases.neutral;
         if(State.popularity > 80) pool = Phrases.happy;
         if(State.popularity < 40) pool = Phrases.angry;
-        if(State.day > Config.combatStartDay - 5 && State.soldiers < 2) pool = Phrases.fear;
 
         const text = pool[Math.floor(Math.random() * pool.length)];
         const el = document.getElementById('villager-chatter');
-        
-        // Kleine Animation: Ausblenden, Text ändern, Einblenden
         el.style.opacity = 0;
         setTimeout(() => {
             el.innerText = `"${text}"`;
@@ -576,7 +590,7 @@ const Game = {
             UI.update();
             UI.log("Soldat rekrutiert.", "important");
         } else {
-            UI.log("Kaserne, Gold, Waffen oder Bauern fehlen.");
+            UI.log("Bedingungen nicht erfüllt.");
         }
     }
 };
@@ -587,11 +601,11 @@ const UI = {
         const div = document.createElement('div');
         div.className = `log-entry ${type}`;
         div.innerHTML = `<strong>Tag ${State.day}:</strong> ${text}`;
-        area.prepend(div); // Neuestes Oben!
+        area.prepend(div);
         if(area.children.length > 20) area.removeChild(area.lastChild);
     },
 
-    update: function() {
+    update: function(efficiency = 1, jobs = 0, peasants = 0) {
         const s = State;
         const set = (id, val) => document.getElementById(id).innerText = Math.floor(val);
         set('res-gold', s.gold); set('res-wood', s.wood); set('res-stone', s.stone); set('res-iron', s.iron);
@@ -600,11 +614,20 @@ const UI = {
         
         document.getElementById('stat-day').innerText = s.day;
         document.getElementById('stat-pop').innerText = `${s.population} / ${s.maxPop}`;
+
+        // Tax Display
+        const tax = Config.taxes[s.taxIndex];
+        document.getElementById('display-tax').innerText = tax.name;
         
-        // Gesamtzahl Gebäude
-        let totalBuild = 0;
-        for(let k in s.b) totalBuild += s.b[k];
-        document.getElementById('stat-buildings').innerText = totalBuild;
+        // Workers Display
+        const effPct = Math.floor(efficiency * 100);
+        const elWorker = document.getElementById('stat-workers');
+        // Wenn keine Jobs da sind, ist Effizienz egal (aber 100% angezeigt sieht besser aus als 0%)
+        if(jobs === 0) elWorker.innerText = "Keine Jobs";
+        else {
+            elWorker.innerText = `${peasants}/${jobs} Arbeiter (${effPct}%)`;
+            elWorker.className = (effPct < 100) ? 'efficiency-display low' : 'efficiency-display';
+        }
     },
 
     updateBars: function() {
@@ -622,9 +645,7 @@ const UI = {
         const el = document.createElement('div');
         el.className = 'floating-text';
         el.innerText = text;
-        el.style.left = (x - 10) + 'px'; // Leicht versetzt damit Maus nicht verdeckt
-        el.style.top = (y - 20) + 'px';
-        el.style.color = color;
+        el.style.left = (x - 10) + 'px'; el.style.top = (y - 20) + 'px'; el.style.color = color;
         document.getElementById('particles').appendChild(el);
         setTimeout(() => el.remove(), 1000);
     },
