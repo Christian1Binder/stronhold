@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Burgherr V19 - Smooth & Clean</title>
+    <title>Burgherr V21 - Free Market</title>
     <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=MedievalSharp&display=swap" rel="stylesheet">
     
     <style>
@@ -30,25 +30,25 @@
         /* --- HEADER --- */
         header { 
             background: #1a1a1a; height: 120px; flex-shrink: 0; border-bottom: 3px solid var(--border);
-            display: flex; align-items: center; justify-content: space-between; padding: 0 15px; z-index: 100; position: relative;
+            display: flex; align-items: center; justify-content: space-between; padding: 0 10px; z-index: 100; position: relative;
         }
 
-        .header-info { width: 220px; }
-        .game-title { font-family: 'MedievalSharp'; font-size: 1.8rem; color: var(--highlight); margin: 0; line-height: 1; text-shadow: 2px 2px 0 #000; }
-        .objective { font-size: 0.75rem; background: rgba(255,255,255,0.05); padding: 5px; border-left: 3px solid var(--highlight); margin-top: 5px; color: #bbb; }
+        .header-info { width: 180px; }
+        .game-title { font-family: 'MedievalSharp'; font-size: 1.6rem; color: var(--highlight); margin: 0; line-height: 1; text-shadow: 2px 2px 0 #000; }
+        .objective { font-size: 0.7rem; background: rgba(255,255,255,0.05); padding: 5px; border-left: 3px solid var(--highlight); margin-top: 5px; color: #bbb; }
         .obj-done { text-decoration: line-through; color: var(--success); opacity: 0.7; }
 
-        .res-container { display: flex; gap: 8px; flex: 1; justify-content: flex-end; }
+        .res-container { display: flex; gap: 5px; flex: 1; justify-content: flex-end; }
         .res-group { 
-            background: #2d2d2d; border: 1px solid #444; border-radius: 4px; padding: 4px 8px; 
-            min-width: 70px; text-align: center; display: flex; flex-direction: column; justify-content: center;
+            background: #2d2d2d; border: 1px solid #444; border-radius: 4px; padding: 4px 6px; 
+            min-width: 60px; text-align: center; display: flex; flex-direction: column; justify-content: center;
             position: relative; cursor: help; transition: background 0.2s;
         }
         .res-group:hover .tooltip { display: block; }
-        .res-label { font-size: 0.6rem; text-transform: uppercase; color: #888; border-bottom: 1px solid #444; margin-bottom: 2px; }
-        .res-values { display: flex; gap: 10px; justify-content: center; font-weight: bold; font-size: 0.9rem; color: #eee; position: relative; }
+        .res-label { font-size: 0.55rem; text-transform: uppercase; color: #888; border-bottom: 1px solid #444; margin-bottom: 2px; }
+        .res-values { display: flex; gap: 8px; justify-content: center; font-weight: bold; font-size: 0.85rem; color: #eee; position: relative; }
         
-        .res-item { position: relative; display: inline-block; min-width: 30px; text-align: center; }
+        .res-item { position: relative; display: inline-block; min-width: 25px; text-align: center; }
         .rate-ind { font-size: 0.65rem; position: absolute; top: -8px; right: -5px; opacity: 0.9; font-weight: 900; text-shadow: 1px 1px 0 #000; }
         .rate-pos { color: #66bb6a; }
         .rate-neg { color: #ef5350; }
@@ -70,11 +70,10 @@
         .tooltip { 
             display: none; position: absolute; top: 100%; right: 0; margin-top: 5px; z-index: 2000;
             background: #e0e0e0; color: #000; padding: 10px; border: 2px solid var(--border); border-radius: 4px;
-            width: 220px; text-align: left; box-shadow: 0 5px 15px rgba(0,0,0,0.5); pointer-events: none;
+            width: 240px; text-align: left; box-shadow: 0 5px 15px rgba(0,0,0,0.5); pointer-events: none;
         }
         .tt-row { display: flex; justify-content: space-between; font-size: 0.8rem; border-bottom: 1px dashed #ccc; padding: 2px 0; }
         
-        /* IDLE & POP */
         .pop-val { display:flex; gap:5px; align-items:center; }
         .idle-val { color: var(--highlight); margin-left: 8px; }
 
@@ -144,6 +143,7 @@
         .log-entry.prod { border-color: var(--success); }
         .log-entry.warn { border-color: var(--danger); background: #ffebee; }
         .log-entry.death { border-color: #000; background: #444; color: #fff; }
+        .log-entry.war { border-color: var(--highlight); background: #fff8e1; }
 
         .controls { padding: 10px; background: #bcaaa4; border-top: 2px solid var(--border); }
         .c-row { display: flex; gap: 5px; margin-bottom: 5px; }
@@ -153,6 +153,8 @@
         }
         .btn:hover { background: #fff; transform: translateY(-1px); }
         .btn:active { transform: translateY(1px); }
+        .btn-war { background: #5d4037; color: #fff; border-color: #3e2723; }
+        .btn-war:hover { background: #4e342e; }
 
         /* --- FOOTER (BUILDING) --- */
         footer { 
@@ -185,6 +187,11 @@
         .list-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; max-height: 400px; overflow-y: auto; text-align: left; margin: 15px 0; }
         .list-item { background: rgba(255,255,255,0.5); padding: 5px; border: 1px solid #999; display: flex; justify-content: space-between; align-items: center; border-radius: 4px; font-size: 0.9rem; }
         .missing-res { color: var(--danger); font-weight: bold; }
+
+        /* WAR MISSION STYLES */
+        .war-card { background: rgba(0,0,0,0.1); padding: 10px; margin-bottom: 5px; border: 1px solid #777; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; }
+        .war-lvl { font-weight: bold; color: var(--danger); }
+        .war-loot { font-size: 0.8rem; color: #555; }
     </style>
 </head>
 <body>
@@ -194,6 +201,17 @@
         <h2 id="m-title" style="font-family:'MedievalSharp'; margin-top:0">Titel</h2>
         <div id="m-body" style="font-size:1.1rem; line-height:1.4">Text</div>
         <button id="m-btn" class="btn" style="margin-top:20px; width:100%; background:var(--highlight);">Aktion</button>
+    </div>
+</div>
+
+<div id="war-mask" class="modal-mask">
+    <div class="modal-win" style="width: 600px;">
+        <h2 style="font-family:'MedievalSharp'; margin:0">Feldzüge</h2>
+        <div style="margin-bottom:10px; border-bottom:1px solid #999; padding-bottom:5px;">
+            Deine Armeestärke: <span id="army-str" style="font-weight:bold; font-size:1.2rem">0</span> ⚔️
+        </div>
+        <div id="war-list" class="list-grid" style="grid-template-columns: 1fr;"></div>
+        <button onclick="UI.closeWar()" class="btn" style="width:100%">Rückzug</button>
     </div>
 </div>
 
@@ -217,7 +235,7 @@
 
 <header>
     <div class="header-info">
-        <div class="game-title">Burgherr V19</div>
+        <div class="game-title">Burgherr V21</div>
         <div class="objective" id="obj-disp">Lade...</div>
     </div>
 
@@ -227,12 +245,14 @@
             <div class="res-values">💰 <span id="r-gold">0</span></div>
         </div>
         
-        <div class="res-group" id="rg-store">
+        <div class="res-group" id="rg-store" style="min-width:120px">
             <span class="res-label">Lager</span>
             <div class="res-values">
                 <span class="res-item" title="Holz">🌲<span id="r-wood">0</span><span id="d-wood" class="rate-ind"></span></span>
                 <span class="res-item" title="Stein">🧱<span id="r-stone">0</span><span id="d-stone" class="rate-ind"></span></span>
                 <span class="res-item" title="Eisen">⛓️<span id="r-iron">0</span><span id="d-iron" class="rate-ind"></span></span>
+                <span class="res-item" title="Weizen">🌾<span id="r-wheat">0</span><span id="d-wheat" class="rate-ind"></span></span>
+                <span class="res-item" title="Mehl">🥡<span id="r-flour">0</span><span id="d-flour" class="rate-ind"></span></span>
             </div>
             <div class="tooltip">Limit: <span id="tt-stock">100</span> (Vorratslager bauen)</div>
         </div>
@@ -248,7 +268,7 @@
             <div class="tooltip">Limit: <span id="tt-food">100</span> (Kornspeicher bauen)</div>
         </div>
 
-        <div class="res-group" style="min-width:140px">
+        <div class="res-group" style="min-width:100px">
             <span class="res-label">Truppen</span>
             <div class="res-values">
                 <span title="Bogen">🏹<span id="r-bow">0</span></span>
@@ -300,6 +320,9 @@
         <div class="controls">
             <div class="c-row">
                 <button class="btn" onclick="UI.openRecruit()">🛡️ Armee</button>
+                <button class="btn btn-war" onclick="UI.openWar()">⚔️ Feldzug</button>
+            </div>
+            <div class="c-row">
                 <button class="btn" onclick="UI.openMarket()">⚖️ Markt</button>
             </div>
             <div style="background:rgba(255,255,255,0.5); padding:5px; border-radius:4px; font-size:0.8rem; margin:5px 0;">
@@ -345,7 +368,7 @@ const T = {
     gold:"Gold", pop:"Bürger", archer:"Schütze", pikeman:"Pikenier", swordsman:"Schwertkämpfer", merc:"Söldner",
     cath:"Kathedrale"
 };
-const SafeT = (k) => T[k] || k; // Fallback
+const SafeT = (k) => T[k] || k; 
 
 const Levels = [
     {
@@ -353,12 +376,7 @@ const Levels = [
         t:"Gründung", 
         msg:"Sorge für Nahrung und Unterkünfte. Klicke auf die Karte für erste Rohstoffe!", 
         goal:{wood:50, pop:10}, 
-        start:{
-            gold: 100, 
-            wood: 60, 
-            bread: 50,
-            apple: 20
-        }
+        start:{gold: 100, wood: 60, bread: 50, apple: 20}
     },
     {id:2, t:"Stein & Brot", msg:"Baut Steinbrüche & Brotproduktion. Klicke auf Berge für Stein.", goal:{stone:20, bread:30}, start:{gold:150, wood:50, bread:50}},
     {id:3, t:"Waffen", msg:"Stellt Bögen und Speere her.", goal:{bow:5, spear:5}, start:{gold:200, wood:100, stone:50, bread:100, meat:20}},
@@ -373,11 +391,18 @@ const Units = {
     merc: {n:"Söldner", cost:50, str:10}
 };
 
+const Missions = [
+    {n:"Banditenlager", str:20, loot:{gold:50, wood:20, bread:20}, risk:"Niedrig"},
+    {n:"Wegelagerer", str:50, loot:{gold:100, iron:10, meat:20}, risk:"Mittel"},
+    {n:"Raubritterburg", str:150, loot:{gold:300, stone:50, sword:5, armor:2}, risk:"Hoch"},
+    {n:"Feindliche Grafschaft", str:500, loot:{gold:1000, iron:100}, risk:"Extrem"}
+];
+
 const Config = {
-    tick: 4000, // 4 Sek / Tag
+    tick: 4000, 
     taxes: [
         {n:"Keine",   g:0, h:1},
-        {n:"Gering",  g:1, h:-1}, // 1G = -1H
+        {n:"Gering",  g:1, h:-1}, 
         {n:"Normal",  g:2, h:-2},
         {n:"Hoch",    g:4, h:-4},
         {n:"Wucher",  g:8, h:-10}
@@ -424,14 +449,14 @@ const Config = {
 };
 
 /* LOGIC */
-let S = {}; // State
+let S = {}; 
 let lastTickTime = 0;
 
 const Game = {
     init: function() {
-        if(localStorage.getItem('sh_v19')) {
+        if(localStorage.getItem('sh_v21')) {
             try {
-                S = JSON.parse(localStorage.getItem('sh_v19'));
+                S = JSON.parse(localStorage.getItem('sh_v21'));
                 if(!S.b.gran && S.b.granary) { S.b.gran = S.b.granary; delete S.b.granary; }
                 UI.init();
                 UI.showModal("Willkommen zurück", "Dein Lehen erwartet dich.", "Weiter");
@@ -467,7 +492,12 @@ const Game = {
         UI.showModal("Level " + id + ": " + l.t, l.msg, "Starten");
     },
 
-    // MANUAL CLICK GATHERING
+    getArmyStr: function() {
+        let s = 0;
+        for(let k in S.units) s += (S.units[k] * Units[k].str);
+        return s;
+    },
+
     clickGather: function(type, e) {
         if(S.paused) return;
         
@@ -497,14 +527,16 @@ const Game = {
         
         let startRes = JSON.parse(JSON.stringify(S.res));
         
-        // 1. LIMITS
+        // 1. LIMITS & SPACE CALC
         let maxS = (S.b.stock || 1) * 50;
         let maxF = (S.b.gran || 1) * 50; 
         
         let curS = S.res.wood + S.res.stone + S.res.iron + S.res.wheat + S.res.flour;
         let curF = S.res.bread + S.res.meat + S.res.apple + S.res.cheese;
-        let fullS = curS >= maxS;
-        let fullF = curF >= maxF;
+        
+        // Remaining space
+        let spaceS = maxS - curS;
+        let spaceF = maxF - curF;
 
         // 2. PRODUCTION
         for(let k in Config.b) {
@@ -516,27 +548,53 @@ const Game = {
 
             if(b.prod) {
                 let isFood = ['meat','apple','cheese','wheat','hops'].includes(b.prod);
-                if((isFood && !fullF) || (!isFood && !fullS)) {
-                    let amt = n * (b.amt||1);
-                    S.res[b.prod] = (S.res[b.prod]||0) + amt;
+                let isStorage = !['meat','apple','cheese','bread'].includes(b.prod);
+                let amt = n * (b.amt||1);
+                
+                if(isFood && spaceF > 0) {
+                    let realAdd = Math.min(amt, spaceF);
+                    S.res[b.prod] = (S.res[b.prod]||0) + realAdd;
+                    spaceF -= realAdd;
+                } else if(isStorage && spaceS > 0) {
+                    let realAdd = Math.min(amt, spaceS);
+                    S.res[b.prod] = (S.res[b.prod]||0) + realAdd;
+                    spaceS -= realAdd;
                 }
             }
+            // Process (Converts 1:X, consumes space but frees input space? Simplified: Just check output space)
             if(b.proc) {
                 let take = Math.min(S.res[b.proc]||0, n);
-                if(take > 0 && !fullF) {
-                    S.res[b.proc] -= take;
-                    S.res[b.out] = (S.res[b.out]||0) + (take * (b.r||1));
+                // Check if we have space for output
+                let outAmt = take * (b.r||1);
+                // Simple logic: if food output, check spaceF
+                let isFoodOut = ['bread','beer'].includes(b.out); // beer is neither food nor storage limit technically? Let's treat beer as limitless or storage.
+                // Actually wheat->flour (Storage to Storage). Flour->Bread (Storage to Food).
+                
+                if(take > 0) {
+                    // We assume processing always works for now to keep flow, but strictly we should check limit.
+                    // Let's rely on space checks.
+                    let canProd = true;
+                    if(['bread'].includes(b.out) && spaceF < outAmt) canProd = false;
+                    if(['flour'].includes(b.out) && spaceS < outAmt) canProd = false;
+                    
+                    if(canProd) {
+                        S.res[b.proc] -= take;
+                        S.res[b.out] = (S.res[b.out]||0) + outAmt;
+                        if(['bread'].includes(b.out)) spaceF -= outAmt;
+                        if(['flour'].includes(b.out)) spaceS -= outAmt; // Frees wheat space but takes flour space. Net zero change mostly.
+                    }
                 }
             }
             if(b.use) {
-                if((S.res[b.use]||0) >= n && !fullS) {
+                if((S.res[b.use]||0) >= n) {
+                    // Check output space? Weapons don't have limit logic in this simple version
                     S.res[b.use] -= n;
                     S.res[b.out] = (S.res[b.out]||0) + (n*(b.amt||1));
                 }
             }
         }
 
-        // 3. EAT (Prioritize Cheap Food)
+        // 3. EAT
         let eat = S.pop.curr;
         let foods = ['apple','bread','cheese','meat'];
         let ateTypes = 0;
@@ -550,9 +608,9 @@ const Game = {
         let hChg = 0;
         if(eat > 0) { 
             UI.log(`${eat} hungern!`, 'warn'); 
-            hChg -= 3; // SMOOTHER: Nur -3 statt -20
+            hChg -= 3; 
             S.factors.food = -3; 
-            if(Math.random() < 0.1) { // Geringere Sterberate
+            if(Math.random() < 0.1) {
                 S.pop.curr--;
                 UI.log("Ein Bürger verhungert.", "death");
             }
@@ -572,20 +630,15 @@ const Game = {
         }
 
         hChg += ((S.b.church||0) * 5);
-        
-        // LIMIT CHANGE (Smoothing)
-        let diff = hChg; 
-        // Max +/- 10 per Tick
-        diff = Math.max(-10, Math.min(10, diff));
-        
+        let diff = Math.max(-10, Math.min(10, hChg));
         S.pop.hap = Math.max(0, Math.min(100, S.pop.hap + diff));
 
-        // 4. POPULATION & LOSS CHECK
+        // 4. GAME OVER
         if(S.pop.curr <= 0) {
             S.pop.curr = 0; 
             S.paused = true;
             UI.update();
-            UI.showModal("GAME OVER", "Das Dorf ist ausgestorben. Dein Lehen ist gefallen.", "Neustart", Game.reset);
+            UI.showModal("GAME OVER", "Das Dorf ist ausgestorben.", "Neustart", Game.reset);
             return; 
         }
 
@@ -610,9 +663,6 @@ const Game = {
                 if(diff > 0) UI.showFloatingText(k, `+${diff}`, 'pos');
             }
         }
-        
-        // NO PROD LOGGING ANYMORE - CLEAN CHAT
-        // let prodArr = []; ... UI.log ... REMOVED
 
         // 6. WIN CHECK
         let l = Levels.find(x => x.id == S.lvl);
@@ -650,20 +700,11 @@ const Game = {
     build: function(key) {
         let b = Config.b[key];
         if(S.res.gold >= (b.cost.g||0) && S.res.wood >= (b.cost.w||0) && S.res.stone >= (b.cost.s||0)) {
-            // Rohstoffe abziehen
             S.res.gold -= (b.cost.g||0); S.res.wood -= (b.cost.w||0); S.res.stone -= (b.cost.s||0);
-            
-            // Counter erhöhen
             S.b[key]++;
-            
-            // Logik-Updates
             Game.autoAssign();
             UI.addMapIcon(key);
-            
-            // --- FIX: VISUELLE LISTE NEU ZEICHNEN ---
-            UI.renderBuild(); 
-            // ----------------------------------------
-
+            UI.renderBuild();
             UI.update();
         }
     },
@@ -692,6 +733,46 @@ const Game = {
         UI.update();
     },
 
+    launchWar: function(idx) {
+        let m = Missions[idx];
+        let str = Game.getArmyStr();
+        
+        let rng = (Math.random() * 0.4) + 0.8; 
+        let enemyRoll = m.str * rng;
+        let playerRoll = str;
+        
+        let win = playerRoll >= enemyRoll;
+        
+        let lossRate = win ? 0.1 : 0.3;
+        let lostUnits = [];
+        for(let k in S.units) {
+            let uCount = S.units[k];
+            if(uCount > 0) {
+                let kill = Math.ceil(uCount * lossRate * Math.random());
+                if(kill > 0) {
+                    S.units[k] -= kill;
+                    lostUnits.push(`${kill} ${Units[k].n}`);
+                }
+            }
+        }
+        
+        if(win) {
+            let lootText = [];
+            for(let k in m.loot) {
+                S.res[k] = (S.res[k]||0) + m.loot[k];
+                lootText.push(`${m.loot[k]} ${SafeT(k)}`);
+            }
+            UI.log(`Sieg gegen ${m.n}! Beute: ${lootText.join(', ')}`, 'war');
+        } else {
+            UI.log(`Niederlage gegen ${m.n}.`, 'warn');
+        }
+        
+        if(lostUnits.length) UI.log(`Verluste: ${lostUnits.join(', ')}`, 'death');
+        
+        UI.update();
+        UI.closeWar();
+    },
+
     tax: function(d) {
         let n = S.tax + d;
         if(n >= 0 && n < 5) S.tax = n;
@@ -708,8 +789,8 @@ const Game = {
         S.paused = !S.paused; 
         if(!S.paused) lastTickTime = Date.now();
     },
-    save: function() { localStorage.setItem('sh_v19', JSON.stringify(S)); UI.log("Gespeichert", "prod"); },
-    reset: function() { localStorage.removeItem('sh_v19'); location.reload(); }
+    save: function() { localStorage.setItem('sh_v21', JSON.stringify(S)); UI.log("Gespeichert", "prod"); },
+    reset: function() { localStorage.removeItem('sh_v21'); location.reload(); }
 };
 
 const UI = {
@@ -731,13 +812,14 @@ const UI = {
     },
     
     update: function() {
-        // Resources (Resourcen UND Units)
-        ['gold','wood','stone','iron','bread','meat','apple','cheese','wheat','flour','hops','bow','spear','sword','merc'].forEach(k => {
+        // Resources
+        ['gold','wood','stone','iron','wheat','flour','bread','meat','apple','cheese','bow','spear','sword','merc'].forEach(k => {
             let el = document.getElementById('r-'+k);
-            let val = S.res[k] !== undefined ? S.res[k] : (S.units[k] !== undefined ? S.units[k] : 0);
-            if(el) el.innerText = Math.floor(val); 
+            if(el) {
+                let val = S.res[k] !== undefined ? S.res[k] : (S.units[k] !== undefined ? S.units[k] : 0);
+                el.innerText = Math.floor(val); 
+            }
             
-            // Rates (+/- Display)
             let dEl = document.getElementById('d-'+k);
             if(dEl) {
                 let r = S.rates[k] || 0;
@@ -752,22 +834,17 @@ const UI = {
         let idle = S.pop.curr - sold - work;
 
         document.getElementById('r-pop').innerText = S.pop.curr + "/" + S.pop.max;
-        document.getElementById('r-idle').innerText = idle; // UPDATE IDLE
+        document.getElementById('r-idle').innerText = idle;
         document.getElementById('r-hap').innerText = Math.floor(S.pop.hap);
         document.getElementById('day-disp').innerText = S.day;
         document.getElementById('lvl-disp').innerText = S.lvl;
         
-        // Idle Warning (Keep icon for visual flare, but text is now separate)
-        // document.getElementById('idle-icon').style.display = idle > 0 ? 'inline' : 'none'; 
-
-        // Tax Info
         let tIdx = Config.taxes[S.tax];
         document.getElementById('tax-name').innerText = tIdx.n;
         document.getElementById('tax-impact').innerText = `+${S.pop.curr * tIdx.g}💰 / ${tIdx.h}❤️`;
         if(tIdx.h < 0) document.getElementById('tax-impact').style.color = 'var(--danger)';
         else document.getElementById('tax-impact').style.color = 'var(--success)';
 
-        // Tooltips Breakdown
         document.getElementById('hap-breakdown').innerHTML = `
             <div class="tt-row"><span>Essen:</span><span>${S.factors.food > 0 ? '+'+S.factors.food : S.factors.food}</span></div>
             <div class="tt-row"><span>Steuer:</span><span>${S.factors.tax}</span></div>
@@ -797,6 +874,9 @@ const UI = {
         }
 
         this.updateBuildState();
+        if(document.getElementById('war-mask').style.display === 'flex') {
+            document.getElementById('army-str').innerText = Game.getArmyStr();
+        }
     },
 
     updateBuildState: function() {
@@ -820,7 +900,7 @@ const UI = {
 
     showFloatingText: function(key, text, type) {
         let targetId = "";
-        if(['wood','stone','iron'].includes(key)) targetId = 'rg-store';
+        if(['wood','stone','iron','wheat','flour'].includes(key)) targetId = 'rg-store';
         else if(['bread','meat','apple','cheese'].includes(key)) targetId = 'rg-food';
         else if(key === 'gold') targetId = 'rg-gold';
         else return; 
@@ -906,10 +986,8 @@ const UI = {
         if(zone) {
             let d = document.createElement('div'); d.className='map-b'; d.innerText = b.i;
             d.title = b.n;
-            
             d.style.left = (10 + Math.random() * 70) + '%';
             d.style.top = (10 + Math.random() * 70) + '%';
-            
             zone.appendChild(d);
         }
     },
@@ -946,6 +1024,30 @@ const UI = {
     },
     closeRecruit: function() { document.getElementById('recruit-mask').style.display='none'; },
 
+    openWar: function() {
+        document.getElementById('war-mask').style.display='flex';
+        let l = document.getElementById('war-list'); l.innerHTML="";
+        document.getElementById('army-str').innerText = Game.getArmyStr();
+        
+        Missions.forEach((m, idx) => {
+            let row = document.createElement('div'); row.className='war-card';
+            let lootTxt = [];
+            for(let k in m.loot) lootTxt.push(`${m.loot[k]} ${SafeT(k)}`);
+            row.innerHTML = `
+                <div>
+                    <div style="font-weight:bold">${m.n}</div>
+                    <div class="war-loot">Beute: ${lootTxt.join(', ')}</div>
+                </div>
+                <div style="text-align:right">
+                    <div class="war-lvl">Stärke: ${m.str}</div>
+                    <button class="btn" style="margin-top:5px; background:var(--danger); color:#fff" onclick="Game.launchWar(${idx})">Angriff!</button>
+                </div>
+            `;
+            l.appendChild(row);
+        });
+    },
+    closeWar: function() { document.getElementById('war-mask').style.display='none'; },
+
     openMarket: function() {
         document.getElementById('market-mask').style.display='flex';
         this.renderMarket();
@@ -953,7 +1055,8 @@ const UI = {
     closeMarket: function() { document.getElementById('market-mask').style.display='none'; },
     renderMarket: function() {
         let l = document.getElementById('market-list'); l.innerHTML="";
-        ['wood','stone','iron','wheat','flour','bread','meat','cheese','apple','bow','spear','sword'].forEach(k => {
+        // ALL TRADEABLE GOODS
+        ['wood','stone','iron','pitch','wheat','flour','hops','bread','meat','cheese','apple','beer','bow','spear','sword','armor','leather'].forEach(k => {
             let row = document.createElement('div'); row.className='list-item';
             row.innerHTML = `<span>${SafeT(k)}: ${Math.floor(S.res[k]||0)}</span><div><button onclick="Game.trade('${k}',1)">Kauf</button> <button onclick="Game.trade('${k}',0)">Verk</button></div>`;
             l.appendChild(row);
