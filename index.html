@@ -3,643 +3,531 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Burgherr WebApp - V4.0 Stronghold Style</title>
+    <title>Burgherr V5 - Visual Village</title>
     <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=MedievalSharp&display=swap" rel="stylesheet">
     
     <style>
         :root {
-            --bg-body: #3e3e3e; --bg-panel: #e0d5b7; 
-            --primary: #5d4037; --secondary: #2c2c2c; 
-            --accent: #8b0000; --highlight: #ffb300;
-            --text-main: #222;
+            --bg-ui: #2c2c2c; 
+            --bg-paper: #e0d5b7;
+            --primary: #5d4037; 
+            --accent: #d32f2f; 
+            --highlight: #ffb300;
+            --text-light: #f5f5f5;
         }
 
         * { box-sizing: border-box; user-select: none; }
-        body { font-family: 'Lato', sans-serif; background: var(--bg-body); color: var(--text-main); margin: 0; height: 100vh; display: flex; justify-content: center; overflow: hidden; }
-        
-        #app { 
-            background: url('https://www.transparenttextures.com/patterns/aged-paper.png'), var(--bg-panel);
-            width: 100%; max-width: 1600px; display: flex; flex-direction: column; position: relative; box-shadow: 0 0 50px rgba(0,0,0,0.8);
-        }
+        body { font-family: 'Lato', sans-serif; background: #111; color: #333; margin: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
 
-        /* --- HEADER (Ressourcen) --- */
+        /* --- 1. HEADER (OLD STYLE RESTORED) --- */
         header { 
-            background: #2a2a2a; color: #eee; padding: 5px 15px; height: 100px; 
+            background: var(--bg-ui); color: var(--text-light); height: 100px; 
             display: flex; align-items: center; justify-content: space-between; 
-            border-bottom: 3px solid #5d4037; flex-shrink: 0;
+            padding: 0 15px; border-bottom: 3px solid var(--primary); flex-shrink: 0;
         }
-        .header-left h1 { font-family: 'MedievalSharp'; color: var(--highlight); margin: 0; font-size: 1.5rem; text-shadow: 2px 2px 0 #000; }
-        .limit-display { font-size: 0.75rem; color: #aaa; margin-top: 2px; }
-        .limit-alert { color: #ff5252; font-weight: bold; animation: blink 1s infinite; }
+        
+        .header-title h1 { font-family: 'MedievalSharp'; margin: 0; font-size: 1.4rem; color: var(--highlight); }
+        .header-title span { font-size: 0.8rem; color: #aaa; }
 
-        .res-container { display: flex; gap: 10px; flex: 1; justify-content: flex-end; }
-        .res-group { background: rgba(0,0,0,0.4); border: 1px solid #555; border-radius: 4px; padding: 2px 8px; min-width: 80px; text-align: center; }
-        .res-val { font-weight: 900; font-size: 0.9rem; color: #fff; display: block; }
-        .res-icon { font-size: 1rem; }
+        .res-bar { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 5px; flex: 1; justify-content: flex-end; }
+        .res-box { 
+            background: rgba(0,0,0,0.4); border: 1px solid #555; border-radius: 4px; 
+            padding: 3px 6px; min-width: 60px; text-align: center; display: flex; flex-direction: column;
+        }
+        .res-box small { font-size: 0.55rem; text-transform: uppercase; color: #aaa; margin-bottom: 2px; border-bottom: 1px solid #444; }
+        .res-row { display: flex; justify-content: center; gap: 8px; font-size: 0.9rem; font-weight: bold; }
+        .res-single { display: flex; flex-direction: column; align-items: center; }
+        .res-ico { font-size: 1rem; }
 
-        /* --- MAIN AREA --- */
+        /* --- 2. MAIN AREA (VILLAGE & LOG) --- */
         main { display: flex; flex: 1; overflow: hidden; position: relative; }
+
+        /* VISUAL VILLAGE (LINKS/MITTE) */
+        #village-map {
+            flex: 1; 
+            background-color: #558b2f; /* Wiese */
+            background-image: 
+                radial-gradient(#689f38 15%, transparent 16%),
+                radial-gradient(#33691e 15%, transparent 16%);
+            background-size: 60px 60px;
+            background-position: 0 0, 30px 30px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: inset 0 0 50px rgba(0,0,0,0.5);
+            padding: 20px;
+            display: flex; flex-wrap: wrap; align-content: flex-start; gap: 10px;
+        }
         
-        /* LOG (Mitte) */
-        #center-log { 
-            flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;
-            background-image: radial-gradient(#d7ccc8 10%, transparent 10%); background-size: 20px 20px;
-            padding-bottom: 160px; /* Platz für Footer */
+        /* Die Gebäude auf der Karte */
+        .map-building {
+            width: 60px; height: 60px; 
+            background: #e0d5b7; border: 2px solid #3e2723; border-radius: 6px;
+            display: flex; align-items: center; justify-content: center; font-size: 2rem;
+            box-shadow: 2px 4px 5px rgba(0,0,0,0.3);
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
         }
+        .map-building::after { content:''; position:absolute; top:2px; left:2px; width:4px; height:4px; border-radius:50%; background:#8d6e63; }
+        @keyframes popIn { from { transform: scale(0); } to { transform: scale(1); } }
 
-        /* RECHTS (Verwaltung) */
-        aside.right { 
-            width: 320px; background: #d7ccc8; border-left: 2px solid #5d4037; 
-            padding: 10px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px;
-            padding-bottom: 160px; /* Platz für Footer */
+        /* LOG (RECHTS, SCHMAL) */
+        aside.log-sidebar {
+            width: 300px; 
+            background: #d7ccc8; 
+            border-left: 3px solid var(--primary);
+            display: flex; flex-direction: column;
+            z-index: 10;
         }
+        .log-container { flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 6px; }
+        
+        /* LOG ITEMS */
+        .log-entry { background: #fff; padding: 6px; border-radius: 4px; font-size: 0.8rem; border-left: 4px solid #aaa; box-shadow: 0 1px 2px rgba(0,0,0,0.1); flex-shrink: 0; }
+        .log-entry.report { border-color: #558b2f; background: #f1f8e9; }
+        .log-entry.error { border-color: #d32f2f; background: #ffebee; font-weight: bold; }
+        .log-entry.info { border-color: #ffb300; }
 
-        /* --- FOOTER (BAUMENÜ) --- */
+        /* SIDEBAR CONTROLS */
+        .sidebar-controls { padding: 10px; background: #bcaaa4; border-top: 1px solid #8d6e63; }
+        .side-btn { width: 100%; padding: 8px; margin-bottom: 5px; cursor: pointer; border: 1px solid #5d4037; background: #efebe9; font-weight: bold; border-radius: 3px; }
+        .side-btn:hover { background: #fff; }
+
+        /* --- 3. FOOTER (BUILD MENU) --- */
         footer {
-            position: absolute; bottom: 0; left: 0; width: 100%; height: 150px;
-            background: url('https://www.transparenttextures.com/patterns/wood-pattern.png'), #3e2723;
-            border-top: 4px solid #8d6e63; display: flex; align-items: center; padding: 0 20px;
-            box-shadow: 0 -5px 15px rgba(0,0,0,0.5); z-index: 100;
+            height: 140px; background: #3e2723; border-top: 4px solid #8d6e63;
+            display: flex; align-items: center; padding: 0 10px; flex-shrink: 0; z-index: 20;
         }
+        
+        .cat-list { display: flex; flex-direction: column; gap: 5px; margin-right: 15px; border-right: 1px solid #6d4c41; padding-right: 10px; height: 100%; justify-content: center; }
+        .cat-btn { width: 40px; height: 40px; border-radius: 50%; border: 2px solid #a1887f; background: #5d4037; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; cursor: pointer; transition: 0.2s; }
+        .cat-btn:hover, .cat-btn.active { background: var(--highlight); color: #000; transform: scale(1.1); border-color: #fff; }
 
-        /* Kategorien (Links) */
-        .cat-menu { display: flex; gap: 10px; border-right: 2px solid #8d6e63; padding-right: 20px; margin-right: 20px; }
-        .cat-btn {
-            width: 60px; height: 60px; background: #5d4037; border: 2px solid #a1887f; border-radius: 8px;
-            cursor: pointer; display: flex; justify-content: center; align-items: center; font-size: 2rem;
-            transition: all 0.1s; position: relative;
-        }
-        .cat-btn:hover { background: #6d4c41; transform: scale(1.05); }
-        .cat-btn.active { background: #ffb300; border-color: #fff; color: #3e2723; box-shadow: 0 0 10px #ffb300; }
-        .cat-tooltip { position: absolute; bottom: 70px; background: #000; color: #fff; padding: 4px; font-size: 0.7rem; border-radius: 4px; opacity: 0; pointer-events: none; transition: opacity 0.2s; white-space: nowrap;}
-        .cat-btn:hover .cat-tooltip { opacity: 1; }
-
-        /* Gebäude (Rechts) */
-        .build-menu { display: flex; gap: 10px; overflow-x: auto; flex: 1; align-items: center; padding-bottom: 10px;}
-        .building-icon {
-            width: 70px; height: 90px; background: #e0d5b7; border: 2px solid #5d4037; border-radius: 4px;
+        .build-list { display: flex; gap: 8px; overflow-x: auto; flex: 1; padding: 5px; height: 100%; align-items: center; }
+        
+        .b-card {
+            min-width: 80px; height: 100px; background: #e0d5b7; border: 2px solid #5d4037; border-radius: 5px;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            cursor: pointer; text-align: center; padding: 2px; position: relative; transition: transform 0.1s;
+            cursor: pointer; position: relative; transition: transform 0.1s;
         }
-        .building-icon:hover { transform: translateY(-5px); background: #fff; }
-        .b-img { font-size: 1.8rem; margin-bottom: 2px; }
-        .b-name { font-size: 0.65rem; font-weight: bold; line-height: 1; margin-bottom: 2px; }
+        .b-card:hover { transform: translateY(-3px); background: #fff; }
+        .b-badge { position: absolute; top: -5px; right: -5px; background: #d32f2f; color: white; width: 20px; height: 20px; border-radius: 50%; font-size: 0.75rem; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 1px solid #fff; box-shadow: 1px 1px 3px rgba(0,0,0,0.3); }
+        .b-icon { font-size: 2rem; margin-bottom: 2px; }
+        .b-name { font-size: 0.65rem; font-weight: bold; margin-bottom: 2px; }
         .b-cost { font-size: 0.6rem; color: #555; }
-        .b-count { position: absolute; top: -5px; right: -5px; background: #d32f2f; color: white; font-size: 0.7rem; font-weight: bold; padding: 2px 5px; border-radius: 10px; }
 
-        /* --- LOG CARDS --- */
-        .log-card { background: #fff; border-radius: 4px; border-left: 4px solid #999; margin-bottom: 5px; padding: 5px; font-size: 0.85rem; box-shadow: 0 1px 2px rgba(0,0,0,0.1); flex-shrink: 0;}
-        .log-header { font-weight: bold; font-size: 0.75rem; color: #555; display: flex; justify-content: space-between; margin-bottom: 4px; border-bottom: 1px dashed #ccc; padding-bottom: 2px;}
-        .log-card.error { border-left-color: #d32f2f; background: #ffebee; }
-        .log-card.info { border-left-color: #ffb300; background: #fff8e1; }
-        .log-card.report { border-left-color: #558b2f; background: #f1f8e9; }
-        
-        /* --- UI ELEMENTS --- */
-        .stat-btn { width: 100%; padding: 8px; background: #5d4037; color: #fff; border: 1px solid #3e2723; cursor: pointer; margin-bottom: 5px; border-radius: 4px; }
-        .stat-btn:hover { background: #4e342e; }
-        
-        .market-overlay { display: none; position: absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index: 200; justify-content:center; align-items:center;}
-        .market-box { background: #e0d5b7; padding: 20px; border: 4px solid #5d4037; width: 600px; max-height:80vh; overflow-y:auto; border-radius: 8px; }
-        .trade-row { display: flex; justify-content: space-between; padding: 5px; border-bottom: 1px solid #ccc; align-items: center; }
+        /* MODALS */
+        .modal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.8); z-index: 100; justify-content: center; align-items: center; }
+        .modal-content { background: var(--bg-paper); padding: 20px; width: 500px; border: 4px solid var(--primary); border-radius: 8px; text-align: center; }
+        .market-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; max-height: 400px; overflow-y: auto; text-align: left; }
+        .trade-row { background: #fff; padding: 5px; border: 1px solid #ccc; display: flex; justify-content: space-between; align-items: center; }
+        .trade-btn { padding: 2px 8px; font-size: 0.8rem; cursor: pointer; }
 
-        @keyframes blink { 50% { opacity: 0; } }
     </style>
 </head>
 <body>
 
-<div id="market-modal" class="market-overlay">
-    <div class="market-box">
-        <h2 style="margin-top:0; border-bottom: 2px solid #5d4037;">Der Marktplatz</h2>
-        <div id="market-list"></div>
-        <button class="stat-btn" onclick="UI.toggleMarket(false)" style="margin-top:20px;">Schließen</button>
+<div id="market-modal" class="modal">
+    <div class="modal-content">
+        <h2>Marktplatz</h2>
+        <div id="market-list" class="market-grid"></div>
+        <button onclick="UI.toggleMarket(false)" class="side-btn" style="margin-top:10px">Schließen</button>
     </div>
 </div>
 
-<div id="app">
-    <header>
-        <div class="header-left">
-            <h1>🏰 StrongWeb</h1>
-            <div class="limit-display">
-                <span id="limit-stock">Lager: 0/100</span> | <span id="limit-food">Korn: 0/100</span>
+<header>
+    <div class="header-title">
+        <h1>Burgherr</h1>
+        <span id="limit-info">Lager: 0/100</span>
+    </div>
+    
+    <div class="res-bar">
+        <div class="res-box">
+            <small>Kasse</small>
+            <div class="res-row">
+                <span class="res-single" title="Gold">💰<span id="r-gold">0</span></span>
             </div>
         </div>
-        <div class="res-container">
-            <div class="res-group" title="Gold">
-                <span class="res-icon">💰</span> <span class="res-val" id="res-gold">0</span>
-            </div>
-            <div class="res-group" title="Bevölkerung (Aktuell / Max / Untätig)">
-                <span class="res-icon">👨‍🌾</span> <span class="res-val" id="res-pop">0/0 (0)</span>
-            </div>
-            <div class="res-group" title="Beliebtheit">
-                <span class="res-icon">❤️</span> <span class="res-val" id="res-hap">100</span>
-            </div>
-            <div class="res-group" title="Militär (Söldner / Soldaten)">
-                <span class="res-icon">⚔️</span> <span class="res-val" id="res-mil">0 / 0</span>
+        <div class="res-box">
+            <small>Baustoff</small>
+            <div class="res-row">
+                <span class="res-single" title="Holz">🌲<span id="r-wood">0</span></span>
+                <span class="res-single" title="Stein">🧱<span id="r-stone">0</span></span>
+                <span class="res-single" title="Eisen">⛓️<span id="r-iron">0</span></span>
             </div>
         </div>
-    </header>
-
-    <main>
-        <section id="center-log"></section>
-
-        <aside class="right">
-            <h3>Verwaltung</h3>
-            <button class="stat-btn" onclick="UI.toggleMarket(true)">⚖️ Marktplatz</button>
-            <div style="font-size:0.8rem; margin:10px 0; background: #fff; padding:5px; border-radius:4px;">
-                <strong>Steuern:</strong> <span id="tax-name">Keine</span><br>
-                <div style="display:flex; gap:5px; margin-top:5px;">
-                    <button onclick="Game.setTax(-1)" style="flex:1">-</button>
-                    <button onclick="Game.setTax(1)" style="flex:1">+</button>
-                </div>
+        <div class="res-box">
+            <small>Ernte</small>
+            <div class="res-row">
+                <span class="res-single" title="Weizen">🌾<span id="r-wheat">0</span></span>
+                <span class="res-single" title="Mehl">🥡<span id="r-flour">0</span></span>
+                <span class="res-single" title="Hopfen">🌿<span id="r-hops">0</span></span>
             </div>
-            
-            <h3>Militär</h3>
-            <div id="mil-controls">
-                <button class="stat-btn" onclick="Game.recruit('regular')">🛡️ Soldat (10💰, 1⚔️)</button>
-                <button class="stat-btn" onclick="Game.recruit('mercenary')">🗡️ Söldner (50💰)</button>
-                <button class="stat-btn" style="background:#8b0000;" onclick="Game.startRaid()">⚔️ Raubzug</button>
-            </div>
-            
-            <div style="margin-top:auto; font-size:0.8rem; color:#555;">Tag: <span id="game-day">1</span></div>
-        </aside>
-    </main>
-
-    <footer>
-        <div class="cat-menu">
-            <div class="cat-btn active" onclick="UI.selectCat('burg')" title="Burg"><span class="cat-tooltip">Burg</span>🏰</div>
-            <div class="cat-btn" onclick="UI.selectCat('industrie')" title="Industrie"><span class="cat-tooltip">Industrie</span>🔨</div>
-            <div class="cat-btn" onclick="UI.selectCat('farm')" title="Farmen"><span class="cat-tooltip">Farmen</span>🍎</div>
-            <div class="cat-btn" onclick="UI.selectCat('stadt')" title="Stadt"><span class="cat-tooltip">Stadt</span>🏠</div>
-            <div class="cat-btn" onclick="UI.selectCat('waffen')" title="Waffen"><span class="cat-tooltip">Waffen</span>⚔️</div>
-            <div class="cat-btn" onclick="UI.selectCat('nahrung')" title="Verarbeitung"><span class="cat-tooltip">Nahrung</span>🍞</div>
         </div>
-        <div class="build-menu" id="build-menu-content">
+        <div class="res-box">
+            <small>Speise</small>
+            <div class="res-row">
+                <span class="res-single" title="Brot">🍞<span id="r-bread">0</span></span>
+                <span class="res-single" title="Fleisch">🥩<span id="r-meat">0</span></span>
+                <span class="res-single" title="Äpfel">🍎<span id="r-apple">0</span></span>
+                <span class="res-single" title="Käse">🧀<span id="r-cheese">0</span></span>
             </div>
-    </footer>
-</div>
+        </div>
+        <div class="res-box">
+            <small>Waffen</small>
+            <div class="res-row">
+                <span class="res-single" title="Waffen">⚔️<span id="r-weapon">0</span></span>
+                <span class="res-single" title="Bier">🍺<span id="r-beer">0</span></span>
+            </div>
+        </div>
+        <div class="res-box">
+            <small>Reich</small>
+            <div class="res-row">
+                <span class="res-single" title="Bürger">👨‍🌾<span id="r-pop">0</span></span>
+                <span class="res-single" title="Beliebtheit">❤️<span id="r-hap">0</span></span>
+                <span class="res-single" title="Soldaten">🛡️<span id="r-sold">0</span></span>
+            </div>
+        </div>
+    </div>
+</header>
+
+<main>
+    <div id="village-map">
+        </div>
+
+    <aside class="log-sidebar">
+        <div style="padding:10px; background:#bcaaa4; font-weight:bold; border-bottom:1px solid #8d6e63;">
+            Tag <span id="day-display">1</span> - Level <span id="level-display">1</span>
+        </div>
+        
+        <div class="log-container" id="game-log">
+            </div>
+
+        <div class="sidebar-controls">
+            <button class="side-btn" onclick="UI.toggleMarket(true)">⚖️ Marktplatz</button>
+            <button class="side-btn" onclick="Game.recruit('regular')">🛡️ Soldat (10💰)</button>
+            <button class="side-btn" style="background:#ffccbc" onclick="Game.startRaid()">⚔️ Raubzug</button>
+            <div style="display:flex; gap:5px; margin-top:5px;">
+                <button class="side-btn" onclick="Game.setTax(-1)">Steuer -</button>
+                <button class="side-btn" onclick="Game.setTax(1)">Steuer +</button>
+            </div>
+            <div style="font-size:0.7rem; text-align:center; margin-top:2px;">Aktuell: <span id="tax-text">Keine</span></div>
+        </div>
+    </aside>
+</main>
+
+<footer>
+    <div class="cat-list">
+        <div class="cat-btn active" onclick="UI.setCat('res')" title="Ressourcen">🔨</div>
+        <div class="cat-btn" onclick="UI.setCat('food')" title="Nahrung">🍎</div>
+        <div class="cat-btn" onclick="UI.setCat('city')" title="Stadt">🏠</div>
+        <div class="cat-btn" onclick="UI.setCat('mil')" title="Militär">⚔️</div>
+    </div>
+
+    <div class="build-list" id="build-menu">
+        </div>
+</footer>
 
 <script>
-/* --- KONFIGURATION --- */
+/* DATEN */
 const Config = {
-    tickRate: 5000,
-    taxes: [
-        {name:"Bestechung", g:-2, h:5}, {name:"Keine", g:0, h:1}, {name:"Niedrig", g:2, h:-2},
-        {name:"Normal", g:4, h:-6}, {name:"Hoch", g:8, h:-12}, {name:"Grausam", g:12, h:-20}
-    ],
-    // Kategorien: burg, industrie, farm, stadt, waffen, nahrung
     buildings: {
-        // BURG
-        wall_wood:  { name: "Holzwall", cat: "burg", icon: "🪵", costG: 10, costW: 20, def: 10 },
-        wall_stone: { name: "Steinmauer", cat: "burg", icon: "🧱", costG: 50, costS: 20, def: 50 },
-        tower:      { name: "Wachturm", cat: "burg", icon: "🗼", costG: 100, costS: 50, def: 150 },
-        gate:       { name: "Torhaus", cat: "burg", icon: "⛩️", costG: 50, costS: 20, costW: 20, def: 20 },
-        barracks:   { name: "Kaserne", cat: "burg", icon: "⛺", costG: 150, costS: 20, costW: 20, desc: "Ermöglicht Ausbildung" },
-        merc_post:  { name: "Söldnerposten", cat: "burg", icon: "🎪", costG: 500, costW: 100, desc: "Söldner anheuern" },
+        // RES
+        wood: { name: "Holzfäller", cat: "res", icon: "🪓", cost:{g:10}, prod:"wood", amt:2 },
+        quarry: { name: "Steinbruch", cat: "res", icon: "⛏️", cost:{g:50,w:50}, prod:"stone", amt:1, needs:"ox" },
+        ox: { name: "Ochsenjoch", cat: "res", icon: "🐂", cost:{g:20,w:20} },
+        iron: { name: "Eisenmine", cat: "res", icon: "⛓️", cost:{g:100,w:100}, prod:"iron", amt:1 },
+        stock: { name: "Vorratslager", cat: "res", icon: "📦", cost:{w:20}, desc:"+50 Lager" },
+        
+        // FOOD
+        apple: { name: "Obstgarten", cat: "food", icon: "🍎", cost:{g:30,w:10}, prod:"apple", amt:3 },
+        hunter: { name: "Jäger", cat: "food", icon: "🏹", cost:{g:20,w:5}, prod:"meat", amt:2 },
+        wheat: { name: "Kornfarm", cat: "food", icon: "🌾", cost:{g:40,w:10}, prod:"wheat", amt:2 },
+        mill: { name: "Mühle", cat: "food", icon: "⚙️", cost:{g:100,w:50}, proc:"wheat", out:"flour", ratio:1, cap:8 },
+        bake: { name: "Bäckerei", cat: "food", icon: "🍞", cost:{g:50,w:20}, proc:"flour", out:"bread", ratio:4, cap:1 },
+        dairy: { name: "Käserei", cat: "food", icon: "🧀", cost:{g:40,w:20}, prod:"cheese", amt:2 },
+        hops: { name: "Hopfenfarm", cat: "food", icon: "🌿", cost:{g:40,w:10}, prod:"hops", amt:2 },
+        brew: { name: "Brauerei", cat: "food", icon: "🍺", cost:{g:100,w:20}, proc:"hops", out:"beer", ratio:2, cap:2 },
+        granary: { name: "Kornspeicher", cat: "food", icon: "🛖", cost:{w:20}, desc:"+50 Nahrung" },
 
-        // INDUSTRIE
-        stockpile:  { name: "Vorratslager", cat: "industrie", icon: "📦", costG: 0, costW: 20, capRes: 50, desc: "+50 Lagerplatz" },
-        woodcutter: { name: "Holzfäller", cat: "industrie", icon: "🪓", costG: 10, costW: 0, prod: "wood", amt: 2 },
-        ox_tether:  { name: "Ochsenjoch", cat: "industrie", icon: "🐂", costG: 20, costW: 20, desc: "Nötig für Steinbruch" },
-        quarry:     { name: "Steinbruch", cat: "industrie", icon: "⛏️", costG: 50, costW: 50, prod: "stone", amt: 1, needs: "ox_tether" },
-        ironmine:   { name: "Eisenmine", cat: "industrie", icon: "⛓️", costG: 100, costW: 100, prod: "iron", amt: 1 },
-        pitch_rig:  { name: "Pechgrube", cat: "industrie", icon: "⚫", costG: 150, costW: 50, prod: "pitch", amt: 1, desc: "Pech für Verteidigung" },
-
-        // FARMEN
-        hunter:     { name: "Jägerstand", cat: "farm", icon: "🏹", costG: 20, costW: 5, prod: "meat", amt: 2, storage: "food" },
-        apple:      { name: "Obstgarten", cat: "farm", icon: "🍎", costG: 30, costW: 10, prod: "apple", amt: 3, storage: "food" },
-        dairy:      { name: "Käserei", cat: "farm", icon: "🧀", costG: 40, costW: 20, prod: "cheese", amt: 2, storage: "food", desc: "Liefert Leder für Gerber" },
-        wheat:      { name: "Getreidefarm", cat: "farm", icon: "🌾", costG: 40, costW: 10, prod: "wheat", amt: 2 },
-        hops:       { name: "Hopfenfarm", cat: "farm", icon: "🌿", costG: 40, costW: 10, prod: "hops", amt: 2 },
-
-        // STADT
-        hovel:      { name: "Hütte", cat: "stadt", icon: "⛺", costG: 0, costW: 10, pop: 5 },
-        house:      { name: "Haus", cat: "stadt", icon: "🏠", costG: 50, costW: 30, costS: 10, pop: 10 },
-        church:     { name: "Kirche", cat: "stadt", icon: "⛪", costG: 500, costS: 100, rel: 10 },
-        cathedral:  { name: "Kathedrale", cat: "stadt", icon: "🕍", costG: 5000, costS: 1000, rel: 50, win: true },
-        apothecary: { name: "Apotheke", cat: "stadt", icon: "💊", costG: 200, costW: 50, hap: 5 },
-        well:       { name: "Brunnen", cat: "stadt", icon: "💧", costG: 50, costS: 10, hap: 2 },
-
-        // WAFFEN (Verbrauchen Rohstoffe!)
-        fletcher:   { name: "Pfeilmacher", cat: "waffen", icon: "🏹", costG: 100, costW: 50, prod: "bows", amt: 1, use: "wood", useAmt: 1 },
-        blacksmith: { name: "Schmiede", cat: "waffen", icon: "⚔️", costG: 200, costW: 100, prod: "swords", amt: 1, use: "iron", useAmt: 1 },
-        armorer:    { name: "Rüstung", cat: "waffen", icon: "🛡️", costG: 200, costW: 100, prod: "armor", amt: 1, use: "iron", useAmt: 1 },
-        tanner:     { name: "Gerber", cat: "waffen", icon: "🧥", costG: 100, costW: 50, prod: "leather", amt: 1, dep: "dairy", ratio: 0.25 }, // 1 Dairy supports 4 Tanners
-
-        // NAHRUNG (Verarbeitung)
-        granary:    { name: "Kornspeicher", cat: "nahrung", icon: "🛖", costG: 0, costW: 20, capFood: 50, desc: "+50 Nahrungslager" },
-        mill:       { name: "Mühle", cat: "nahrung", icon: "⚙️", costG: 100, costW: 50, proc: "wheat", out: "flour", ratio: 1, cap: 8 },
-        bakery:     { name: "Bäckerei", cat: "nahrung", icon: "🍞", costG: 50, costW: 20, proc: "flour", out: "bread", ratio: 4, cap: 1, storage: "food" },
-        brewery:    { name: "Brauerei", cat: "nahrung", icon: "🍺", costG: 100, costW: 20, proc: "hops", out: "beer", ratio: 2, cap: 2 },
-        inn:        { name: "Schenke", cat: "nahrung", icon: "🍻", costG: 200, costW: 100, cons: "beer", hap: 10 }
-    }
-};
-
-const Labels = {
-    wood: "Holz", stone: "Stein", iron: "Eisen", pitch: "Pech", wheat: "Weizen", flour: "Mehl", hops: "Hopfen",
-    meat: "Fleisch", apple: "Äpfel", cheese: "Käse", bread: "Brot", beer: "Bier",
-    bows: "Bögen", swords: "Schwerter", armor: "Rüstung", leather: "Lederharnisch"
+        // CITY
+        hovel: { name: "Hütte", cat: "city", icon: "⛺", cost:{w:10}, pop:5 },
+        house: { name: "Haus", cat: "city", icon: "🏠", cost:{g:50,w:30,s:10}, pop:10 },
+        church: { name: "Kirche", cat: "city", icon: "⛪", cost:{g:500,s:100}, rel:10 },
+        cath: { name: "KATHEDRALE", cat: "city", icon: "🕍", cost:{g:5000,s:2000}, rel:50 },
+        
+        // MIL
+        smith: { name: "Schmiede", cat: "mil", icon: "⚔️", cost:{g:200,w:100}, use:"iron", out:"weapon", amt:1 },
+        tanner: { name: "Gerber", cat: "mil", icon: "🧥", cost:{g:100,w:50}, needs:"dairy" }, // Simuliert
+        barracks: { name: "Kaserne", cat: "mil", icon: "🏰", cost:{g:150,s:50} },
+        wall: { name: "Holzwall", cat: "mil", icon: "🪵", cost:{g:10,w:20}, def:10 },
+        tower: { name: "Stein-Turm", cat: "mil", icon: "🗼", cost:{g:200,s:100}, def:150 }
+    },
+    taxes: ["Steuerfrei", "Niedrig", "Mittel", "Hoch", "Grausam"]
 };
 
 let State = {
     day: 1, paused: false,
-    res: { gold: 200, wood: 50, stone: 0, iron: 0, pitch: 0, wheat: 0, flour: 0, hops: 0, meat: 5, apple: 5, cheese: 0, bread: 20, beer: 0, bows:0, swords:0, armor:0, leather:0 },
-    limits: { stock: 100, food: 100 },
-    pop: { curr: 5, max: 8, idle: 0, soldiers: 0, mercs: 0, hap: 100 },
-    b: {}, // Buildings count
-    w: {}, // Workers count
-    tax: 1
+    res: { gold:200, wood:50, stone:0, iron:0, wheat:0, flour:0, bread:20, meat:10, apple:10, cheese:0, hops:0, beer:0, weapon:0 },
+    pop: { curr:5, max:0, sold:0, hap:100 },
+    b: {}, w: {}, tax: 0
 };
-
-// Init Buildings
+// Init
 for(let k in Config.buildings) { State.b[k]=0; State.w[k]=0; }
-// Ein Start-Lager und Speicher
-State.b.stockpile = 1; State.b.granary = 1;
+State.b.stock=1; State.b.granary=1;
 
 const Game = {
     init: function() {
-        UI.renderCats();
-        UI.selectCat('industrie');
+        UI.setCat('res');
         UI.update();
-        setInterval(this.tick, Config.tickRate);
-        setInterval(() => { if(!State.paused) UI.updateLogTime(); }, 500);
-        UI.log("Sire, willkommen in Eurer Festung! Baut Holzfäller und vergesst das Ochsenjoch für den Steinbruch nicht.", "info");
+        setInterval(this.tick, 5000);
+        UI.log("Sire! Baut Hütten und Holzfäller.", "info");
     },
-
     tick: function() {
         if(State.paused) return;
         State.day++;
         
-        let logProd = [];
-        let logEat = [];
-        let warnings = [];
-
-        // 1. LIMITS BERECHNEN
-        let maxStock = State.b.stockpile * 50;
+        // 1. Storage
+        let maxStock = State.b.stock * 50;
         let maxFood = State.b.granary * 50;
-        
-        let curStock = State.res.wood + State.res.stone + State.res.iron + State.res.pitch + State.res.wheat + State.res.flour + State.res.hops + State.res.leather + State.res.bows + State.res.swords + State.res.armor;
-        let curFood = State.res.meat + State.res.apple + State.res.cheese + State.res.bread;
+        let curStock = State.res.wood + State.res.stone + State.res.iron + State.res.wheat + State.res.flour + State.res.hops + State.res.weapon;
+        let curFood = State.res.bread + State.res.meat + State.res.apple + State.res.cheese + State.res.beer;
+        let fullS = curStock >= maxStock;
+        let fullF = curFood >= maxFood;
 
-        let stockFull = curStock >= maxStock;
-        let foodFull = curFood >= maxFood;
+        let prodLog = [];
 
-        if(stockFull) warnings.push("Vorratslager voll!");
-        if(foodFull) warnings.push("Kornspeicher voll!");
-
-        // 2. PRODUKTION (Basis)
+        // 2. Production
         for(let k in Config.buildings) {
             let b = Config.buildings[k];
-            let count = State.w[k];
-            if(count <= 0) continue;
+            let n = State.w[k];
+            if(n <= 0) continue;
 
-            // SPECIAL LOGIC: QUARRY
-            if(k === 'quarry') {
-                let oxen = State.b.ox_tether;
-                let effective = Math.min(count, oxen);
-                if(effective < count && Math.random()<0.1) UI.log("Sire, wir brauchen mehr Ochsenjoche!", "error");
-                count = effective;
-            }
-
-            // SPECIAL LOGIC: TANNER
-            if(k === 'tanner') {
-                let dairies = State.b.dairy;
-                let maxTanners = dairies * 4;
-                let effective = Math.min(count, maxTanners);
-                if(effective < count && Math.random()<0.1) UI.log("Gerber haben keine Kühe (Käserei)!", "error");
-                count = effective;
-            }
-
-            // SPECIAL LOGIC: WEAPONS (Resource Cost)
-            if(b.use) {
-                if(State.res[b.use] >= b.useAmt * count) {
-                    State.res[b.use] -= b.useAmt * count;
-                } else {
-                    count = 0; // Keine Ressource, keine Produktion
-                    if(Math.random()<0.1) UI.log(`${b.name} fehlt ${Labels[b.use]}!`, "error");
-                }
-            }
-
-            // PRODUCTION EXECUTION
+            // Logic Checks
+            if(k==='quarry' && State.b.ox < n) n = State.b.ox; // Need Ox
+            
+            // Production
             if(b.prod) {
-                let amount = count * b.amt;
-                let isFood = (b.storage === 'food');
-                
-                if(isFood && !foodFull) {
-                    State.res[b.prod] += amount;
-                    logProd.push(`${amount} ${Labels[b.prod]}`);
-                } else if(!isFood && !stockFull) {
-                    State.res[b.prod] += amount;
-                    logProd.push(`${amount} ${Labels[b.prod]}`);
+                let amt = n * b.amt;
+                let isFood = ['meat','apple','wheat','hops','cheese'].includes(b.prod);
+                if((isFood && !fullF) || (!isFood && !fullS)) {
+                    State.res[b.prod] += amt;
+                    prodLog.push(`${amt} ${b.prod}`);
+                }
+            }
+            // Processing
+            if(b.proc) {
+                let maxIn = n * (b.cap||1);
+                let take = Math.min(State.res[b.proc], maxIn);
+                if(take > 0 && ((b.out==='bread' && !fullF) || (b.out!=='bread' && !fullS))) {
+                    State.res[b.proc] -= take;
+                    let gain = take * b.ratio;
+                    State.res[b.out] += gain;
+                    prodLog.push(`${gain} ${b.out}`);
+                }
+            }
+            // Smith
+            if(b.use) {
+                if(State.res[b.use] >= n) {
+                    State.res[b.use] -= n;
+                    State.res[b.out] += n;
+                    prodLog.push(`${n} ${b.out}`);
                 }
             }
         }
 
-        // 3. VERARBEITUNG (Mühle, Bäcker, Brauer)
-        const process = (key) => {
-            let b = Config.buildings[key];
-            let w = State.w[key];
-            if(w <= 0) return;
-            
-            let maxIn = w * b.cap; // Kapazität der Arbeiter
-            let actualIn = Math.min(State.res[b.proc], maxIn);
-            
-            // Check Output Limit
-            let isFood = (b.storage === 'food');
-            if((isFood && foodFull) || (!isFood && stockFull)) return; 
-
-            if(actualIn > 0) {
-                State.res[b.proc] -= actualIn;
-                let outAmt = actualIn * b.ratio;
-                State.res[b.out] += outAmt;
-                logProd.push(`${outAmt} ${Labels[b.out]}`);
-            } else if(Math.random()<0.05) {
-                UI.log(`${b.name} hat kein ${Labels[b.proc]}!`, "error");
+        // 3. Eat
+        let eat = State.pop.curr;
+        let types = ['bread','meat','apple','cheese'];
+        let ate = 0;
+        types.forEach(t => {
+            if(eat > 0 && State.res[t] > 0) {
+                let take = Math.min(eat, State.res[t]);
+                State.res[t] -= take; eat -= take; ate += take;
             }
-        };
-        process('mill'); process('bakery'); process('brewery');
-
-        // 4. KONSUM (Essen & Bier)
-        let mouths = State.pop.curr;
-        let diversity = 0;
+        });
         
-        const consume = (type) => {
-            if(State.res[type] > 0) {
-                let eat = Math.min(State.res[type], mouths);
-                State.res[type] -= eat;
-                mouths -= eat;
-                if(eat > 0) {
-                    diversity++; 
-                    // Nur loggen wenn relevant
-                    if(State.day % 5 === 0) logEat.push(Labels[type]); 
-                }
-            }
-        };
-        consume('bread'); consume('meat'); consume('cheese'); consume('apple');
+        let hapChange = 0;
+        if(eat > 0) { UI.log(`${eat} hungern!`, "error"); hapChange -= 20; }
+        else hapChange += 2;
 
-        let foodFactor = 0;
-        if(mouths > 0) {
-            UI.log(`Hungersnot! ${mouths} Bürger haben nichts gegessen.`, "error");
-            foodFactor = -20;
-        } else {
-            foodFactor = diversity * 2; // +2 pro Nahrungsart
+        // Taxes
+        let tax = [-2, 0, 2, 4, 8][State.tax];
+        let taxHap = [5, 1, -2, -5, -15][State.tax];
+        State.res.gold += (State.pop.curr * tax);
+        hapChange += taxHap;
+
+        // Beer
+        if(State.res.beer >= State.pop.curr && State.pop.curr > 0) {
+            State.res.beer -= State.pop.curr;
+            hapChange += 10;
         }
 
-        // Bier (Schenke)
-        let beerFactor = 0;
-        if(State.b.inn > 0 && State.res.beer > 0) {
-            let drink = Math.min(State.res.beer, State.pop.curr);
-            State.res.beer -= drink;
-            if(drink >= State.pop.curr) beerFactor = 10 + (State.b.inn * 2);
+        // Church
+        hapChange += (State.b.church * 5);
+
+        // Calc Hap
+        State.pop.hap = Math.min(100, Math.max(0, State.pop.hap + hapChange));
+
+        // Migration
+        State.pop.max = (State.b.hovel*5) + (State.b.house*10) + 5;
+        let work = 0; for(let k in State.w) work += State.w[k];
+        State.pop.idle = State.pop.curr - State.pop.sold - work;
+
+        if(State.pop.hap > 60 && State.pop.curr < State.pop.max && Math.random()>0.5) {
+            State.pop.curr++; State.pop.idle++; UI.autoAssign();
+        } else if(State.pop.hap < 30 && State.pop.curr > 0) {
+            State.pop.curr--; State.pop.idle--; // Quick fix logic
+            UI.log("Bürger flieht!", "error");
         }
 
-        // 5. FINANZEN & BELIEBTHEIT
-        let tax = Config.taxes[State.taxIndex];
-        State.res.gold += (State.pop.curr * tax.g);
-        
-        let relFactor = (State.b.church * 10) + (State.b.cathedral * 50);
-        let miscFactor = (State.b.well * 2) + (State.b.apothecary * 5);
-
-        let totalChange = foodFactor + beerFactor + relFactor + miscFactor + tax.h;
-        State.pop.hap = Math.max(0, Math.min(100, State.pop.hap + totalChange));
-
-        // 6. MIGRATION
-        // Max Pop = Hütten * 5 + Häuser * 10
-        State.pop.max = (State.b.hovel * 5) + (State.b.house * 10) + 8; // +8 Burgfried
-        
-        if(State.pop.hap > 60 && State.pop.curr < State.pop.max) {
-            if(Math.random() > 0.5) { State.pop.curr++; UI.autoAssign(); }
-        } else if(State.pop.hap < 40 && State.pop.curr > 0) {
-            if(Math.random() > 0.5) { 
-                State.pop.curr--; 
-                // Worker entfernen
-                for(let k in State.w) { if(State.w[k]>0){ State.w[k]--; break;}}
-                UI.log("Ein Bürger verlässt die Burg.", "error"); 
-            }
-        }
-
-        // REPORT
-        if(warnings.length > 0) UI.log(warnings.join(", "), "error");
-        if(logProd.length > 0) {
-            // Zusammenfassen für bessere Lesbarkeit
-            let shortProd = logProd.length > 3 ? `${logProd.length} Waren produziert` : logProd.join(", ");
-            UI.log(`Tag ${State.day}: ${shortProd}`, "report");
-        }
+        // Logs
+        if(prodLog.length) UI.log(`Prod: ${prodLog.join(', ')}`, "report");
+        if(fullS || fullF) UI.log("Lager voll!", "error");
 
         UI.update();
     },
 
-    setTax: function(dir) {
-        let n = State.taxIndex + dir;
-        if(n >= 0 && n < Config.taxes.length) { State.taxIndex = n; UI.update(); }
+    build: function(k) {
+        let b = Config.buildings[k];
+        if(State.res.gold >= (b.cost.g||0) && State.res.wood >= (b.cost.w||0) && State.res.stone >= (b.cost.s||0)) {
+            State.res.gold -= (b.cost.g||0); State.res.wood -= (b.cost.w||0); State.res.stone -= (b.cost.s||0);
+            State.b[k]++;
+            if(b.amt || b.proc || b.use) UI.autoAssign(); // Try assign worker
+            if(k==='cath') UI.log("SIEG! Die Kathedrale steht!", "info");
+            UI.addMapIcon(b.icon);
+            UI.update();
+        } else UI.log("Zu wenig Ressourcen", "error");
     },
 
     recruit: function(type) {
-        let needs = (type==='regular') ? {g:10, w:'swords', a:'armor'} : {g:50}; // Einfachheitshalber Söldner nur Gold
-        let avail = State.pop.curr - State.pop.soldiers - State.pop.mercs - UI.getTotalWorkers();
+        if(State.b.barracks < 1) return UI.log("Kaserne nötig", "error");
+        if(State.pop.idle < 1 && type!=='merc') return UI.log("Keine Bauern", "error");
         
         if(type==='regular') {
-            if(State.b.barracks < 1) return UI.log("Keine Kaserne!", "error");
-            if(avail <= 0) return UI.log("Keine freien Bauern!", "error");
-            if(State.res.gold < 10) return UI.log("Zu wenig Gold!", "error");
-            // Einfachheit: Ein Soldat braucht EINE Waffe (beliebig)
-            if(State.res.swords > 0 || State.res.bows > 0 || State.res.leather > 0) {
-                // Remove one weapon
-                if(State.res.swords > 0) State.res.swords--;
-                else if(State.res.bows > 0) State.res.bows--;
-                else State.res.leather--;
-                
-                State.res.gold -= 10;
-                State.pop.soldiers++;
-                UI.log("Soldat rekrutiert", "info");
-            } else {
-                UI.log("Waffen fehlen!", "error");
-            }
-        } else {
-            if(State.res.gold >= 50) {
-                State.res.gold -= 50;
-                State.pop.mercs++;
-                UI.log("Söldner angeheuert", "info");
+            if(State.res.gold >= 10 && State.res.weapon >= 1) {
+                State.res.gold -= 10; State.res.weapon--; State.pop.curr--; State.pop.sold++;
+                UI.log("Soldat ausgebildet", "info");
             }
         }
+        UI.update();
+    },
+
+    trade: function(item, buy) {
+        let p = 5; 
+        if(buy) {
+            if(State.res.gold >= p) { State.res.gold -= p; State.res[item]+=5; }
+        } else {
+            if(State.res[item] >= 5) { State.res[item] -= 5; State.res.gold += 3; }
+        }
+        UI.update(); UI.renderMarket();
+    },
+
+    setTax: function(d) {
+        let n = State.tax + d;
+        if(n >= 0 && n < 5) State.tax = n;
         UI.update();
     },
 
     startRaid: function() {
-        if((State.pop.soldiers + State.pop.mercs) < 5) return UI.log("Zu wenig Truppen!", "error");
-        UI.log("Truppen ausgesandt...", "info");
-        setTimeout(() => {
-            let loot = Math.floor(Math.random()*200);
-            State.res.gold += loot;
-            UI.log(`Raubzug beendet. ${loot} Gold erbeutet.`, "success");
-            UI.update();
-        }, 3000);
-    },
-
-    build: function(key) {
-        let b = Config.buildings[key];
-        if(State.res.gold >= b.costG && State.res.wood >= (b.costW||0) && State.res.stone >= (b.costS||0)) {
-            State.res.gold -= b.costG;
-            State.res.wood -= (b.costW||0);
-            State.res.stone -= (b.costS||0);
-            State.b[key]++;
-            
-            // Auto Worker
-            if(b.amt) {
-                let free = State.pop.curr - State.pop.soldiers - State.pop.mercs - UI.getTotalWorkers();
-                if(free > 0) State.w[key]++;
-            }
-
-            UI.log(`${b.name} errichtet.`, "success");
-            UI.update();
-        } else {
-            UI.log("Zu wenig Rohstoffe!", "error");
-        }
-    },
-
-    trade: function(item, buy) {
-        let price = 5; // Simpel
-        if(buy) {
-            if(State.res.gold >= price) { State.res.gold -= price; State.res[item] += 5; }
-        } else {
-            if(State.res[item] >= 5) { State.res[item] -= 5; State.res.gold += 3; }
-        }
-        UI.updateMarket();
-        UI.update();
+        if(State.pop.sold < 5) return UI.log("Zu wenig Truppen", "error");
+        UI.log("Truppen entsandt...", "info");
+        setTimeout(()=>{ 
+            State.res.gold += 100; UI.log("Beute: 100 Gold", "info"); UI.update();
+        }, 2000);
     }
 };
 
 const UI = {
-    cat: 'burg',
-    
-    selectCat: function(c) {
-        this.cat = c;
+    cat: 'res',
+    setCat: function(c) { 
+        this.cat = c; 
         document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
-        event.currentTarget.classList.add('active');
-        this.renderBuildings();
+        event.target.classList.add('active');
+        this.renderBuildMenu(); 
     },
-
-    renderCats: function() {
-        // HTML static in footer
-    },
-
-    renderBuildings: function() {
-        const div = document.getElementById('build-menu-content');
-        div.innerHTML = "";
-        
+    
+    renderBuildMenu: function() {
+        const d = document.getElementById('build-menu'); d.innerHTML = "";
         for(let k in Config.buildings) {
             let b = Config.buildings[k];
             if(b.cat !== this.cat) continue;
+            let cost = [];
+            if(b.cost.g) cost.push(b.cost.g+"💰");
+            if(b.cost.w) cost.push(b.cost.w+"🌲");
+            if(b.cost.s) cost.push(b.cost.s+"🧱");
             
-            let count = State.b[k];
-            let worker = State.w[k] || 0;
-            
-            let costStr = `${b.costG}💰`;
-            if(b.costW) costStr += ` ${b.costW}🪵`;
-            if(b.costS) costStr += ` ${b.costS}🧱`;
-
-            let el = document.createElement('div');
-            el.className = "building-icon";
-            el.title = b.desc || b.name;
-            el.onclick = () => Game.build(k);
-            el.innerHTML = `
-                ${count > 0 ? `<span class="b-count">${count}</span>` : ''}
-                <div class="b-img">${b.icon}</div>
+            let div = document.createElement('div');
+            div.className = "b-card";
+            div.onclick = () => Game.build(k);
+            div.innerHTML = `
+                ${State.b[k]>0 ? `<div class="b-badge">${State.b[k]}</div>` : ''}
+                <div class="b-icon">${b.icon}</div>
                 <div class="b-name">${b.name}</div>
-                <div class="b-cost">${costStr}</div>
+                <div class="b-cost">${cost.join(' ')}</div>
             `;
-            div.appendChild(el);
+            d.appendChild(div);
         }
     },
 
-    update: function() {
-        // Header Resources
-        document.getElementById('res-gold').innerText = Math.floor(State.res.gold);
-        // Vorräte berechnen
-        let curStock = State.res.wood + State.res.stone + State.res.iron + State.res.pitch + State.res.wheat + State.res.flour + State.res.hops + State.res.leather;
-        let maxStock = State.b.stockpile * 50;
-        let curFood = State.res.meat + State.res.apple + State.res.cheese + State.res.bread;
-        let maxFood = State.b.granary * 50;
-
-        document.getElementById('limit-stock').innerText = `Lager: ${Math.floor(curStock)}/${maxStock}`;
-        document.getElementById('limit-food').innerText = `Korn: ${Math.floor(curFood)}/${maxFood}`;
-        
-        if(curStock >= maxStock) document.getElementById('limit-stock').classList.add('limit-alert');
-        else document.getElementById('limit-stock').classList.remove('limit-alert');
-        
-        if(curFood >= maxFood) document.getElementById('limit-food').classList.add('limit-alert');
-        else document.getElementById('limit-food').classList.remove('limit-alert');
-
-        // Pop
-        let workers = this.getTotalWorkers();
-        let idle = State.pop.curr - State.pop.soldiers - State.pop.mercs - workers;
-        document.getElementById('res-pop').innerText = `${State.pop.curr}/${State.pop.max} (${idle})`;
-        document.getElementById('res-hap').innerText = Math.floor(State.pop.hap);
-        document.getElementById('res-mil').innerText = `${State.pop.mercs} / ${State.pop.soldiers}`;
-
-        // Side Info
-        document.getElementById('game-day').innerText = State.day;
-        document.getElementById('tax-name').innerText = Config.taxes[State.taxIndex].name;
-
-        // Re-Render Buildings (für Counter update)
-        this.renderBuildings();
-    },
-
-    updateLogTime: function() {
-        // Optional: Smooth scroll or time update
-    },
-
-    getTotalWorkers: function() {
-        let sum = 0;
-        for(let k in State.w) sum += State.w[k];
-        return sum;
-    },
-
-    log: function(msg, type) {
-        const log = document.getElementById('center-log');
-        const d = document.createElement('div');
-        d.className = `log-card ${type}`;
-        d.innerHTML = `<div class="log-header">Nachricht</div><div>${msg}</div>`;
-        log.prepend(d);
-        if(log.children.length > 15) log.lastChild.remove();
+    addMapIcon: function(icon) {
+        let d = document.createElement('div');
+        d.className = 'map-building';
+        d.innerText = icon;
+        document.getElementById('village-map').appendChild(d);
     },
 
     autoAssign: function() {
-        let idle = State.pop.curr - State.pop.soldiers - State.pop.mercs - this.getTotalWorkers();
-        if(idle <= 0) return;
+        // Simple logic: fill prod buildings
+        let idle = State.pop.curr - State.pop.sold;
+        // Reset workers
+        for(let k in State.w) State.w[k]=0;
         
-        // Simple priority filler
         for(let k in Config.buildings) {
-            if(idle <= 0) break;
-            if(Config.buildings[k].amt && State.b[k] > State.w[k]) {
-                State.w[k]++;
-                idle--;
+            let b = Config.buildings[k];
+            if(b.amt || b.proc || b.use) {
+                let needed = State.b[k]; // 1 worker per building
+                let take = Math.min(needed, idle);
+                State.w[k] = take;
+                idle -= take;
             }
         }
     },
 
-    toggleMarket: function(show) {
-        const m = document.getElementById('market-modal');
-        m.style.display = show ? 'flex' : 'none';
-        if(show) this.renderMarket();
+    update: function() {
+        const s = State.res;
+        ['gold','wood','stone','iron','wheat','flour','hops','bread','meat','apple','cheese','beer','weapon'].forEach(k => {
+            let el = document.getElementById('r-'+k);
+            if(el) el.innerText = Math.floor(s[k]);
+        });
+        
+        document.getElementById('r-pop').innerText = State.pop.curr + "/" + State.pop.max;
+        document.getElementById('r-hap').innerText = Math.floor(State.pop.hap);
+        document.getElementById('r-sold').innerText = State.pop.sold;
+        document.getElementById('day-display').innerText = State.day;
+        document.getElementById('tax-text').innerText = Config.taxes[State.tax];
+        
+        this.renderBuildMenu(); // Update counts
     },
 
-    renderMarket: function() {
-        const list = document.getElementById('market-list');
-        list.innerHTML = "";
-        let goods = ['wood','stone','iron','pitch','wheat','flour','hops','meat','apple','cheese','bread','beer','bows','swords','armor','leather'];
-        
-        goods.forEach(key => {
-            let row = document.createElement('div');
-            row.className = 'trade-row';
-            row.innerHTML = `
-                <div>${Labels[key] || key} (${Math.floor(State.res[key])})</div>
-                <div>
-                    <button onclick="Game.trade('${key}', true)">Kauf (5💰)</button>
-                    <button onclick="Game.trade('${key}', false)">Verk (3💰)</button>
-                </div>
-            `;
-            list.appendChild(row);
-        });
+    log: function(txt, type) {
+        let d = document.createElement('div');
+        d.className = `log-entry ${type}`;
+        d.innerText = `Tag ${State.day}: ${txt}`;
+        let c = document.getElementById('game-log');
+        c.prepend(d);
+        if(c.children.length > 20) c.lastChild.remove();
+    },
+
+    toggleMarket: function(show) {
+        document.getElementById('market-modal').style.display = show ? 'flex' : 'none';
+        if(show) {
+            let lst = document.getElementById('market-list'); lst.innerHTML = "";
+            for(let k in State.res) {
+                if(k==='gold') continue;
+                let r = document.createElement('div'); r.className='trade-row';
+                r.innerHTML = `<span>${k} (${Math.floor(State.res[k])})</span><div><button class="trade-btn" onclick="Game.trade('${k}',1)">Kauf</button> <button class="trade-btn" onclick="Game.trade('${k}',0)">Verk</button></div>`;
+                lst.appendChild(r);
+            }
+        }
     }
 };
 
