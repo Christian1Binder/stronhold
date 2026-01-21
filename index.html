@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Burgherr WebApp - Balancing Update</title>
+    <title>Burgherr WebApp - Full Production Chain</title>
     <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=MedievalSharp&display=swap" rel="stylesheet">
     
     <style>
@@ -24,7 +24,7 @@
         .res-container { display: flex; gap: 8px; flex: 1; justify-content: flex-end; }
         .res-group { background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 4px 8px; display: flex; flex-direction: column; min-width: 90px; }
         .res-group-label { font-size: 0.6rem; text-transform: uppercase; color: #aaa; margin-bottom: 2px; border-bottom: 1px solid #555; text-align:center; }
-        .res-items { display: flex; justify-content: space-around; align-items: center; gap: 8px; }
+        .res-items { display: flex; justify-content: space-around; align-items: center; gap: 10px; }
         .res-item { display: flex; flex-direction: column; align-items: center; cursor: help; }
         .res-icon { font-size: 1.1rem; }
         .res-val { font-weight: 900; font-size: 0.9rem; color: #fff; }
@@ -116,10 +116,14 @@
                 <div class="res-group-label">Speis & Trank</div>
                 <div class="res-items">
                     <div class="res-item" title="Weizen"><span class="res-icon">🌾</span><span class="res-val" id="res-wheat">0</span></div>
+                    <div class="res-item" title="Mehl"><span class="res-icon">🥡</span><span class="res-val" id="res-flour">0</span></div>
                     <div class="res-item" title="Brot"><span class="res-icon">🍞</span><span class="res-val" id="res-bread">0</span></div>
+                    
+                    <div class="res-item" title="Hopfen"><span class="res-icon">🌿</span><span class="res-val" id="res-hops">0</span></div>
+                    <div class="res-item" title="Bier"><span class="res-icon">🍺</span><span class="res-val" id="res-beer">0</span></div>
+                    
                     <div class="res-item" title="Fleisch"><span class="res-icon">🥩</span><span class="res-val" id="res-meat">0</span></div>
                     <div class="res-item" title="Äpfel"><span class="res-icon">🍎</span><span class="res-val" id="res-apple">0</span></div>
-                    <div class="res-item" title="Bier"><span class="res-icon">🍺</span><span class="res-val" id="res-beer">0</span></div>
                 </div>
             </div>
 
@@ -178,7 +182,7 @@
             </div>
 
             <br>
-            <h2>📊 Vorschau (nächster Tag)</h2>
+            <h2>📊 Produktions-Vorschau</h2>
             <div class="preview-panel" id="production-preview"></div>
             
             <div style="margin-top:10px; font-size:0.9rem">Tag: <span id="stat-day">1</span></div>
@@ -211,15 +215,9 @@ const Config = {
     tickRate: 5000, 
     combatStartDay: 40,
     buildings: {
-        // --- BASIS ---
         woodcutter: { name: "Holzfäller", costG: 15, costW: 0, costS: 0, output: "wood", amount: 2 },
         quarry:     { name: "Steinbruch", costG: 50, costW: 20, costS: 0, output: "stone", amount: 1 },
         ironmine:   { name: "Eisenmine",  costG: 100, costW: 50, costS: 0, output: "iron", amount: 1 },
-        
-        // --- NAHRUNG (BALANCING 4:1:8) ---
-        // 4 Farmen (je 2 Weizen) = 8 Weizen
-        // 1 Mühle (8 Durchsatz) = Verarbeitet 8 Weizen -> 8 Mehl (Ratio 1:1)
-        // 8 Bäckereien (1 Durchsatz) = Verarbeiten 8 Mehl -> 32 Brot (Ratio 1:4)
         
         farm_apple: { name: "Apfelgarten", costG: 30, costW: 10, costS: 0, output: "apple", amount: 3 },
         hunter:     { name: "Jägerstand", costG: 20, costW: 5, costS: 0, output: "meat", amount: 2 },
@@ -231,11 +229,8 @@ const Config = {
         farm_hops:  { name: "Hopfenfarm", costG: 40, costW: 15, costS: 0, output: "hops", amount: 2 },
         brewery:    { name: "Brauerei", costG: 100, costW: 20, costS: 20, process: "hops", product: "beer", throughput: 2, ratio: 2 },
         
-        // --- MILITÄR ---
         weaponsmith:{ name: "Waffenschmiede", costG: 100, costW: 0, costS: 20, process: "iron", product: "weapons", throughput: 1, ratio: 1 },
-        barracks:   { name: "Kaserne", costG: 150, costW: 0, costS: 50 }, // Baut Soldaten
-        
-        // --- WOHNEN ---
+        barracks:   { name: "Kaserne", costG: 150, costW: 0, costS: 50 },
         house:      { name: "Hütte", costG: 0, costW: 10, costS: 0, capacity: 5 },
     },
     taxes: [
@@ -264,7 +259,7 @@ const Game = {
         UI.update();
         setInterval(() => { if(!State.paused) this.tick(); }, Config.tickRate);
         setInterval(() => { if(!State.paused) UI.updateBar(); }, 100);
-        UI.log("Sire! Wir benötigen Getreidefarmen für die Mühle.", "report");
+        UI.log("Sire! Die Kornkammern sind bereit. Baut Farmen!", "report");
         this.autoAssign();
     },
 
@@ -283,7 +278,7 @@ const Game = {
             }
         });
 
-        // Verarbeitung (Mit Throughput Logic)
+        // Verarbeitung
         this.process('mill', 'wheat', 'flour', report);
         this.process('bakery', 'flour', 'bread', report);
         this.process('brewery', 'hops', 'beer', report);
@@ -342,7 +337,6 @@ const Game = {
         let workers = State.w[b];
         let conf = Config.buildings[b];
         if(workers > 0) {
-            // Capacity = Workers * Throughput
             let capacity = workers * (conf.throughput || 1);
             let possible = Math.min(State.res[inR], capacity);
             
@@ -360,7 +354,6 @@ const Game = {
         let free = State.pop.current - State.pop.soldiers - assigned;
 
         if(free > 0) {
-            // Priorität
             const priority = ['farm_apple', 'hunter', 'bakery', 'mill', 'farm_wheat', 'brewery', 'farm_hops', 'woodcutter', 'quarry', 'ironmine', 'weaponsmith'];
             for(let t of priority) {
                 if(free <= 0) break;
@@ -469,6 +462,7 @@ const UI = {
         const el = document.getElementById('build-list'); el.innerHTML = "";
         for(let k in Config.buildings) {
             let b = Config.buildings[k];
+            
             let cost = `${b.costG}💰`;
             if(b.costW) cost += ` ${b.costW}🌲`;
             if(b.costS) cost += ` ${b.costS}🧱`;
@@ -476,6 +470,7 @@ const UI = {
             let workers = State.w[k] || 0;
             let max = State.b[k] || 0;
             let pillClass = (max > 0 && workers === max) ? "full" : (max > 0 ? "empty" : "");
+            
             let pillText = (k === 'house' || k === 'barracks') ? `${max} Gebaut` : `👷 ${workers}/${max}`;
 
             let div = document.createElement('div');
@@ -500,6 +495,7 @@ const UI = {
         
         set('res-gold', r.gold); set('res-wood', r.wood); set('res-stone', r.stone); set('res-iron', r.iron);
         set('res-bread', r.bread); set('res-meat', r.meat); set('res-apple', r.apple); set('res-wheat', r.wheat);
+        set('res-flour', r.flour); // Display Flour too!
         set('res-hops', r.hops); set('res-beer', r.beer); set('res-weapon', r.weapons); set('res-soldier', s.pop.soldiers);
         
         // Idle
@@ -536,25 +532,26 @@ const UI = {
         
         add("Holz", State.w.woodcutter*Config.buildings.woodcutter.amount, true);
         
-        // Complex Calculations for Preview
         let cMill = Config.buildings.mill;
         let cBakery = Config.buildings.bakery;
         
-        // Mühle
+        // Mühle Sim
         let millCap = State.w.mill * cMill.throughput;
         let wheatIn = Math.min(State.res.wheat, millCap);
         let flourOut = wheatIn * cMill.ratio;
         
-        // Bäcker
+        // Bäcker Sim
         let bakeCap = State.w.bakery * cBakery.throughput;
-        let flourIn = Math.min(State.res.flour + flourOut, bakeCap); // Simuliert Fluss
+        let flourIn = Math.min(State.res.flour + flourOut, bakeCap);
         let breadOut = flourIn * cBakery.ratio;
         
         // Essen Netto
-        let foodGain = (State.w.farm_apple*3) + (State.w.hunter*2) + breadOut;
+        let foodGain = (State.w.farm_apple*Config.buildings.farm_apple.amount) + (State.w.hunter*Config.buildings.hunter.amount) + breadOut;
         let foodNet = foodGain - State.pop.current;
         
         add("Nahrung (Netto)", foodNet, foodNet>=0);
+        add("Weizen (Verbr.)", -wheatIn, false);
+        add("Mehl (Netto)", flourOut - flourIn, (flourOut-flourIn)>=0);
         
         if(State.w.mill > 0 && State.res.wheat < 1) html += `<div style="color:orange;font-size:0.7rem">⚠️ Weizen fehlt</div>`;
         if(State.w.bakery > 0 && (State.res.flour + flourOut) < 1) html += `<div style="color:orange;font-size:0.7rem">⚠️ Mehl fehlt</div>`;
