@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Burgherr WebApp - V2.5 Defense & Log</title>
+    <title>Burgherr WebApp - V2.6 Detail View</title>
     <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=MedievalSharp&display=swap" rel="stylesheet">
     
     <style>
@@ -15,17 +15,17 @@
 
         * { box-sizing: border-box; user-select: none; }
         body { font-family: 'Lato', sans-serif; background: var(--bg-body); color: var(--text-main); margin: 0; padding: 10px; height: 100vh; display: flex; justify-content: center; overflow: hidden; }
-        #app { background: var(--bg-panel); width: 100%; max-width: 1600px; border-radius: var(--border-radius); box-shadow: 0 10px 30px rgba(0,0,0,0.6); display: flex; flex-direction: column; overflow: hidden; position: relative; }
+        #app { background: var(--bg-panel); width: 100%; max-width: 1650px; border-radius: var(--border-radius); box-shadow: 0 10px 30px rgba(0,0,0,0.6); display: flex; flex-direction: column; overflow: hidden; position: relative; }
 
         /* HEADER */
-        header { background: var(--secondary); color: var(--text-light); padding: 5px 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 4px solid var(--primary); height: 120px; }
-        .header-left h1 { font-family: 'MedievalSharp', cursive; margin: 0; font-size: 1.5rem; color: var(--highlight); text-shadow: 2px 2px 0 #000; }
+        header { background: var(--secondary); color: var(--text-light); padding: 5px 15px; display: flex; align-items: center; justify-content: space-between; border-bottom: 4px solid var(--primary); height: 120px; }
+        .header-left h1 { font-family: 'MedievalSharp', cursive; margin: 0; font-size: 1.4rem; color: var(--highlight); text-shadow: 2px 2px 0 #000; }
         
-        .res-container { display: flex; gap: 8px; flex: 1; justify-content: flex-end; }
-        .res-group { background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 4px 8px; display: flex; flex-direction: column; min-width: 90px; position: relative; cursor: default; }
+        .res-container { display: flex; gap: 6px; flex: 1; justify-content: flex-end; }
+        .res-group { background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 4px 6px; display: flex; flex-direction: column; min-width: 85px; position: relative; cursor: default; }
         .res-group:hover { background: rgba(255,255,255,0.1); }
-        .res-group-label { font-size: 0.6rem; text-transform: uppercase; color: #aaa; margin-bottom: 2px; border-bottom: 1px solid #555; text-align:center; }
-        .res-items { display: flex; justify-content: space-around; align-items: center; gap: 8px; }
+        .res-group-label { font-size: 0.55rem; text-transform: uppercase; color: #aaa; margin-bottom: 2px; border-bottom: 1px solid #555; text-align:center; }
+        .res-items { display: flex; justify-content: space-around; align-items: center; gap: 6px; }
         .res-item { display: flex; flex-direction: column; align-items: center; }
         .res-icon { font-size: 1.1rem; }
         .res-val { font-weight: 900; font-size: 0.9rem; color: #fff; }
@@ -41,7 +41,7 @@
         main { display: flex; flex: 1; overflow: hidden; }
         aside.left { width: 360px; background: #f4ecd8; padding: 15px; overflow-y: auto; border-right: 1px solid #dccbb1; display: flex; flex-direction: column; gap: 10px; }
         aside.right { width: 380px; background: #eaddcf; padding: 15px; overflow-y: auto; border-left: 1px solid #dccbb1; display: flex; flex-direction: column; gap: 15px; }
-        section#center-log { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; background: #fff; background-image: radial-gradient(#f4e4bc 10%, transparent 10%); background-size: 20px 20px; }
+        section#center-log { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; background: #fff; background-image: radial-gradient(#f4e4bc 10%, transparent 10%); background-size: 20px 20px; }
 
         h2 { font-family: 'MedievalSharp', cursive; color: var(--primary-dark); border-bottom: 2px solid var(--primary); font-size: 1.2rem; margin: 0 0 5px 0; }
         h3.cat-title { font-family: 'MedievalSharp', cursive; color: #555; margin: 10px 0 5px 0; border-bottom: 1px dashed #aaa; font-size: 1rem; }
@@ -69,36 +69,25 @@
         .trade-btn { border: 1px solid #999; background: #eee; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; font-weight: bold; min-width: 80px; }
         .trade-btn:hover { background: var(--highlight); border-color: #f57f17; }
 
-        /* --- NEUES LOG DESIGN --- */
-        .log-card {
-            background: #fff; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); 
-            border-left: 5px solid #ccc; font-size: 0.9rem; overflow: hidden;
-        }
-        .log-header {
-            background: #f5f5f5; padding: 4px 10px; font-weight: bold; color: #555; font-size: 0.75rem;
-            border-bottom: 1px solid #eee; display: flex; justify-content: space-between;
-        }
+        /* NEW LOG DESIGN */
+        .log-card { background: #fff; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border-left: 5px solid #ccc; font-size: 0.9rem; overflow: hidden; margin-bottom: 5px; }
+        .log-header { background: #f5f5f5; padding: 4px 10px; font-weight: bold; color: #555; font-size: 0.75rem; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; }
         .log-content { padding: 8px 10px; line-height: 1.4; }
         
-        /* Typen */
-        .log-card.report { border-left-color: #8d6e63; } /* Braun für Daily Report */
+        .log-card.report { border-left-color: #8d6e63; } 
         .log-card.report .log-header { background: #efebe9; color: #5d4037; }
-        
         .log-card.error { border-left-color: #d32f2f; background: #ffebee; color: #b71c1c; }
         .log-card.error .log-header { background: #ffcdd2; color: #b71c1c; }
-        
         .log-card.success { border-left-color: #2e7d32; background: #e8f5e9; }
         .log-card.success .log-header { background: #c8e6c9; color: #1b5e20; }
-
         .log-card.combat { border-left-color: #333; background: #eceff1; }
         .log-card.combat .log-header { background: #cfd8dc; color: #263238; }
+        .log-card.beer { border-left-color: #f57f17; background-color: #fff8e1; color: #bf360c; }
 
-        /* Report Zeilen */
         .rep-row { display: flex; margin-bottom: 2px; align-items: baseline; }
         .rep-label { width: 80px; font-weight: bold; font-size: 0.8rem; text-transform: uppercase; color: #777; }
         .rep-val { font-weight: bold; }
-        .rep-val.plus { color: #2e7d32; }
-        .rep-val.minus { color: #c62828; }
+        .rep-val.plus { color: #2e7d32; } .rep-val.minus { color: #c62828; }
 
         /* UI MISC */
         .preview-panel { background: #fff3e0; border: 1px solid #ffb74d; padding: 8px; border-radius: 6px; font-size: 0.85rem; }
@@ -157,6 +146,16 @@
                     <div class="res-item" title="Eisen"><span class="res-icon">⛓️</span><span class="res-val" id="res-iron">0</span></div>
                 </div>
             </div>
+            
+            <div class="res-group">
+                <div class="res-group-label">Ernte & Mehl</div>
+                <div class="res-items">
+                    <div class="res-item" title="Weizen"><span class="res-icon">🌾</span><span class="res-val" id="res-wheat">0</span></div>
+                    <div class="res-item" title="Mehl"><span class="res-icon">🥡</span><span class="res-val" id="res-flour">0</span></div>
+                    <div class="res-item" title="Hopfen"><span class="res-icon">🌿</span><span class="res-val" id="res-hops">0</span></div>
+                </div>
+            </div>
+
             <div class="res-group">
                 <div class="res-group-label">Speisekammer</div>
                 <div class="res-items">
@@ -166,6 +165,7 @@
                     <div class="res-item" title="Bier"><span class="res-icon">🍺</span><span class="res-val" id="res-beer">0</span></div>
                 </div>
             </div>
+
             <div class="res-group">
                 <div class="res-group-label">Militär</div>
                 <div class="res-items">
@@ -174,6 +174,7 @@
                     <div class="res-item" title="Söldner"><span class="res-icon">🗡️</span><span class="res-val" id="res-mercs">0</span></div>
                 </div>
             </div>
+
             <div class="res-group" id="pop-group">
                 <div class="res-group-label">Das Reich</div>
                 <div class="res-items">
@@ -244,12 +245,14 @@
 <script>
 const Config = {
     tickRate: 5000, 
-    combatStartDay: 40,
+    combatStartDay: 80, // LÄNGERER FRIEDEN!
     buildings: {
+        // RESSOURCEN
         woodcutter: { name: "Holzfäller", costG: 15, costW: 0, costS: 0, output: "wood", amount: 2, cat: "Ressourcen" },
         quarry:     { name: "Steinbruch", costG: 50, costW: 20, costS: 0, output: "stone", amount: 1, cat: "Ressourcen" },
         ironmine:   { name: "Eisenmine",  costG: 100, costW: 50, costS: 0, output: "iron", amount: 1, cat: "Ressourcen" },
         
+        // NAHRUNG
         farm_apple: { name: "Apfelgarten", costG: 30, costW: 10, costS: 0, output: "apple", amount: 3, cat: "Nahrung" },
         hunter:     { name: "Jägerstand", costG: 20, costW: 5, costS: 0, output: "meat", amount: 2, cat: "Nahrung" },
         farm_wheat: { name: "Getreidefarm", costG: 40, costW: 10, costS: 0, output: "wheat", amount: 2, cat: "Nahrung" }, 
@@ -258,18 +261,19 @@ const Config = {
         farm_hops:  { name: "Hopfenfarm", costG: 40, costW: 15, costS: 0, output: "hops", amount: 2, cat: "Nahrung" },
         brewery:    { name: "Brauerei", costG: 100, costW: 20, costS: 20, process: "hops", product: "beer", throughput: 2, ratio: 2, cat: "Nahrung" },
         
+        // WOHNRAUM
         house:      { name: "Hütte", costG: 0, costW: 10, costS: 0, capacity: 5, cat: "Wohnraum" },
         house_lg:   { name: "Haus", costG: 50, costW: 40, costS: 10, capacity: 10, cat: "Wohnraum" },
 
+        // VERTEIDIGUNG
         weaponsmith:{ name: "Waffenschmiede", costG: 100, costW: 0, costS: 20, process: "iron", product: "weapons", throughput: 1, ratio: 1, cat: "Verteidigung" },
         barracks:   { name: "Kaserne", costG: 150, costW: 0, costS: 50, cat: "Verteidigung" },
         merc_post:  { name: "Söldnerlager", costG: 500, costW: 50, costS: 0, cat: "Verteidigung" },
-        
-        // --- VERTEIDIGUNG (NEU) ---
         wall_wood:  { name: "Holzpalisade", costG: 20, costW: 50, costS: 0, defense: 10, cat: "Verteidigung" },
         wall_stone: { name: "Steinmauer", costG: 100, costW: 0, costS: 50, defense: 50, cat: "Verteidigung" },
         tower:      { name: "Wachturm", costG: 200, costW: 20, costS: 100, defense: 150, cat: "Verteidigung" },
 
+        // KUNST
         church:     { name: "Kirche", costG: 500, costW: 0, costS: 200, capacity: 0, religion: 15, cat: "Kunst" },
         cathedral:  { name: "KATHEDRALE", costG: 5000, costW: 2000, costS: 3000, capacity: 0, cat: "Kunst" } 
     },
@@ -299,7 +303,7 @@ const Game = {
         UI.update();
         setInterval(() => { if(!State.paused) this.tick(); }, Config.tickRate);
         setInterval(() => { if(!State.paused) UI.updateBar(); }, 100);
-        UI.log("Willkommen, Burgherr! Baut Unterkünfte und Nahrung.", "report");
+        UI.log("Sire! Wir haben Frieden bis Tag 80. Nutzt die Zeit!", "report");
         this.autoAssign();
     },
 
@@ -363,13 +367,12 @@ const Game = {
         this.checkCombat();
         this.handleRaid();
 
-        // ERWEITERTER BERICHT (KARTEN-DESIGN)
+        // LOG
         let html = `<div class="log-header"><span>Tagesabschluss (Tag ${State.day})</span><span>Beliebtheit: ${State.pop.happiness}</span></div><div class="log-content">`;
-        if(report.produced.length) html += `<div class="rep-row"><span class="rep-label">Produktion</span><span class="rep-val plus">${report.produced.join(', ')}</span></div>`;
-        if(report.eaten.length) html += `<div class="rep-row"><span class="rep-label">Verbrauch</span><span class="rep-val minus">${report.eaten.join(', ')}</span></div>`;
+        if(report.produced.length) html += `<div class="rep-row"><span class="rep-label">Prod</span><span class="rep-val plus">${report.produced.join(', ')}</span></div>`;
+        if(report.eaten.length) html += `<div class="rep-row"><span class="rep-label">Essen</span><span class="rep-val minus">${report.eaten.join(', ')}</span></div>`;
         html += `</div>`;
-        
-        UI.log(html, "report", true); // true = raw html
+        UI.log(html, "report", true);
 
         UI.update();
     },
@@ -508,13 +511,11 @@ const Game = {
         if(State.day < Config.combatStartDay || State.pop.current === 0) return;
         if(Math.random() < 0.1) {
             State.paused = true; 
-            
-            // Defense Calcs
             let def = (State.pop.soldiers*10) + (State.pop.mercs*20);
             let walls = (State.b.wall_wood||0)*10 + (State.b.wall_stone||0)*50 + (State.b.tower||0)*150;
             let total = def + walls;
-            
             const enemy = Math.floor(State.day * 1.5);
+            
             UI.showInfo("Angriff!", `Feind: ${enemy} vs Verteidigung: ${total}`);
             
             if(total >= enemy) {
