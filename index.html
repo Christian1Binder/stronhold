@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Burgherr V18 - Fair Start</title>
+    <title>Burgherr V19 - Smooth & Clean</title>
     <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=MedievalSharp&display=swap" rel="stylesheet">
     
     <style>
@@ -73,8 +73,10 @@
             width: 220px; text-align: left; box-shadow: 0 5px 15px rgba(0,0,0,0.5); pointer-events: none;
         }
         .tt-row { display: flex; justify-content: space-between; font-size: 0.8rem; border-bottom: 1px dashed #ccc; padding: 2px 0; }
-        .idle-alert { display: none; color: var(--highlight); font-size: 1.2rem; animation: pulse 1s infinite; margin-left: 5px; }
-        @keyframes pulse { 0% { opacity: 0.5; transform: scale(0.9); } 50% { opacity: 1; transform: scale(1.1); } 100% { opacity: 0.5; transform: scale(0.9); } }
+        
+        /* IDLE & POP */
+        .pop-val { display:flex; gap:5px; align-items:center; }
+        .idle-val { color: var(--highlight); margin-left: 8px; }
 
         /* --- MAIN MAP --- */
         main { display: flex; flex: 1; overflow: hidden; position: relative; }
@@ -215,7 +217,7 @@
 
 <header>
     <div class="header-info">
-        <div class="game-title">Burgherr V18</div>
+        <div class="game-title">Burgherr V19</div>
         <div class="objective" id="obj-disp">Lade...</div>
     </div>
 
@@ -258,14 +260,12 @@
 
         <div class="res-group">
             <span class="res-label">Bevölkerung</span>
-            <div class="res-values">
+            <div class="res-values pop-val">
                 <span title="Bürger">👨‍🌾 <span id="r-pop">0</span></span>
                 <span title="Beliebtheit">❤️ <span id="r-hap">0</span></span>
-                <span id="idle-icon" class="idle-alert" title="Untätige Arbeiter!">💤</span>
+                <span title="Untätig" class="idle-val">💤 <span id="r-idle">0</span></span>
             </div>
             <div class="tooltip">
-                <div class="tt-row"><span>Untätig:</span><span id="tt-idle" style="font-weight:bold">0</span></div>
-                <hr>
                 <div id="hap-breakdown"></div>
             </div>
         </div>
@@ -374,13 +374,13 @@ const Units = {
 };
 
 const Config = {
-    tick: 3000, 
+    tick: 4000, // 4 Sek / Tag
     taxes: [
         {n:"Keine",   g:0, h:1},
-        {n:"Gering",  g:1, h:-1},
-        {n:"Normal",  g:2, h:-3},
-        {n:"Hoch",    g:4, h:-10},
-        {n:"Wucher",  g:8, h:-25}
+        {n:"Gering",  g:1, h:-1}, // 1G = -1H
+        {n:"Normal",  g:2, h:-2},
+        {n:"Hoch",    g:4, h:-4},
+        {n:"Wucher",  g:8, h:-10}
     ],
     b: {
         // BURG
@@ -429,9 +429,9 @@ let lastTickTime = 0;
 
 const Game = {
     init: function() {
-        if(localStorage.getItem('sh_v18')) {
+        if(localStorage.getItem('sh_v19')) {
             try {
-                S = JSON.parse(localStorage.getItem('sh_v18'));
+                S = JSON.parse(localStorage.getItem('sh_v19'));
                 if(!S.b.gran && S.b.granary) { S.b.gran = S.b.granary; delete S.b.granary; }
                 UI.init();
                 UI.showModal("Willkommen zurück", "Dein Lehen erwartet dich.", "Weiter");
@@ -550,10 +550,9 @@ const Game = {
         let hChg = 0;
         if(eat > 0) { 
             UI.log(`${eat} hungern!`, 'warn'); 
-            hChg -= 20; 
-            S.factors.food = -20; 
-            // Chance of dying from starvation
-            if(Math.random() < 0.2) {
+            hChg -= 3; // SMOOTHER: Nur -3 statt -20
+            S.factors.food = -3; 
+            if(Math.random() < 0.1) { // Geringere Sterberate
                 S.pop.curr--;
                 UI.log("Ein Bürger verhungert.", "death");
             }
@@ -573,11 +572,15 @@ const Game = {
         }
 
         hChg += ((S.b.church||0) * 5);
-        S.pop.hap = Math.max(0, Math.min(100, S.pop.hap + hChg));
+        
+        // LIMIT CHANGE (Smoothing)
+        let diff = hChg; 
+        // Max +/- 10 per Tick
+        diff = Math.max(-10, Math.min(10, diff));
+        
+        S.pop.hap = Math.max(0, Math.min(100, S.pop.hap + diff));
 
         // 4. POPULATION & LOSS CHECK
-        
-        // --- GAME OVER CHECK ---
         if(S.pop.curr <= 0) {
             S.pop.curr = 0; 
             S.paused = true;
@@ -608,11 +611,8 @@ const Game = {
             }
         }
         
-        let prodArr = [];
-        for(let k in S.rates) {
-            if(S.rates[k] > 0 && k !== 'gold') prodArr.push(`${S.rates[k]} ${SafeT(k)}`);
-        }
-        if(prodArr.length) UI.log("Produktion: " + prodArr.join(", "), 'prod');
+        // NO PROD LOGGING ANYMORE - CLEAN CHAT
+        // let prodArr = []; ... UI.log ... REMOVED
 
         // 6. WIN CHECK
         let l = Levels.find(x => x.id == S.lvl);
@@ -698,8 +698,8 @@ const Game = {
         S.paused = !S.paused; 
         if(!S.paused) lastTickTime = Date.now();
     },
-    save: function() { localStorage.setItem('sh_v18', JSON.stringify(S)); UI.log("Gespeichert", "prod"); },
-    reset: function() { localStorage.removeItem('sh_v18'); location.reload(); }
+    save: function() { localStorage.setItem('sh_v19', JSON.stringify(S)); UI.log("Gespeichert", "prod"); },
+    reset: function() { localStorage.removeItem('sh_v19'); location.reload(); }
 };
 
 const UI = {
@@ -742,12 +742,13 @@ const UI = {
         let idle = S.pop.curr - sold - work;
 
         document.getElementById('r-pop').innerText = S.pop.curr + "/" + S.pop.max;
-        document.getElementById('tt-idle').innerText = idle;
+        document.getElementById('r-idle').innerText = idle; // UPDATE IDLE
         document.getElementById('r-hap').innerText = Math.floor(S.pop.hap);
         document.getElementById('day-disp').innerText = S.day;
         document.getElementById('lvl-disp').innerText = S.lvl;
         
-        document.getElementById('idle-icon').style.display = idle > 0 ? 'inline' : 'none';
+        // Idle Warning (Keep icon for visual flare, but text is now separate)
+        // document.getElementById('idle-icon').style.display = idle > 0 ? 'inline' : 'none'; 
 
         // Tax Info
         let tIdx = Config.taxes[S.tax];
@@ -896,7 +897,6 @@ const UI = {
             let d = document.createElement('div'); d.className='map-b'; d.innerText = b.i;
             d.title = b.n;
             
-            // RANDOM POSITION (Scatter Placement)
             d.style.left = (10 + Math.random() * 70) + '%';
             d.style.top = (10 + Math.random() * 70) + '%';
             
