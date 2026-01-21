@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Burgherr WebApp - V3.2 Fix</title>
+    <title>Burgherr WebApp - V3.3 Fix</title>
     <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=MedievalSharp&display=swap" rel="stylesheet">
     
     <style>
@@ -18,12 +18,13 @@
         #app { background: var(--bg-panel); width: 100%; max-width: 1650px; border-radius: var(--border-radius); box-shadow: 0 10px 30px rgba(0,0,0,0.6); display: flex; flex-direction: column; overflow: hidden; position: relative; }
 
         /* HEADER */
-        header { background: var(--secondary); color: var(--text-light); padding: 5px 15px; display: flex; align-items: center; justify-content: space-between; border-bottom: 4px solid var(--primary); height: 140px; flex-shrink: 0; }
+        header { background: var(--secondary); color: var(--text-light); padding: 5px 15px; display: flex; align-items: center; justify-content: space-between; border-bottom: 4px solid var(--primary); height: 140px; flex-shrink: 0;}
         .header-left { display:flex; flex-direction:column; justify-content:center; max-width: 250px; }
         .header-left h1 { font-family: 'MedievalSharp', cursive; margin: 0; font-size: 1.6rem; color: var(--highlight); text-shadow: 2px 2px 0 #000; line-height: 1; }
         
+        /* ZIEL BOX */
         .objective-box { background: rgba(0,0,0,0.4); padding: 8px; border-radius: 4px; font-size: 0.8rem; margin-top: 8px; border-left: 4px solid var(--highlight); }
-        .objective-title { font-weight: bold; color: var(--highlight); text-transform: uppercase; font-size: 0.75rem; margin-bottom: 3px; }
+        .objective-title { font-weight: bold; color: var(--highlight); text-transform: uppercase; font-size: 0.7rem; margin-bottom: 3px; }
         .obj-item { display: block; color: #fff; margin-bottom: 2px; }
         .obj-done { color: #81c784; text-decoration: line-through; opacity: 0.7; }
 
@@ -45,45 +46,31 @@
 
         /* LAYOUT */
         main { display: flex; flex: 1; overflow: hidden; }
+        aside.left { width: 360px; background: #f4ecd8; padding: 15px; overflow-y: auto; border-right: 1px solid #dccbb1; display: flex; flex-direction: column; gap: 10px; flex-shrink: 0;}
+        aside.right { width: 380px; background: #eaddcf; padding: 15px; overflow-y: auto; border-left: 1px solid #dccbb1; display: flex; flex-direction: column; gap: 15px; flex-shrink: 0;}
         
-        aside.left { width: 360px; background: #f4ecd8; padding: 15px; overflow-y: auto; border-right: 1px solid #dccbb1; display: flex; flex-direction: column; gap: 10px; flex-shrink: 0; }
-        aside.right { width: 380px; background: #eaddcf; padding: 15px; overflow-y: auto; border-left: 1px solid #dccbb1; display: flex; flex-direction: column; gap: 15px; flex-shrink: 0; }
-        
-        /* --- LOG FIX --- */
+        /* LOG FIX */
         section#center-log { 
-            flex: 1; 
-            padding: 20px; 
-            overflow-y: auto; /* Scrollbar erlauben */
-            display: flex; 
-            flex-direction: column; /* Stapeln */
-            gap: 10px; /* Platz zwischen Nachrichten */
-            background: #fff; 
-            background-image: radial-gradient(#f4e4bc 10%, transparent 10%); 
-            background-size: 20px 20px; 
+            flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; 
+            background: #fff; background-image: radial-gradient(#f4e4bc 10%, transparent 10%); background-size: 20px 20px; 
         }
 
-        /* --- NEUES LOG DESIGN (FIXED) --- */
+        /* NEW LOG DESIGN */
         .log-card { 
-            background: #fff; border-radius: 6px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
-            border-left: 5px solid #ccc; font-size: 0.9rem; overflow: hidden; 
-            /* WICHTIG: Verhindert das Zusammenquetschen */
-            flex-shrink: 0; 
-            height: auto;
-            min-height: min-content;
+            background: #fff; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); 
+            border-left: 5px solid #ccc; font-size: 0.9rem; overflow: hidden; flex-shrink: 0;
         }
-        .log-header { background: #f5f5f5; padding: 6px 10px; font-weight: bold; color: #555; font-size: 0.8rem; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; }
-        .log-content { padding: 10px; line-height: 1.5; }
+        .log-header { background: #f5f5f5; padding: 4px 10px; font-weight: bold; color: #555; font-size: 0.75rem; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; }
+        .log-content { padding: 8px 10px; line-height: 1.4; }
         
-        .log-card.report { border-left-color: #8d6e63; } 
-        .log-card.report .log-header { background: #efebe9; color: #5d4037; }
+        .log-card.report { border-left-color: #8d6e63; } .log-card.report .log-header { background: #efebe9; color: #5d4037; }
         .log-card.error { border-left-color: #d32f2f; background: #ffebee; color: #b71c1c; } .log-card.error .log-header { background: #ffcdd2; color: #b71c1c; }
         .log-card.success { border-left-color: #2e7d32; background: #e8f5e9; } .log-card.success .log-header { background: #c8e6c9; color: #1b5e20; }
         .log-card.combat { border-left-color: #333; background: #eceff1; } .log-card.combat .log-header { background: #cfd8dc; color: #263238; }
-        .log-card.beer { border-left-color: #f57f17; background-color: #fff8e1; color: #bf360c; }
-
-        .rep-row { display: flex; margin-bottom: 2px; align-items: baseline; justify-content: space-between; border-bottom: 1px dashed #eee; padding-bottom: 2px;}
-        .rep-label { font-weight: bold; font-size: 0.8rem; text-transform: uppercase; color: #777; width: 80px;}
-        .rep-val { font-weight: bold; text-align: right; flex: 1;}
+        
+        .rep-row { display: flex; margin-bottom: 2px; align-items: baseline; justify-content:space-between; border-bottom:1px dashed #eee; }
+        .rep-label { font-weight: bold; font-size: 0.8rem; text-transform: uppercase; color: #777; }
+        .rep-val { font-weight: bold; }
         .rep-val.plus { color: #2e7d32; } .rep-val.minus { color: #c62828; }
 
         h2 { font-family: 'MedievalSharp', cursive; color: var(--primary-dark); border-bottom: 2px solid var(--primary); font-size: 1.2rem; margin: 0 0 5px 0; }
@@ -104,14 +91,14 @@
         .worker-pill.empty { background: #ffcdd2; color: #b71c1c; }
         .def-pill { background: #cfd8dc; color: #37474f; font-weight:bold; font-size:0.75rem; padding: 2px 6px; border-radius:4px; border: 1px solid #b0bec5; }
 
-        /* MARKET MODAL */
+        /* MARKET */
         .trade-row-simple { display: flex; justify-content: space-between; align-items: center; background: #fff; padding: 8px; border-bottom: 1px solid #ddd; }
         .trade-label { font-weight: bold; width: 100px; text-align: left; display: flex; align-items: center; gap: 5px; }
         .trade-actions { display: flex; gap: 10px; }
         .trade-btn { border: 1px solid #999; background: #eee; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; font-weight: bold; min-width: 80px; }
         .trade-btn:hover { background: var(--highlight); border-color: #f57f17; }
 
-        /* UI MISC */
+        /* MISC */
         .preview-panel { background: #fff3e0; border: 1px solid #ffb74d; padding: 8px; border-radius: 6px; font-size: 0.85rem; }
         .preview-row { display: flex; justify-content: space-between; margin-bottom: 1px; }
         .p-plus { color: var(--positive); font-weight: bold; } .p-minus { color: var(--accent); font-weight: bold; }
@@ -120,28 +107,19 @@
         .floating-text { position: absolute; font-weight: bold; animation: floatUp 1s ease-out forwards; pointer-events: none; z-index: 9999; text-shadow: 1px 1px 0 #fff;}
         @keyframes floatUp { to { opacity: 0; transform: translateY(-30px); } }
         
-        /* Modal General */
         .modal-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 10000; }
         .modal-box { background: #fdf6e3; width: 600px; padding: 25px; border: 4px solid var(--primary); border-radius: 10px; text-align: center; max-height: 90vh; overflow-y: auto;}
         .modal-title { font-family: 'MedievalSharp'; font-size: 2rem; color: var(--accent); margin-bottom: 15px; }
         
         .big-btn { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 1.1rem; transition: background 0.2s; box-shadow: 0 4px 0 var(--primary-dark); }
-        .big-btn:active { transform: translateY(4px); box-shadow: none; }
         .big-btn:hover { background: #7a4e30; }
         .big-btn.secondary { background: #fff; color: #333; border: 2px solid var(--primary); box-shadow: 0 4px 0 #ccc; }
         
-        /* System Bar */
         .system-bar { margin-top: 20px; display: flex; gap: 5px; border-top: 1px solid #ccc; padding-top: 10px; }
         .sys-btn { font-size: 0.8rem; padding: 5px; background: #90a4ae; border:none; border-radius: 3px; cursor: pointer; color: white; flex:1; }
         .sys-btn:hover { background: #607d8b; }
 
-        /* PAUSED INDICATOR */
-        #paused-indicator {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            font-size: 5rem; color: rgba(255,0,0,0.3); font-family: 'MedievalSharp';
-            pointer-events: none; z-index: 500; display: none; transform: rotate(-10deg);
-        }
-
+        #paused-indicator { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 5rem; color: rgba(255,0,0,0.3); font-family: 'MedievalSharp'; pointer-events: none; z-index: 500; display: none; transform: rotate(-10deg); }
         button:disabled { opacity: 0.5; cursor: not-allowed; filter: grayscale(1); }
     </style>
 </head>
@@ -277,16 +255,16 @@
 </div>
 
 <script>
-// Übersetzungstabelle für Ziele
+// --- ÜBERSETZUNGSTABELLE FÜR ZIELE ---
 const Labels = {
     gold: "Gold", wood: "Holz", stone: "Stein", iron: "Eisen", 
-    bread: "Brot", food: "Nahrung", wheat: "Weizen", flour: "Mehl",
-    pop: "Einwohner", soldiers: "Soldaten", 
-    tower: "Wachturm", cathedral: "Kathedrale"
+    bread: "Brot", food: "Nahrung", wheat: "Weizen", flour: "Mehl", hops: "Hopfen", beer: "Bier",
+    pop: "Einwohner", soldiers: "Soldaten", mercs: "Söldner",
+    tower: "Wachturm", cathedral: "Kathedrale", church: "Kirche"
 };
 
 const Levels = [
-    { id: 1, title: "Die Gründung", intro: "Willkommen, Sire! Sichert das Überleben. Baut Hütten und sammelt Holz.", goal: { wood: 50, pop: 10 }, startRes: { gold: 100, wood: 20, food: 20 } },
+    { id: 1, title: "Die Gründung", intro: "Willkommen! Sichert das Überleben. Baut Hütten und sammelt Holz.", goal: { wood: 50, pop: 10 }, startRes: { gold: 100, wood: 20, food: 20 } },
     { id: 2, title: "Brot für das Volk", intro: "Die Vorräte schwinden. Errichtet eine Nahrungskette (Farm -> Mühle -> Bäcker).", goal: { bread: 30, stone: 20, pop: 15 }, startRes: { gold: 150, wood: 50, food: 30 } },
     { id: 3, title: "Der Handel", intro: "Wir brauchen Gold! Nutzt den Markt, um Reichtum anzuhäufen.", goal: { gold: 500, pop: 20 }, startRes: { gold: 50, wood: 100, stone: 20, food: 50 } },
     { id: 4, title: "Zu den Waffen", intro: "Banditen wurden gesichtet. Baut eine Armee und einen Wachturm.", goal: { soldiers: 10, tower: 1 }, startRes: { gold: 300, wood: 100, stone: 100, iron: 20, food: 100 } },
@@ -366,11 +344,11 @@ const Game = {
     togglePause: function() {
         State.paused = !State.paused;
         UI.update();
-        State.lastTick = Date.now(); // Reset timer to avoid jump
+        State.lastTick = Date.now();
     },
 
     tick: function() {
-        if(State.paused) return; // WICHTIG: Hier wird geblockt
+        if(State.paused) return;
         
         try {
             State.day++;
@@ -428,9 +406,10 @@ const Game = {
             this.handleMigration();
             this.checkCombat();
             this.handleRaid();
+            
+            // WICHTIG: Win Check vor dem Log, damit das Modal nicht blockiert wird
             this.checkVictory();
 
-            // LOG
             let html = `<div class="log-header"><span>Tag ${State.day} (Level ${State.level})</span><span>Beliebtheit: ${State.pop.happiness}</span></div><div class="log-content">`;
             if(report.produced.length) html += `<div class="rep-row"><span class="rep-label">Prod</span><span class="rep-val plus">${report.produced.join(', ')}</span></div>`;
             if(report.eaten.length) html += `<div class="rep-row"><span class="rep-label">Essen</span><span class="rep-val minus">${report.eaten.join(', ')}</span></div>`;
@@ -441,7 +420,7 @@ const Game = {
         } catch(e) {
             console.error(e);
             State.paused = true;
-            UI.showModal("Fehler", "Ein Fehler ist aufgetreten. Spiel pausiert.");
+            UI.showModal("Fehler", "Ein kritischer Fehler ist aufgetreten. Das Spiel wurde pausiert.");
         }
     },
 
@@ -513,12 +492,15 @@ const Game = {
 
         if(win) {
             State.paused = true;
-            document.getElementById('modal-overlay').style.display = 'none'; 
+            // FIXED: Schließe nur existierende Modals
+            document.getElementById('modal-market').style.display = 'none';
+            document.getElementById('modal-info').style.display = 'none';
+            
             let nextLvl = Levels.find(l => l.id === State.level + 1);
             if(nextLvl) {
                 document.getElementById('info-title').innerText = "SIEG!";
-                document.getElementById('info-text').innerText = "Ziele erreicht!";
-                document.getElementById('info-actions').innerHTML = `<button onclick="Game.startLevel(${nextLvl.id}); document.getElementById('modal-info').style.display='none';" class="big-btn">Nächstes Level</button>`;
+                document.getElementById('info-text').innerText = "Ziele erreicht! Das Volk jubelt.";
+                document.getElementById('info-actions').innerHTML = `<button onclick="Game.startLevel(${nextLvl.id}); document.getElementById('modal-info').style.display='none';" class="big-btn">Level ${nextLvl.id} starten</button>`;
                 document.getElementById('modal-info').style.display = 'flex';
             } else {
                 UI.showModal("SPIEL DURCHGESPIELT!", "Ihr seid der mächtigste Burgherr aller Zeiten!");
@@ -534,11 +516,7 @@ const Game = {
             State.paused = true;
             UI.renderBuildMenu(); UI.update();
             UI.log("Geladen.", "success");
-            // Show resume modal
-            document.getElementById('info-title').innerText = "Spielstand geladen";
-            document.getElementById('info-text').innerText = "Klickt um fortzufahren.";
-            document.getElementById('info-actions').innerHTML = `<button onclick="UI.closeInfo()" class="big-btn">Weiter</button>`;
-            document.getElementById('modal-info').style.display='flex';
+            UI.showModal("Spiel geladen", "Willkommen zurück!");
         } else UI.log("Kein Save vorhanden.", "error");
     },
     reset: function() { if(confirm("Wirklich alles löschen?")) { localStorage.removeItem('burgherr_save'); location.reload(); } },
@@ -607,11 +585,11 @@ const Game = {
             if(success) {
                 let g = Math.floor(Math.random()*100)+50; let f = Math.floor(Math.random()*20)+10;
                 State.res.gold += g; State.res.meat += f;
-                UI.log(`Erfolg! +${g} Gold, +${f} Fleisch.`, "success");
+                UI.log(`Raubzug Erfolg! +${g} Gold, +${f} Fleisch.`, "success");
             } else {
                 let dead = Math.floor(Math.random()*3)+1;
                 State.pop.soldiers = Math.max(0, State.pop.soldiers-dead);
-                UI.log(`Misserfolg! -${dead} Soldaten.`, "error");
+                UI.log(`Raubzug Misserfolg! -${dead} Soldaten.`, "error");
             }
         }
     },
@@ -630,13 +608,13 @@ const Game = {
             let total = def + walls;
             const enemy = Math.floor(State.day * 1.5);
             
-            UI.showInfo("Angriff!", `Feind: ${enemy} vs Verteidigung: ${total}`);
+            UI.showModal("Angriff!", `Feind: ${enemy} vs Verteidigung: ${total}`);
             
             if(total >= enemy) {
-                UI.log(`SIEG! Feind abgewehrt. (Def: ${total})`, "success"); State.factors.events = 10;
+                UI.log(`SIEG! Feind abgewehrt.`, "success"); State.factors.events = 10;
             } else {
                 UI.log("NIEDERLAGE! Geplündert.", "error");
-                State.res.gold = Math.floor(State.res.gold/2); State.res.apple=0; State.res.meat=0; State.res.bread=0;
+                State.res.gold = Math.floor(State.res.gold/2); State.res.apple=0;
                 State.factors.events = -15;
                 if(State.pop.mercs > 0) State.pop.mercs--; else if(State.pop.soldiers > 0) State.pop.soldiers--;
             }
@@ -672,7 +650,6 @@ const UI = {
         document.getElementById('modal-market').style.display = show ? 'flex' : 'none';
         if(show) { State.paused = true; this.renderMarket(); }
         else { State.paused = false; State.lastTick = Date.now(); }
-        UI.update();
     },
 
     renderMarket: function() {
@@ -718,7 +695,6 @@ const UI = {
         set('stat-day', s.day); set('stat-level', s.level);
         document.getElementById('tax-display').innerText = Config.taxes[s.taxIndex].name;
         
-        // Objective Formatting
         const lvl = Levels.find(l => l.id === s.level);
         if(lvl) {
             let html = "";
@@ -735,7 +711,6 @@ const UI = {
             document.getElementById('objective-list').innerHTML = html;
         }
 
-        // Pause Anzeige
         document.getElementById('paused-indicator').style.display = s.paused ? 'block' : 'none';
 
         const btnReg = document.getElementById('btn-recruit');
@@ -785,11 +760,11 @@ const UI = {
             div.innerHTML = `<strong>T${State.day}:</strong> ${msg}`;
         }
         box.prepend(div);
+        if(box.children.length > 20) box.removeChild(box.lastChild);
     },
     showModal: function(t, txt) {
         document.getElementById('info-title').innerText=t; document.getElementById('info-text').innerText=txt;
         document.getElementById('modal-info').style.display='flex';
-        // Reset action button to standard close
         document.getElementById('info-actions').innerHTML = `<button onclick="UI.closeInfo()" class="big-btn">Verstanden</button>`;
     },
     closeInfo: function() { document.getElementById('modal-info').style.display='none'; State.paused=false; State.lastTick=Date.now(); },
