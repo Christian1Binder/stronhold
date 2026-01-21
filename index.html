@@ -2,8 +2,8 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Burgherr V21 - Free Market</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Burgherr V22 - Pocket Edition</title>
     <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=MedievalSharp&display=swap" rel="stylesheet">
     
     <style>
@@ -24,31 +24,36 @@
         body { font-family: 'Lato', sans-serif; background: var(--bg-body); color: #ccc; margin: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
 
         /* --- TICK BAR --- */
-        #tick-container { height: 6px; background: #000; width: 100%; position: relative; z-index: 200; }
+        #tick-container { height: 6px; background: #000; width: 100%; position: relative; z-index: 200; flex-shrink: 0; }
         #tick-bar { height: 100%; background: var(--highlight); width: 0%; transition: width 0.1s linear; box-shadow: 0 0 10px var(--highlight); }
 
         /* --- HEADER --- */
         header { 
-            background: #1a1a1a; height: 120px; flex-shrink: 0; border-bottom: 3px solid var(--border);
+            background: #1a1a1a; height: 90px; flex-shrink: 0; border-bottom: 3px solid var(--border);
             display: flex; align-items: center; justify-content: space-between; padding: 0 10px; z-index: 100; position: relative;
         }
 
-        .header-info { width: 180px; }
-        .game-title { font-family: 'MedievalSharp'; font-size: 1.6rem; color: var(--highlight); margin: 0; line-height: 1; text-shadow: 2px 2px 0 #000; }
-        .objective { font-size: 0.7rem; background: rgba(255,255,255,0.05); padding: 5px; border-left: 3px solid var(--highlight); margin-top: 5px; color: #bbb; }
+        .header-info { width: 160px; flex-shrink: 0; }
+        .game-title { font-family: 'MedievalSharp'; font-size: 1.4rem; color: var(--highlight); margin: 0; line-height: 1; text-shadow: 2px 2px 0 #000; }
+        .objective { font-size: 0.65rem; background: rgba(255,255,255,0.05); padding: 3px; border-left: 3px solid var(--highlight); margin-top: 3px; color: #bbb; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .obj-done { text-decoration: line-through; color: var(--success); opacity: 0.7; }
 
-        .res-container { display: flex; gap: 5px; flex: 1; justify-content: flex-end; }
+        /* Scrollable Resources on Mobile */
+        .res-container { display: flex; gap: 5px; flex: 1; justify-content: flex-end; overflow-x: auto; padding-bottom: 5px; -webkit-overflow-scrolling: touch; }
+        .res-container::-webkit-scrollbar { height: 4px; }
+        .res-container::-webkit-scrollbar-thumb { background: #555; border-radius: 2px; }
+
         .res-group { 
             background: #2d2d2d; border: 1px solid #444; border-radius: 4px; padding: 4px 6px; 
-            min-width: 60px; text-align: center; display: flex; flex-direction: column; justify-content: center;
-            position: relative; cursor: help; transition: background 0.2s;
+            min-width: 65px; text-align: center; display: flex; flex-direction: column; justify-content: center;
+            position: relative; cursor: help; transition: background 0.2s; flex-shrink: 0;
         }
-        .res-group:hover .tooltip { display: block; }
+        .res-group:active, .res-group:hover { background: #444; } /* Visual touch feedback */
+        
         .res-label { font-size: 0.55rem; text-transform: uppercase; color: #888; border-bottom: 1px solid #444; margin-bottom: 2px; }
         .res-values { display: flex; gap: 8px; justify-content: center; font-weight: bold; font-size: 0.85rem; color: #eee; position: relative; }
         
-        .res-item { position: relative; display: inline-block; min-width: 25px; text-align: center; }
+        .res-item { position: relative; display: inline-block; min-width: 20px; text-align: center; }
         .rate-ind { font-size: 0.65rem; position: absolute; top: -8px; right: -5px; opacity: 0.9; font-weight: 900; text-shadow: 1px 1px 0 #000; }
         .rate-pos { color: #66bb6a; }
         .rate-neg { color: #ef5350; }
@@ -60,11 +65,11 @@
             animation: floatUp 1.5s forwards; text-shadow: 1px 1px 0 #000; z-index: 3000;
         }
         .click-pop {
-            position: absolute; font-size: 1.5rem; font-weight: bold; color: #fff; pointer-events: none; z-index: 4000;
-            text-shadow: 0 0 5px #000; animation: floatUpMap 0.8s forwards;
+            position: absolute; font-size: 2rem; font-weight: bold; color: #fff; pointer-events: none; z-index: 4000;
+            text-shadow: 0 0 5px #000; animation: floatUpMap 0.6s forwards;
         }
         @keyframes floatUp { 0% { opacity: 1; top: -10px; transform: translateX(-50%); } 100% { opacity: 0; top: -40px; transform: translateX(-50%); } }
-        @keyframes floatUpMap { 0% { opacity: 1; transform: translateY(0) scale(1); } 100% { opacity: 0; transform: translateY(-40px) scale(1.3); } }
+        @keyframes floatUpMap { 0% { opacity: 1; transform: translateY(0) scale(1); } 100% { opacity: 0; transform: translateY(-50px) scale(1.5); } }
 
         /* TOOLTIP */
         .tooltip { 
@@ -72,8 +77,12 @@
             background: #e0e0e0; color: #000; padding: 10px; border: 2px solid var(--border); border-radius: 4px;
             width: 240px; text-align: left; box-shadow: 0 5px 15px rgba(0,0,0,0.5); pointer-events: none;
         }
+        /* Mobile Tooltip Fix: Show below or center */
+        @media (max-width: 600px) {
+            .tooltip { right: auto; left: 50%; transform: translateX(-50%); width: 280px; }
+        }
+
         .tt-row { display: flex; justify-content: space-between; font-size: 0.8rem; border-bottom: 1px dashed #ccc; padding: 2px 0; }
-        
         .pop-val { display:flex; gap:5px; align-items:center; }
         .idle-val { color: var(--highlight); margin-left: 8px; }
 
@@ -86,14 +95,13 @@
             display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 8px;
         }
         
-        /* ZONES */
         .zone { 
             position: relative; border-radius: 8px; overflow: hidden; 
             box-shadow: inset 0 0 20px rgba(0,0,0,0.6);
             transition: transform 0.1s; cursor: pointer; border: 2px solid rgba(255,255,255,0.05);
+            touch-action: manipulation; /* Improves touch response */
         }
-        .zone:active { transform: scale(0.99); }
-        .zone:hover { border-color: rgba(255,255,255,0.2); }
+        .zone:active { transform: scale(0.97); border-color: rgba(255,255,255,0.4); }
 
         #z-forest { background: radial-gradient(circle at center, #2e7d32, #1b5e20); }
         #z-mountain { background: linear-gradient(135deg, #5d4037, #3e2723); } 
@@ -105,34 +113,26 @@
             font-family: 'MedievalSharp'; font-size: 1.2rem; color: rgba(255,255,255,0.6); 
             text-shadow: 1px 1px 2px #000; pointer-events: none; z-index: 10;
         }
-        .zone-hint { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); opacity: 0.1; font-size: 4rem; pointer-events: none; }
+        .zone-hint { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); opacity: 0.15; font-size: 4rem; pointer-events: none; }
 
-        /* SCATTERED BUILDINGS */
         .map-b { 
-            position: absolute; 
-            font-size: 1.6rem; 
-            filter: drop-shadow(2px 2px 1px rgba(0,0,0,0.5));
+            position: absolute; font-size: 1.6rem; 
+            filter: drop-shadow(2px 2px 1px rgba(0,0,0,0.5)); pointer-events: none;
             animation: popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-            cursor: help;
         }
-        .map-b:hover { transform: scale(1.3) translateY(-5px); z-index: 20; filter: drop-shadow(0 5px 5px rgba(0,0,0,0.5)); }
         @keyframes popIn { from { transform: scale(0) translateY(20px); opacity:0; } to { transform: scale(1) translateY(0); opacity:1; } }
 
         /* SIDEBAR */
         aside { 
-            width: 340px; background: var(--panel-bg); border-left: 5px solid var(--border); 
-            display: flex; flex-direction: column; color: var(--text); z-index: 50;
+            width: 320px; background: var(--panel-bg); border-left: 5px solid var(--border); 
+            display: flex; flex-direction: column; color: var(--text); z-index: 50; flex-shrink: 0;
         }
         .log-box { 
-            flex: 1; overflow-y: hidden; padding: 10px; display: flex; flex-direction: column; gap: 5px; 
-            background: rgba(0,0,0,0.05); font-size: 0.85rem; position: relative;
-        }
-        .log-box::after {
-            content:''; position: absolute; bottom:0; left:0; width:100%; height: 50px;
-            background: linear-gradient(transparent, var(--panel-bg)); pointer-events: none;
+            flex: 1; overflow-y: auto; padding: 5px; display: flex; flex-direction: column; gap: 4px; 
+            background: rgba(0,0,0,0.05); font-size: 0.8rem; position: relative;
         }
         .log-entry { 
-            background: #fff; padding: 6px 10px; border-radius: 4px; border-left: 4px solid #999; 
+            background: #fff; padding: 4px 8px; border-radius: 4px; border-left: 4px solid #999; 
             box-shadow: 0 1px 2px rgba(0,0,0,0.1); flex-shrink: 0; animation: slideIn 0.3s ease-out;
         }
         @keyframes slideIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
@@ -145,53 +145,71 @@
         .log-entry.death { border-color: #000; background: #444; color: #fff; }
         .log-entry.war { border-color: var(--highlight); background: #fff8e1; }
 
-        .controls { padding: 10px; background: #bcaaa4; border-top: 2px solid var(--border); }
+        .controls { padding: 8px; background: #bcaaa4; border-top: 2px solid var(--border); }
         .c-row { display: flex; gap: 5px; margin-bottom: 5px; }
         .btn { 
-            flex: 1; padding: 8px; border: 1px solid var(--border); background: #efebe9; 
-            font-weight: bold; cursor: pointer; border-radius: 4px; color: var(--text); transition: 0.1s;
+            flex: 1; padding: 10px 5px; border: 1px solid var(--border); background: #efebe9; 
+            font-weight: bold; cursor: pointer; border-radius: 4px; color: var(--text); font-size: 0.9rem;
+            touch-action: manipulation;
         }
-        .btn:hover { background: #fff; transform: translateY(-1px); }
-        .btn:active { transform: translateY(1px); }
+        .btn:active { transform: translateY(2px); background: #ddd; }
         .btn-war { background: #5d4037; color: #fff; border-color: #3e2723; }
-        .btn-war:hover { background: #4e342e; }
 
         /* --- FOOTER (BUILDING) --- */
         footer { 
-            height: 160px; background: #d7ccc8; border-top: 5px solid var(--border); flex-shrink: 0;
-            display: flex; padding: 0 10px; align-items: center; 
+            height: 150px; background: #d7ccc8; border-top: 5px solid var(--border); flex-shrink: 0;
+            display: flex; padding: 0 5px; align-items: center; 
             background-image: url('https://www.transparenttextures.com/patterns/aged-paper.png');
             z-index: 60;
         }
         
-        .cat-bar { width: 140px; display: flex; flex-wrap: wrap; gap: 5px; border-right: 2px solid #ccc; padding-right: 10px; justify-content: center; }
-        .cat-btn { width: 40px; height: 40px; background: var(--border); color: #fff; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; cursor: pointer; border: 2px solid transparent; transition: 0.2s; }
-        .cat-btn:hover { transform: scale(1.1); }
-        .cat-btn.active { background: var(--highlight); color: #000; border-color: #fff; transform: scale(1.1); box-shadow: 0 0 10px var(--highlight); }
+        .cat-bar { width: 120px; display: flex; flex-wrap: wrap; gap: 4px; border-right: 2px solid #ccc; padding-right: 5px; justify-content: center; }
+        .cat-btn { width: 36px; height: 36px; background: var(--border); color: #fff; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; cursor: pointer; border: 2px solid transparent; }
+        .cat-btn.active { background: var(--highlight); color: #000; border-color: #fff; }
 
-        .build-bar { flex: 1; display: flex; gap: 10px; overflow-x: auto; padding: 5px; height: 100%; align-items: center; }
+        .build-bar { flex: 1; display: flex; gap: 8px; overflow-x: auto; padding: 5px; height: 100%; align-items: center; -webkit-overflow-scrolling: touch; }
         .b-card { 
-            min-width: 80px; height: 110px; background: rgba(0,0,0,0.05); border-radius: 6px; 
+            min-width: 75px; height: 100px; background: rgba(0,0,0,0.05); border-radius: 6px; 
             display: flex; flex-direction: column; align-items: center; justify-content: center; 
-            cursor: pointer; position: relative; border: 2px solid transparent; transition: 0.2s;
+            cursor: pointer; position: relative; border: 2px solid transparent; transition: 0.1s; flex-shrink: 0;
         }
-        .b-card:hover { background: rgba(0,0,0,0.1); border-color: #999; }
-        .b-card.can-build { background: var(--can-build); border-color: var(--can-build-border); box-shadow: 0 4px 6px rgba(46, 125, 50, 0.2); }
-        
+        .b-card:active { transform: scale(0.95); }
+        .b-card.can-build { background: var(--can-build); border-color: var(--can-build-border); box-shadow: 0 2px 4px rgba(46, 125, 50, 0.2); }
         .b-count { position: absolute; top: -5px; right: -5px; background: var(--accent); color: #fff; font-size: 0.7rem; padding: 2px 6px; border-radius: 10px; font-weight: bold; box-shadow: 1px 1px 2px rgba(0,0,0,0.5); }
         
         /* MODALS */
         .modal-mask { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 5000; justify-content: center; align-items: center; backdrop-filter: blur(4px); }
-        .modal-win { background: var(--panel-bg); width: 500px; padding: 25px; border: 4px solid var(--border); border-radius: 8px; text-align: center; color: var(--text); box-shadow: 0 0 50px #000; position: relative; }
+        .modal-win { background: var(--panel-bg); width: 500px; max-width: 95%; max-height: 90vh; overflow-y: auto; padding: 20px; border: 4px solid var(--border); border-radius: 8px; text-align: center; color: var(--text); box-shadow: 0 0 50px #000; position: relative; }
         
-        .list-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; max-height: 400px; overflow-y: auto; text-align: left; margin: 15px 0; }
-        .list-item { background: rgba(255,255,255,0.5); padding: 5px; border: 1px solid #999; display: flex; justify-content: space-between; align-items: center; border-radius: 4px; font-size: 0.9rem; }
+        .list-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; text-align: left; margin: 15px 0; }
+        .list-item { background: rgba(255,255,255,0.5); padding: 5px; border: 1px solid #999; display: flex; justify-content: space-between; align-items: center; border-radius: 4px; font-size: 0.85rem; }
         .missing-res { color: var(--danger); font-weight: bold; }
+        .war-card { background: rgba(0,0,0,0.1); padding: 8px; margin-bottom: 5px; border: 1px solid #777; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem; }
 
-        /* WAR MISSION STYLES */
-        .war-card { background: rgba(0,0,0,0.1); padding: 10px; margin-bottom: 5px; border: 1px solid #777; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; }
-        .war-lvl { font-weight: bold; color: var(--danger); }
-        .war-loot { font-size: 0.8rem; color: #555; }
+        /* --- MOBILE OPTIMIZATION --- */
+        @media (max-width: 768px) {
+            header { height: 70px; padding: 0 5px; }
+            .header-info { display: none; } /* Verstecke Titel für mehr Platz auf Handy */
+            
+            main { flex-direction: column; }
+            #map-area { flex: 1.5; min-height: 40vh; }
+            
+            aside { 
+                width: 100%; height: auto; flex: 1; min-height: 180px; 
+                border-left: none; border-top: 4px solid var(--border); 
+                flex-direction: row; 
+            }
+            .log-box { flex: 1; border-right: 2px solid var(--border); }
+            .controls { width: 140px; overflow-y: auto; padding: 5px; display: flex; flex-direction: column; justify-content: center; }
+            
+            footer { height: 130px; flex-direction: column; padding: 0; }
+            .cat-bar { width: 100%; height: 40px; border-right: none; border-bottom: 2px solid #ccc; flex-wrap: nowrap; overflow-x: auto; justify-content: flex-start; padding: 2px 5px; }
+            .cat-btn { flex-shrink: 0; width: 40px; }
+            .build-bar { width: 100%; height: 90px; }
+            
+            .modal-win { width: 95%; padding: 15px; }
+            .list-grid { grid-template-columns: 1fr; } /* Listen untereinander auf Handy */
+        }
     </style>
 </head>
 <body>
@@ -205,10 +223,10 @@
 </div>
 
 <div id="war-mask" class="modal-mask">
-    <div class="modal-win" style="width: 600px;">
+    <div class="modal-win">
         <h2 style="font-family:'MedievalSharp'; margin:0">Feldzüge</h2>
         <div style="margin-bottom:10px; border-bottom:1px solid #999; padding-bottom:5px;">
-            Deine Armeestärke: <span id="army-str" style="font-weight:bold; font-size:1.2rem">0</span> ⚔️
+            Armee: <span id="army-str" style="font-weight:bold; font-size:1.2rem">0</span> ⚔️
         </div>
         <div id="war-list" class="list-grid" style="grid-template-columns: 1fr;"></div>
         <button onclick="UI.closeWar()" class="btn" style="width:100%">Rückzug</button>
@@ -235,7 +253,7 @@
 
 <header>
     <div class="header-info">
-        <div class="game-title">Burgherr V21</div>
+        <div class="game-title">Burgherr</div>
         <div class="objective" id="obj-disp">Lade...</div>
     </div>
 
@@ -245,7 +263,7 @@
             <div class="res-values">💰 <span id="r-gold">0</span></div>
         </div>
         
-        <div class="res-group" id="rg-store" style="min-width:120px">
+        <div class="res-group" id="rg-store">
             <span class="res-label">Lager</span>
             <div class="res-values">
                 <span class="res-item" title="Holz">🌲<span id="r-wood">0</span><span id="d-wood" class="rate-ind"></span></span>
@@ -254,7 +272,7 @@
                 <span class="res-item" title="Weizen">🌾<span id="r-wheat">0</span><span id="d-wheat" class="rate-ind"></span></span>
                 <span class="res-item" title="Mehl">🥡<span id="r-flour">0</span><span id="d-flour" class="rate-ind"></span></span>
             </div>
-            <div class="tooltip">Limit: <span id="tt-stock">100</span> (Vorratslager bauen)</div>
+            <div class="tooltip">Limit: <span id="tt-stock">100</span></div>
         </div>
 
         <div class="res-group" id="rg-food">
@@ -265,29 +283,17 @@
                 <span class="res-item" title="Äpfel">🍎<span id="r-apple">0</span><span id="d-apple" class="rate-ind"></span></span>
                 <span class="res-item" title="Käse">🧀<span id="r-cheese">0</span><span id="d-cheese" class="rate-ind"></span></span>
             </div>
-            <div class="tooltip">Limit: <span id="tt-food">100</span> (Kornspeicher bauen)</div>
-        </div>
-
-        <div class="res-group" style="min-width:100px">
-            <span class="res-label">Truppen</span>
-            <div class="res-values">
-                <span title="Bogen">🏹<span id="r-bow">0</span></span>
-                <span title="Pike">🔱<span id="r-spear">0</span></span>
-                <span title="Schwert">⚔️<span id="r-sword">0</span></span>
-                <span title="Söldner">🗡️<span id="r-merc">0</span></span>
-            </div>
+            <div class="tooltip">Limit: <span id="tt-food">100</span></div>
         </div>
 
         <div class="res-group">
-            <span class="res-label">Bevölkerung</span>
+            <span class="res-label">Volk</span>
             <div class="res-values pop-val">
                 <span title="Bürger">👨‍🌾 <span id="r-pop">0</span></span>
                 <span title="Beliebtheit">❤️ <span id="r-hap">0</span></span>
                 <span title="Untätig" class="idle-val">💤 <span id="r-idle">0</span></span>
             </div>
-            <div class="tooltip">
-                <div id="hap-breakdown"></div>
-            </div>
+            <div class="tooltip"><div id="hap-breakdown"></div></div>
         </div>
     </div>
 </header>
@@ -313,35 +319,24 @@
     </div>
 
     <aside>
-        <div style="padding:10px; text-align:center; font-weight:bold; border-bottom:1px solid #aaa;">
-            Tag <span id="day-disp">1</span> - Level <span id="lvl-disp">1</span>
-        </div>
         <div class="log-box" id="log"></div>
         <div class="controls">
             <div class="c-row">
-                <button class="btn" onclick="UI.openRecruit()">🛡️ Armee</button>
-                <button class="btn btn-war" onclick="UI.openWar()">⚔️ Feldzug</button>
+                <button class="btn" onclick="UI.openRecruit()">🛡️</button>
+                <button class="btn btn-war" onclick="UI.openWar()">⚔️</button>
+                <button class="btn" onclick="UI.openMarket()">⚖️</button>
             </div>
-            <div class="c-row">
-                <button class="btn" onclick="UI.openMarket()">⚖️ Markt</button>
-            </div>
-            <div style="background:rgba(255,255,255,0.5); padding:5px; border-radius:4px; font-size:0.8rem; margin:5px 0;">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <span>Steuern: <strong id="tax-name">Keine</strong></span>
-                    <span>
-                        <button onclick="Game.tax(-1)" style="cursor:pointer">➖</button> 
-                        <button onclick="Game.tax(1)" style="cursor:pointer">➕</button>
-                    </span>
-                </div>
-                <div id="tax-impact" style="font-size:0.7rem; color:#555; margin-top:3px; text-align:center;">
-                    0💰 / -1❤️
+            <div style="background:rgba(255,255,255,0.5); padding:3px; border-radius:4px; font-size:0.7rem; margin:5px 0; text-align:center;">
+                Steuer: <strong id="tax-name">Keine</strong>
+                <div>
+                    <button onclick="Game.tax(-1)" style="padding:2px 8px;cursor:pointer">➖</button> 
+                    <button onclick="Game.tax(1)" style="padding:2px 8px;cursor:pointer">➕</button>
                 </div>
             </div>
-            <div style="border-top:1px dashed #777; margin-top:5px; padding-top:5px; font-size:0.75rem;">
-                System: 
-                <button onclick="Game.togglePause()">Pause</button>
-                <button onclick="Game.save()">Save</button>
-                <button onclick="Game.reset()" style="color:red">Reset</button>
+            <div style="text-align:center; font-size:0.7rem; margin-top:5px;">
+                Tag <span id="day-disp">1</span> - Lvl <span id="lvl-disp">1</span><br>
+                <button onclick="Game.save()" style="margin-top:3px; padding:2px 5px;">Save</button>
+                <button onclick="Game.reset()" style="margin-top:3px; padding:2px 5px; color:red">Reset</button>
             </div>
         </div>
     </aside>
@@ -454,9 +449,9 @@ let lastTickTime = 0;
 
 const Game = {
     init: function() {
-        if(localStorage.getItem('sh_v21')) {
+        if(localStorage.getItem('sh_v22')) {
             try {
-                S = JSON.parse(localStorage.getItem('sh_v21'));
+                S = JSON.parse(localStorage.getItem('sh_v22'));
                 if(!S.b.gran && S.b.granary) { S.b.gran = S.b.granary; delete S.b.granary; }
                 UI.init();
                 UI.showModal("Willkommen zurück", "Dein Lehen erwartet dich.", "Weiter");
@@ -527,14 +522,12 @@ const Game = {
         
         let startRes = JSON.parse(JSON.stringify(S.res));
         
-        // 1. LIMITS & SPACE CALC
+        // 1. LIMITS & SPACE
         let maxS = (S.b.stock || 1) * 50;
         let maxF = (S.b.gran || 1) * 50; 
-        
         let curS = S.res.wood + S.res.stone + S.res.iron + S.res.wheat + S.res.flour;
         let curF = S.res.bread + S.res.meat + S.res.apple + S.res.cheese;
         
-        // Remaining space
         let spaceS = maxS - curS;
         let spaceF = maxF - curF;
 
@@ -561,33 +554,22 @@ const Game = {
                     spaceS -= realAdd;
                 }
             }
-            // Process (Converts 1:X, consumes space but frees input space? Simplified: Just check output space)
             if(b.proc) {
                 let take = Math.min(S.res[b.proc]||0, n);
-                // Check if we have space for output
                 let outAmt = take * (b.r||1);
-                // Simple logic: if food output, check spaceF
-                let isFoodOut = ['bread','beer'].includes(b.out); // beer is neither food nor storage limit technically? Let's treat beer as limitless or storage.
-                // Actually wheat->flour (Storage to Storage). Flour->Bread (Storage to Food).
+                let canProd = true;
+                if(['bread'].includes(b.out) && spaceF < outAmt) canProd = false;
+                if(['flour'].includes(b.out) && spaceS < outAmt) canProd = false;
                 
-                if(take > 0) {
-                    // We assume processing always works for now to keep flow, but strictly we should check limit.
-                    // Let's rely on space checks.
-                    let canProd = true;
-                    if(['bread'].includes(b.out) && spaceF < outAmt) canProd = false;
-                    if(['flour'].includes(b.out) && spaceS < outAmt) canProd = false;
-                    
-                    if(canProd) {
-                        S.res[b.proc] -= take;
-                        S.res[b.out] = (S.res[b.out]||0) + outAmt;
-                        if(['bread'].includes(b.out)) spaceF -= outAmt;
-                        if(['flour'].includes(b.out)) spaceS -= outAmt; // Frees wheat space but takes flour space. Net zero change mostly.
-                    }
+                if(take > 0 && canProd) {
+                    S.res[b.proc] -= take;
+                    S.res[b.out] = (S.res[b.out]||0) + outAmt;
+                    if(['bread'].includes(b.out)) spaceF -= outAmt;
+                    if(['flour'].includes(b.out)) spaceS -= outAmt;
                 }
             }
             if(b.use) {
                 if((S.res[b.use]||0) >= n) {
-                    // Check output space? Weapons don't have limit logic in this simple version
                     S.res[b.use] -= n;
                     S.res[b.out] = (S.res[b.out]||0) + (n*(b.amt||1));
                 }
@@ -617,13 +599,11 @@ const Game = {
         }
         else { hChg += (ateTypes); S.factors.food = ateTypes; }
 
-        // Tax
         let tx = Config.taxes[S.tax];
         hChg += tx.h;
         S.res.gold += (S.pop.curr * tx.g);
         S.factors.tax = tx.h;
 
-        // Beer
         if(S.res.beer >= S.pop.curr && S.pop.curr > 0) {
             S.res.beer -= S.pop.curr;
             hChg += 5;
@@ -789,8 +769,8 @@ const Game = {
         S.paused = !S.paused; 
         if(!S.paused) lastTickTime = Date.now();
     },
-    save: function() { localStorage.setItem('sh_v21', JSON.stringify(S)); UI.log("Gespeichert", "prod"); },
-    reset: function() { localStorage.removeItem('sh_v21'); location.reload(); }
+    save: function() { localStorage.setItem('sh_v22', JSON.stringify(S)); UI.log("Gespeichert", "prod"); },
+    reset: function() { localStorage.removeItem('sh_v22'); location.reload(); }
 };
 
 const UI = {
@@ -812,7 +792,6 @@ const UI = {
     },
     
     update: function() {
-        // Resources
         ['gold','wood','stone','iron','wheat','flour','bread','meat','apple','cheese','bow','spear','sword','merc'].forEach(k => {
             let el = document.getElementById('r-'+k);
             if(el) {
@@ -828,7 +807,6 @@ const UI = {
             }
         });
 
-        // Pop & Info
         let work = 0; for(let k in S.w) work += S.w[k];
         let sold = 0; for(let k in S.units) sold += S.units[k];
         let idle = S.pop.curr - sold - work;
@@ -1055,8 +1033,7 @@ const UI = {
     closeMarket: function() { document.getElementById('market-mask').style.display='none'; },
     renderMarket: function() {
         let l = document.getElementById('market-list'); l.innerHTML="";
-        // ALL TRADEABLE GOODS
-        ['wood','stone','iron','pitch','wheat','flour','hops','bread','meat','cheese','apple','beer','bow','spear','sword','armor','leather'].forEach(k => {
+        ['wood','stone','iron','wheat','flour','bread','meat','cheese','apple','bow','spear','sword'].forEach(k => {
             let row = document.createElement('div'); row.className='list-item';
             row.innerHTML = `<span>${SafeT(k)}: ${Math.floor(S.res[k]||0)}</span><div><button onclick="Game.trade('${k}',1)">Kauf</button> <button onclick="Game.trade('${k}',0)">Verk</button></div>`;
             l.appendChild(row);
