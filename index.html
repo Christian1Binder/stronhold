@@ -3,18 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Burgherr V16 - Handarbeit</title>
+    <title>Burgherr V17 - Survival</title>
     <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=MedievalSharp&display=swap" rel="stylesheet">
     
     <style>
         :root {
-            --bg-body: #111; 
+            --bg-body: #0d0d0d; 
             --panel-bg: #e0d5b7;
-            --border: #5d4037;
+            --border: #3e2723;
             --highlight: #ffb300;
-            --text: #3e2723;
+            --text: #271c19;
             --success: #2e7d32;
-            --danger: #c62828;
+            --danger: #b71c1c;
             --accent: #d84315;
             --can-build: #e8f5e9;
             --can-build-border: #2e7d32;
@@ -24,64 +24,48 @@
         body { font-family: 'Lato', sans-serif; background: var(--bg-body); color: #ccc; margin: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
 
         /* --- TICK BAR --- */
-        #tick-container {
-            height: 6px; background: #000; width: 100%; position: relative; z-index: 200;
-        }
-        #tick-bar {
-            height: 100%; background: var(--highlight); width: 0%; transition: width 0.1s linear;
-            box-shadow: 0 0 10px var(--highlight);
-        }
+        #tick-container { height: 6px; background: #000; width: 100%; position: relative; z-index: 200; }
+        #tick-bar { height: 100%; background: var(--highlight); width: 0%; transition: width 0.1s linear; box-shadow: 0 0 10px var(--highlight); }
 
         /* --- HEADER --- */
         header { 
-            background: #222; height: 120px; flex-shrink: 0; border-bottom: 3px solid var(--border);
-            display: flex; align-items: center; justify-content: space-between; padding: 0 15px; z-index: 100;
-            position: relative;
+            background: #1a1a1a; height: 120px; flex-shrink: 0; border-bottom: 3px solid var(--border);
+            display: flex; align-items: center; justify-content: space-between; padding: 0 15px; z-index: 100; position: relative;
         }
 
         .header-info { width: 220px; }
         .game-title { font-family: 'MedievalSharp'; font-size: 1.8rem; color: var(--highlight); margin: 0; line-height: 1; text-shadow: 2px 2px 0 #000; }
-        .objective { font-size: 0.75rem; background: rgba(255,255,255,0.1); padding: 5px; border-left: 3px solid var(--highlight); margin-top: 5px; color: #ddd; }
+        .objective { font-size: 0.75rem; background: rgba(255,255,255,0.05); padding: 5px; border-left: 3px solid var(--highlight); margin-top: 5px; color: #bbb; }
         .obj-done { text-decoration: line-through; color: var(--success); opacity: 0.7; }
 
         .res-container { display: flex; gap: 8px; flex: 1; justify-content: flex-end; }
         .res-group { 
-            background: #333; border: 1px solid #555; border-radius: 4px; padding: 4px 8px; 
+            background: #2d2d2d; border: 1px solid #444; border-radius: 4px; padding: 4px 8px; 
             min-width: 70px; text-align: center; display: flex; flex-direction: column; justify-content: center;
             position: relative; cursor: help; transition: background 0.2s;
         }
         .res-group:hover .tooltip { display: block; }
+        .res-label { font-size: 0.6rem; text-transform: uppercase; color: #888; border-bottom: 1px solid #444; margin-bottom: 2px; }
+        .res-values { display: flex; gap: 10px; justify-content: center; font-weight: bold; font-size: 0.9rem; color: #eee; position: relative; }
         
-        .res-label { font-size: 0.6rem; text-transform: uppercase; color: #aaa; border-bottom: 1px solid #555; margin-bottom: 2px; }
-        
-        /* Values & Rates */
-        .res-values { display: flex; gap: 10px; justify-content: center; font-weight: bold; font-size: 0.9rem; color: #fff; position: relative; }
+        /* Rate Indicators */
         .res-item { position: relative; display: inline-block; }
         .rate-ind { font-size: 0.65rem; position: relative; top: -5px; margin-left: 2px; opacity: 0.8; }
         .rate-pos { color: #66bb6a; }
         .rate-neg { color: #ef5350; }
 
-        /* FLOATING TEXT ANIMATION (HEADER) */
+        /* Floating Text */
         .float-txt {
             position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
             font-size: 0.9rem; font-weight: bold; pointer-events: none;
             animation: floatUp 1.5s forwards; text-shadow: 1px 1px 0 #000; z-index: 3000;
         }
-        
-        /* CLICK POPUP (MAP) */
         .click-pop {
             position: absolute; font-size: 1.5rem; font-weight: bold; color: #fff; pointer-events: none; z-index: 4000;
-            text-shadow: 0 0 5px #000; animation: floatUpMap 1s forwards;
+            text-shadow: 0 0 5px #000; animation: floatUpMap 0.8s forwards;
         }
-
-        @keyframes floatUp {
-            0% { opacity: 1; top: -10px; transform: translateX(-50%) scale(1); }
-            100% { opacity: 0; top: -40px; transform: translateX(-50%) scale(1.2); }
-        }
-        @keyframes floatUpMap {
-            0% { opacity: 1; transform: translateY(0) scale(1); }
-            100% { opacity: 0; transform: translateY(-50px) scale(1.5); }
-        }
+        @keyframes floatUp { 0% { opacity: 1; top: -10px; transform: translateX(-50%); } 100% { opacity: 0; top: -40px; transform: translateX(-50%); } }
+        @keyframes floatUpMap { 0% { opacity: 1; transform: translateY(0) scale(1); } 100% { opacity: 0; transform: translateY(-40px) scale(1.3); } }
 
         /* TOOLTIP */
         .tooltip { 
@@ -90,58 +74,65 @@
             width: 220px; text-align: left; box-shadow: 0 5px 15px rgba(0,0,0,0.5); pointer-events: none;
         }
         .tt-row { display: flex; justify-content: space-between; font-size: 0.8rem; border-bottom: 1px dashed #ccc; padding: 2px 0; }
-
-        /* IDLE ICON */
-        .idle-alert {
-            display: none; color: var(--highlight); font-size: 1.2rem; animation: pulse 1s infinite; margin-left: 5px;
-        }
+        .idle-alert { display: none; color: var(--highlight); font-size: 1.2rem; animation: pulse 1s infinite; margin-left: 5px; }
         @keyframes pulse { 0% { opacity: 0.5; transform: scale(0.9); } 50% { opacity: 1; transform: scale(1.1); } 100% { opacity: 0.5; transform: scale(0.9); } }
 
-        /* --- MAIN --- */
+        /* --- MAIN MAP --- */
         main { display: flex; flex: 1; overflow: hidden; position: relative; }
 
-        /* KARTE */
         #map-area { 
-            flex: 1; position: relative; overflow: hidden; padding: 20px;
-            background: radial-gradient(#558b2f, #1b5e20); 
-            display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 4px;
+            flex: 1; position: relative; overflow: hidden; padding: 10px;
+            /* Hintergrund */
+            background-color: #0d1b0e;
+            display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 8px;
         }
-        /* Zones now interactive */
-        .zone { 
-            position: relative; border: 2px dashed rgba(255,255,255,0.1); 
-            display: flex; align-content: flex-start; flex-wrap: wrap; padding: 10px; overflow: hidden; 
-            transition: background 0.2s, transform 0.1s; cursor: pointer;
-        }
-        .zone:hover { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.3); }
-        .zone:active { transform: scale(0.98); background: rgba(255,255,255,0.1); }
-
-        .zone-label { position: absolute; bottom: 5px; right: 5px; font-family: 'MedievalSharp'; font-size: 1.5rem; color: rgba(255,255,255,0.3); pointer-events: none; user-select: none; }
-        .zone-hint { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: rgba(255,255,255,0.1); font-size: 3rem; pointer-events: none; }
         
-        .map-b { 
-            display: inline-flex; width: 40px; height: 40px; font-size: 1.5rem; 
-            align-items: center; justify-content: center; background: rgba(255,255,255,0.2); 
-            border-radius: 4px; margin: 2px; box-shadow: 1px 1px 2px rgba(0,0,0,0.3);
-            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: default; pointer-events: none;
+        /* ZONES - ORGANIC LOOK */
+        .zone { 
+            position: relative; border-radius: 8px; overflow: hidden; 
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.6);
+            transition: transform 0.1s; cursor: pointer; border: 2px solid rgba(255,255,255,0.05);
         }
-        @keyframes popIn { from { transform: scale(0); } to { transform: scale(1); } }
+        .zone:active { transform: scale(0.99); }
+        .zone:hover { border-color: rgba(255,255,255,0.2); }
+
+        /* Zone Specific Styles */
+        #z-forest { background: radial-gradient(circle at center, #2e7d32, #1b5e20); }
+        #z-mountain { background: linear-gradient(135deg, #5d4037, #3e2723); } /* Braun/Grau */
+        #z-town { background: radial-gradient(#d7ccc8, #8d6e63); border: 2px solid #5d4037; }
+        #z-farm { background: radial-gradient(#8bc34a, #558b2f); }
+
+        .zone-label { 
+            position: absolute; bottom: 10px; left: 10px; 
+            font-family: 'MedievalSharp'; font-size: 1.2rem; color: rgba(255,255,255,0.6); 
+            text-shadow: 1px 1px 2px #000; pointer-events: none; z-index: 10;
+        }
+        .zone-hint { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); opacity: 0.1; font-size: 4rem; pointer-events: none; }
+
+        /* SCATTERED BUILDINGS */
+        .map-b { 
+            position: absolute; /* Freie Positionierung! */
+            font-size: 1.6rem; 
+            filter: drop-shadow(2px 2px 1px rgba(0,0,0,0.5));
+            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+            cursor: help;
+        }
+        .map-b:hover { transform: scale(1.2); z-index: 20; }
+        @keyframes popIn { from { transform: scale(0) translateY(10px); } to { transform: scale(1) translateY(0); } }
 
         /* SIDEBAR */
         aside { 
             width: 340px; background: var(--panel-bg); border-left: 5px solid var(--border); 
             display: flex; flex-direction: column; color: var(--text); z-index: 50;
         }
-        
-        /* LOG: Newest at Top */
         .log-box { 
             flex: 1; overflow-y: hidden; padding: 10px; display: flex; flex-direction: column; gap: 5px; 
             background: rgba(0,0,0,0.05); font-size: 0.85rem; position: relative;
         }
         .log-box::after {
-            content:''; position: absolute; bottom:0; left:0; width:100%; height: 40px;
-            background: linear-gradient(transparent, rgba(0,0,0,0.1)); pointer-events: none;
+            content:''; position: absolute; bottom:0; left:0; width:100%; height: 50px;
+            background: linear-gradient(transparent, var(--panel-bg)); pointer-events: none;
         }
-
         .log-entry { 
             background: #fff; padding: 6px 10px; border-radius: 4px; border-left: 4px solid #999; 
             box-shadow: 0 1px 2px rgba(0,0,0,0.1); flex-shrink: 0; animation: slideIn 0.3s ease-out;
@@ -153,7 +144,8 @@
 
         .log-entry.prod { border-color: var(--success); }
         .log-entry.warn { border-color: var(--danger); background: #ffebee; }
-        
+        .log-entry.death { border-color: #000; background: #444; color: #fff; }
+
         .controls { padding: 10px; background: #bcaaa4; border-top: 2px solid var(--border); }
         .c-row { display: flex; gap: 5px; margin-bottom: 5px; }
         .btn { 
@@ -183,19 +175,16 @@
             cursor: pointer; position: relative; border: 2px solid transparent; transition: 0.2s;
         }
         .b-card:hover { background: rgba(0,0,0,0.1); border-color: #999; }
-        
         .b-card.can-build { background: var(--can-build); border-color: var(--can-build-border); box-shadow: 0 4px 6px rgba(46, 125, 50, 0.2); }
-        .b-card.can-build:hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 6px 10px rgba(46, 125, 50, 0.3); }
-
+        
         .b-count { position: absolute; top: -5px; right: -5px; background: var(--accent); color: #fff; font-size: 0.7rem; padding: 2px 6px; border-radius: 10px; font-weight: bold; box-shadow: 1px 1px 2px rgba(0,0,0,0.5); }
         
         /* MODALS */
-        .modal-mask { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 5000; justify-content: center; align-items: center; backdrop-filter: blur(2px); }
+        .modal-mask { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 5000; justify-content: center; align-items: center; backdrop-filter: blur(4px); }
         .modal-win { background: var(--panel-bg); width: 500px; padding: 25px; border: 4px solid var(--border); border-radius: 8px; text-align: center; color: var(--text); box-shadow: 0 0 50px #000; position: relative; }
         
         .list-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; max-height: 400px; overflow-y: auto; text-align: left; margin: 15px 0; }
         .list-item { background: rgba(255,255,255,0.5); padding: 5px; border: 1px solid #999; display: flex; justify-content: space-between; align-items: center; border-radius: 4px; font-size: 0.9rem; }
-
         .missing-res { color: var(--danger); font-weight: bold; }
     </style>
 </head>
@@ -229,7 +218,7 @@
 
 <header>
     <div class="header-info">
-        <div class="game-title">Burgherr V16</div>
+        <div class="game-title">Burgherr V17</div>
         <div class="objective" id="obj-disp">Lade...</div>
     </div>
 
@@ -290,11 +279,11 @@
     <div id="map-area">
         <div class="zone" id="z-forest" onclick="Game.clickGather('wood', event)">
             <div class="zone-hint">🌲</div>
-            <div class="zone-label">Wald</div>
+            <div class="zone-label">Forst</div>
         </div>
         <div class="zone" id="z-mountain" onclick="Game.clickGather('stone', event)">
             <div class="zone-hint">⛰️</div>
-            <div class="zone-label">Berg</div>
+            <div class="zone-label">Gebirge</div>
         </div>
         <div class="zone" id="z-town">
             <div class="zone-hint">🏰</div>
@@ -302,7 +291,7 @@
         </div>
         <div class="zone" id="z-farm" onclick="Game.clickGather('apple', event)">
             <div class="zone-hint">🍎</div>
-            <div class="zone-label">Feld</div>
+            <div class="zone-label">Ländereien</div>
         </div>
     </div>
 
@@ -362,7 +351,7 @@ const T = {
 const SafeT = (k) => T[k] || k; // Fallback
 
 const Levels = [
-    {id:1, t:"Gründung", msg:"Klicke auf Wald und Felder, um Rohstoffe zu sammeln! Baue dann Hütten und Holzfäller.", goal:{wood:50, pop:10}, start:{gold:50, wood:0, food:15}},
+    {id:1, t:"Gründung", msg:"Klicke auf Wald und Felder für Rohstoffe. Lass deine Bürger nicht verhungern!", goal:{wood:50, pop:10}, start:{gold:50, wood:0, food:15}},
     {id:2, t:"Stein & Brot", msg:"Baut Steinbrüche & Brotproduktion. Klicke auf Berge für Stein.", goal:{stone:20, bread:30}, start:{gold:100, wood:50, food:30}},
     {id:3, t:"Waffen", msg:"Stellt Bögen und Speere her.", goal:{bow:5, spear:5}, start:{gold:200, wood:100, stone:50, food:50}},
     {id:4, t:"Armee", msg:"Bildet 10 Soldaten aus.", goal:{soldier:10}, start:{gold:300, wood:100, stone:100, iron:20, food:100}},
@@ -377,7 +366,7 @@ const Units = {
 };
 
 const Config = {
-    tick: 3000, // Faster Pacing
+    tick: 3000, 
     taxes: [
         {n:"Keine",   g:0, h:1},
         {n:"Gering",  g:1, h:-1},
@@ -432,9 +421,9 @@ let lastTickTime = 0;
 
 const Game = {
     init: function() {
-        if(localStorage.getItem('sh_v16')) {
+        if(localStorage.getItem('sh_v17')) {
             try {
-                S = JSON.parse(localStorage.getItem('sh_v16'));
+                S = JSON.parse(localStorage.getItem('sh_v17'));
                 if(!S.b.gran && S.b.granary) { S.b.gran = S.b.granary; delete S.b.granary; }
                 UI.init();
                 UI.showModal("Willkommen zurück", "Dein Lehen erwartet dich.", "Weiter");
@@ -474,7 +463,6 @@ const Game = {
     clickGather: function(type, e) {
         if(S.paused) return;
         
-        // Check Limits
         let maxS = (S.b.stock || 1) * 50;
         let maxF = (S.b.gran || 1) * 50;
         let curS = S.res.wood + S.res.stone + S.res.iron + S.res.wheat + S.res.flour;
@@ -487,11 +475,9 @@ const Game = {
             if(curF >= maxF) { UI.showFloatingText(type, "Voll!", "neg"); return; }
         }
 
-        // Add Resource
         S.res[type]++;
         UI.update();
         
-        // Visuals
         UI.showFloatingText(type, "+1", "pos");
         UI.showMapClickEffect(e.currentTarget, type === 'apple' ? '🍎' : (type==='wood'?'🌲':'🧱'));
     },
@@ -502,7 +488,6 @@ const Game = {
         lastTickTime = Date.now();
         
         let startRes = JSON.parse(JSON.stringify(S.res));
-        let pLog = [];
         
         // 1. LIMITS
         let maxS = (S.b.stock || 1) * 50;
@@ -521,7 +506,6 @@ const Game = {
 
             if(b.need && S.b[b.need] < n) n = S.b[b.need]; 
 
-            // Simple Prod
             if(b.prod) {
                 let isFood = ['meat','apple','cheese','wheat','hops'].includes(b.prod);
                 if((isFood && !fullF) || (!isFood && !fullS)) {
@@ -529,16 +513,13 @@ const Game = {
                     S.res[b.prod] = (S.res[b.prod]||0) + amt;
                 }
             }
-            // Process
             if(b.proc) {
                 let take = Math.min(S.res[b.proc]||0, n);
                 if(take > 0 && !fullF) {
                     S.res[b.proc] -= take;
-                    let out = take * (b.r||1);
-                    S.res[b.out] = (S.res[b.out]||0) + out;
+                    S.res[b.out] = (S.res[b.out]||0) + (take * (b.r||1));
                 }
             }
-            // Craft
             if(b.use) {
                 if((S.res[b.use]||0) >= n && !fullS) {
                     S.res[b.use] -= n;
@@ -549,7 +530,7 @@ const Game = {
 
         // 3. EAT (Prioritize Cheap Food)
         let eat = S.pop.curr;
-        let foods = ['apple','bread','cheese','meat']; // New Order
+        let foods = ['apple','bread','cheese','meat'];
         let ateTypes = 0;
         foods.forEach(f => {
             if(eat > 0 && S.res[f] > 0) {
@@ -559,7 +540,16 @@ const Game = {
         });
 
         let hChg = 0;
-        if(eat > 0) { UI.log(`${eat} hungern!`, 'warn'); hChg -= 20; S.factors.food = -20; }
+        if(eat > 0) { 
+            UI.log(`${eat} hungern!`, 'warn'); 
+            hChg -= 20; 
+            S.factors.food = -20; 
+            // Chance of dying from starvation
+            if(Math.random() < 0.2) {
+                S.pop.curr--;
+                UI.log("Ein Bürger verhungert.", "death");
+            }
+        }
         else { hChg += (ateTypes); S.factors.food = ateTypes; }
 
         // Tax
@@ -574,12 +564,20 @@ const Game = {
             hChg += 5;
         }
 
-        // Church
         hChg += ((S.b.church||0) * 5);
-
         S.pop.hap = Math.max(0, Math.min(100, S.pop.hap + hChg));
 
-        // 4. POPULATION
+        // 4. POPULATION & LOSS CHECK
+        
+        // --- GAME OVER CHECK ---
+        if(S.pop.curr <= 0) {
+            S.pop.curr = 0; // Prevent negative
+            S.paused = true;
+            UI.update();
+            UI.showModal("GAME OVER", "Das Dorf ist ausgestorben. Dein Lehen ist gefallen.", "Neustart", Game.reset);
+            return; // Stop Tick
+        }
+
         S.pop.max = (S.b.hovel*5) + (S.b.house*10) + 5;
         let work = 0; for(let k in S.w) work += S.w[k];
         let sold = 0; for(let k in S.units) sold += S.units[k];
@@ -692,8 +690,8 @@ const Game = {
         S.paused = !S.paused; 
         if(!S.paused) lastTickTime = Date.now();
     },
-    save: function() { localStorage.setItem('sh_v16', JSON.stringify(S)); UI.log("Gespeichert", "prod"); },
-    reset: function() { localStorage.removeItem('sh_v16'); location.reload(); }
+    save: function() { localStorage.setItem('sh_v17', JSON.stringify(S)); UI.log("Gespeichert", "prod"); },
+    reset: function() { localStorage.removeItem('sh_v17'); location.reload(); }
 };
 
 const UI = {
@@ -741,7 +739,6 @@ const UI = {
         document.getElementById('day-disp').innerText = S.day;
         document.getElementById('lvl-disp').innerText = S.lvl;
         
-        // Idle Warning
         document.getElementById('idle-icon').style.display = idle > 0 ? 'inline' : 'none';
 
         // Tax Info
@@ -766,7 +763,6 @@ const UI = {
         let curF = S.res.bread+S.res.meat+S.res.apple+S.res.cheese;
         document.getElementById('tt-food').innerText = `${Math.floor(curF)}/${maxF}`;
 
-        // Objective
         let l = Levels.find(x => x.id == S.lvl);
         if(l) {
             let h = "";
@@ -822,21 +818,17 @@ const UI = {
         setTimeout(() => el.remove(), 1500);
     },
 
-    // NEW MAP CLICK EFFECT
     showMapClickEffect: function(el, icon) {
         let pop = document.createElement('div');
         pop.className = 'click-pop';
         pop.innerText = icon;
-        
-        // Random Position inside element
         let rect = el.getBoundingClientRect();
         let x = Math.random() * (rect.width - 20);
         let y = Math.random() * (rect.height - 20);
         pop.style.left = x + 'px';
         pop.style.top = y + 'px';
-        
         el.appendChild(pop);
-        setTimeout(() => pop.remove(), 1000);
+        setTimeout(() => pop.remove(), 800);
     },
 
     log: function(t, c) {
@@ -879,7 +871,6 @@ const UI = {
     renderMap: function() {
         ['forest','mountain','town','farm'].forEach(z => {
             let el = document.getElementById('z-'+z);
-            // Keep hints and labels
             let nodes = Array.from(el.childNodes);
             nodes.forEach(n => {
                 if(n.className === 'map-b' || n.className === 'click-pop') el.removeChild(n);
@@ -896,6 +887,12 @@ const UI = {
         if(zone) {
             let d = document.createElement('div'); d.className='map-b'; d.innerText = b.i;
             d.title = b.n;
+            
+            // RANDOM POSITION (Scatter Placement)
+            // Range 10% to 80% to keep inside box
+            d.style.left = (10 + Math.random() * 70) + '%';
+            d.style.top = (10 + Math.random() * 70) + '%';
+            
             zone.appendChild(d);
         }
     },
