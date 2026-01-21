@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Burgherr WebApp - Final</title>
+    <title>Burgherr WebApp - V2.5 Defense & Log</title>
     <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=MedievalSharp&display=swap" rel="stylesheet">
     
     <style>
@@ -41,7 +41,7 @@
         main { display: flex; flex: 1; overflow: hidden; }
         aside.left { width: 360px; background: #f4ecd8; padding: 15px; overflow-y: auto; border-right: 1px solid #dccbb1; display: flex; flex-direction: column; gap: 10px; }
         aside.right { width: 380px; background: #eaddcf; padding: 15px; overflow-y: auto; border-left: 1px solid #dccbb1; display: flex; flex-direction: column; gap: 15px; }
-        section#center-log { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; background: #fff; background-image: radial-gradient(#f4e4bc 10%, transparent 10%); background-size: 20px 20px; }
+        section#center-log { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; background: #fff; background-image: radial-gradient(#f4e4bc 10%, transparent 10%); background-size: 20px 20px; }
 
         h2 { font-family: 'MedievalSharp', cursive; color: var(--primary-dark); border-bottom: 2px solid var(--primary); font-size: 1.2rem; margin: 0 0 5px 0; }
         h3.cat-title { font-family: 'MedievalSharp', cursive; color: #555; margin: 10px 0 5px 0; border-bottom: 1px dashed #aaa; font-size: 1rem; }
@@ -59,6 +59,7 @@
         .worker-pill { background: #eee; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 0.75rem; margin-top: 2px; color: #555; }
         .worker-pill.full { background: #c8e6c9; color: #2e7d32; } 
         .worker-pill.empty { background: #ffcdd2; color: #b71c1c; }
+        .def-pill { background: #cfd8dc; color: #37474f; font-weight:bold; font-size:0.75rem; padding: 2px 6px; border-radius:4px; border: 1px solid #b0bec5; }
 
         /* MARKET MODAL STYLE */
         .trade-row-simple { display: flex; justify-content: space-between; align-items: center; background: #fff; padding: 8px; border-bottom: 1px solid #ddd; }
@@ -67,6 +68,37 @@
         .trade-actions { display: flex; gap: 10px; }
         .trade-btn { border: 1px solid #999; background: #eee; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; font-weight: bold; min-width: 80px; }
         .trade-btn:hover { background: var(--highlight); border-color: #f57f17; }
+
+        /* --- NEUES LOG DESIGN --- */
+        .log-card {
+            background: #fff; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); 
+            border-left: 5px solid #ccc; font-size: 0.9rem; overflow: hidden;
+        }
+        .log-header {
+            background: #f5f5f5; padding: 4px 10px; font-weight: bold; color: #555; font-size: 0.75rem;
+            border-bottom: 1px solid #eee; display: flex; justify-content: space-between;
+        }
+        .log-content { padding: 8px 10px; line-height: 1.4; }
+        
+        /* Typen */
+        .log-card.report { border-left-color: #8d6e63; } /* Braun für Daily Report */
+        .log-card.report .log-header { background: #efebe9; color: #5d4037; }
+        
+        .log-card.error { border-left-color: #d32f2f; background: #ffebee; color: #b71c1c; }
+        .log-card.error .log-header { background: #ffcdd2; color: #b71c1c; }
+        
+        .log-card.success { border-left-color: #2e7d32; background: #e8f5e9; }
+        .log-card.success .log-header { background: #c8e6c9; color: #1b5e20; }
+
+        .log-card.combat { border-left-color: #333; background: #eceff1; }
+        .log-card.combat .log-header { background: #cfd8dc; color: #263238; }
+
+        /* Report Zeilen */
+        .rep-row { display: flex; margin-bottom: 2px; align-items: baseline; }
+        .rep-label { width: 80px; font-weight: bold; font-size: 0.8rem; text-transform: uppercase; color: #777; }
+        .rep-val { font-weight: bold; }
+        .rep-val.plus { color: #2e7d32; }
+        .rep-val.minus { color: #c62828; }
 
         /* UI MISC */
         .preview-panel { background: #fff3e0; border: 1px solid #ffb74d; padding: 8px; border-radius: 6px; font-size: 0.85rem; }
@@ -105,8 +137,7 @@
 <div id="modal-market" class="modal-overlay">
     <div class="modal-box">
         <div class="modal-title">⚖️ Der Marktplatz</div>
-        <div id="market-list" style="text-align: left; border: 1px solid #ccc; border-radius: 6px; overflow: hidden;">
-            </div>
+        <div id="market-list" style="text-align: left; border: 1px solid #ccc; border-radius: 6px; overflow: hidden;"></div>
         <button onclick="UI.toggleMarket(false)" class="big-btn secondary" style="margin-top:20px;">Markt verlassen</button>
     </div>
 </div>
@@ -126,26 +157,15 @@
                     <div class="res-item" title="Eisen"><span class="res-icon">⛓️</span><span class="res-val" id="res-iron">0</span></div>
                 </div>
             </div>
-            
-            <div class="res-group">
-                <div class="res-group-label">Korn & Brot</div>
-                <div class="res-items">
-                    <div class="res-item" title="Weizen"><span class="res-icon">🌾</span><span class="res-val" id="res-wheat">0</span></div>
-                    <div class="res-item" title="Mehl"><span class="res-icon">🥡</span><span class="res-val" id="res-flour">0</span></div>
-                    <div class="res-item" title="Brot"><span class="res-icon">🍞</span><span class="res-val" id="res-bread">0</span></div>
-                </div>
-            </div>
-
             <div class="res-group">
                 <div class="res-group-label">Speisekammer</div>
                 <div class="res-items">
+                    <div class="res-item" title="Brot"><span class="res-icon">🍞</span><span class="res-val" id="res-bread">0</span></div>
                     <div class="res-item" title="Fleisch"><span class="res-icon">🥩</span><span class="res-val" id="res-meat">0</span></div>
                     <div class="res-item" title="Äpfel"><span class="res-icon">🍎</span><span class="res-val" id="res-apple">0</span></div>
-                    <div class="res-item" title="Hopfen"><span class="res-icon">🌿</span><span class="res-val" id="res-hops">0</span></div>
                     <div class="res-item" title="Bier"><span class="res-icon">🍺</span><span class="res-val" id="res-beer">0</span></div>
                 </div>
             </div>
-
             <div class="res-group">
                 <div class="res-group-label">Militär</div>
                 <div class="res-items">
@@ -154,7 +174,6 @@
                     <div class="res-item" title="Söldner"><span class="res-icon">🗡️</span><span class="res-val" id="res-mercs">0</span></div>
                 </div>
             </div>
-
             <div class="res-group" id="pop-group">
                 <div class="res-group-label">Das Reich</div>
                 <div class="res-items">
@@ -177,18 +196,16 @@
 
         <aside class="right">
             <h2>Verwaltung</h2>
-            
             <button class="big-btn secondary" onclick="UI.toggleMarket(true)">⚖️ Marktplatz öffnen</button>
 
             <br><br>
-            
             <div class="preview-panel" id="production-preview"></div>
             <div class="bar-container" style="margin-top:5px;"><div class="bar-fill" id="day-bar"></div></div>
             <div style="margin-top:5px; font-size:0.9rem; text-align:right;">Tag: <span id="stat-day">1</span></div>
 
             <hr style="border:0; border-top:1px solid #ccc; margin: 15px 0;">
             
-            <h2>⚔️ Militär & Steuern</h2>
+            <h2>⚔️ Strategie</h2>
             
             <div class="build-card" id="btn-recruit" onclick="Game.recruit('regular')">
                 <div class="build-info">
@@ -229,12 +246,10 @@ const Config = {
     tickRate: 5000, 
     combatStartDay: 40,
     buildings: {
-        // RESSOURCEN
         woodcutter: { name: "Holzfäller", costG: 15, costW: 0, costS: 0, output: "wood", amount: 2, cat: "Ressourcen" },
         quarry:     { name: "Steinbruch", costG: 50, costW: 20, costS: 0, output: "stone", amount: 1, cat: "Ressourcen" },
         ironmine:   { name: "Eisenmine",  costG: 100, costW: 50, costS: 0, output: "iron", amount: 1, cat: "Ressourcen" },
         
-        // NAHRUNG
         farm_apple: { name: "Apfelgarten", costG: 30, costW: 10, costS: 0, output: "apple", amount: 3, cat: "Nahrung" },
         hunter:     { name: "Jägerstand", costG: 20, costW: 5, costS: 0, output: "meat", amount: 2, cat: "Nahrung" },
         farm_wheat: { name: "Getreidefarm", costG: 40, costW: 10, costS: 0, output: "wheat", amount: 2, cat: "Nahrung" }, 
@@ -243,16 +258,18 @@ const Config = {
         farm_hops:  { name: "Hopfenfarm", costG: 40, costW: 15, costS: 0, output: "hops", amount: 2, cat: "Nahrung" },
         brewery:    { name: "Brauerei", costG: 100, costW: 20, costS: 20, process: "hops", product: "beer", throughput: 2, ratio: 2, cat: "Nahrung" },
         
-        // WOHNRAUM
         house:      { name: "Hütte", costG: 0, costW: 10, costS: 0, capacity: 5, cat: "Wohnraum" },
         house_lg:   { name: "Haus", costG: 50, costW: 40, costS: 10, capacity: 10, cat: "Wohnraum" },
 
-        // VERTEIDIGUNG
         weaponsmith:{ name: "Waffenschmiede", costG: 100, costW: 0, costS: 20, process: "iron", product: "weapons", throughput: 1, ratio: 1, cat: "Verteidigung" },
         barracks:   { name: "Kaserne", costG: 150, costW: 0, costS: 50, cat: "Verteidigung" },
         merc_post:  { name: "Söldnerlager", costG: 500, costW: 50, costS: 0, cat: "Verteidigung" },
         
-        // KUNST
+        // --- VERTEIDIGUNG (NEU) ---
+        wall_wood:  { name: "Holzpalisade", costG: 20, costW: 50, costS: 0, defense: 10, cat: "Verteidigung" },
+        wall_stone: { name: "Steinmauer", costG: 100, costW: 0, costS: 50, defense: 50, cat: "Verteidigung" },
+        tower:      { name: "Wachturm", costG: 200, costW: 20, costS: 100, defense: 150, cat: "Verteidigung" },
+
         church:     { name: "Kirche", costG: 500, costW: 0, costS: 200, capacity: 0, religion: 15, cat: "Kunst" },
         cathedral:  { name: "KATHEDRALE", costG: 5000, costW: 2000, costS: 3000, capacity: 0, cat: "Kunst" } 
     },
@@ -267,7 +284,7 @@ const Config = {
 
 const State = {
     day: 1, paused: false, lastTick: Date.now(),
-    res: { gold: 250, wood: 50, stone: 0, iron: 0, wheat: 0, flour: 0, bread: 0, meat: 5, apple: 5, hops: 0, beer: 0, weapons: 0 },
+    res: { gold: 200, wood: 50, stone: 0, iron: 0, wheat: 0, flour: 0, bread: 0, meat: 5, apple: 5, hops: 0, beer: 0, weapons: 0 },
     pop: { current: 5, max: 10, happiness: 100, soldiers: 0, mercs: 0 },
     b: {}, w: {}, taxIndex: 1, 
     factors: { food: 0, tax: 0, events: 0, beer: 0, religion: 0 },
@@ -282,7 +299,7 @@ const Game = {
         UI.update();
         setInterval(() => { if(!State.paused) this.tick(); }, Config.tickRate);
         setInterval(() => { if(!State.paused) UI.updateBar(); }, 100);
-        UI.log("Sire! Baut die Wirtschaft auf. Klickt rechts auf 'Marktplatz' um zu handeln.", "report");
+        UI.log("Willkommen, Burgherr! Baut Unterkünfte und Nahrung.", "report");
         this.autoAssign();
     },
 
@@ -324,7 +341,6 @@ const Game = {
                 UI.log(`HUNGER! ${pop} Bürger hungern!`, "error"); State.factors.food = -20; 
             } else { State.factors.food = foodDiversity; }
 
-            // Bier
             if(State.res.beer > 0) {
                 let drink = Math.min(State.res.beer, State.pop.current);
                 State.res.beer -= drink;
@@ -347,10 +363,13 @@ const Game = {
         this.checkCombat();
         this.handleRaid();
 
-        let logText = "";
-        if(report.produced.length) logText += `<b>P:</b> ${report.produced.join(', ')}. `;
-        if(report.eaten.length) logText += `<b>V:</b> ${report.eaten.join(', ')}.`;
-        if(logText) UI.log(logText, "report");
+        // ERWEITERTER BERICHT (KARTEN-DESIGN)
+        let html = `<div class="log-header"><span>Tagesabschluss (Tag ${State.day})</span><span>Beliebtheit: ${State.pop.happiness}</span></div><div class="log-content">`;
+        if(report.produced.length) html += `<div class="rep-row"><span class="rep-label">Produktion</span><span class="rep-val plus">${report.produced.join(', ')}</span></div>`;
+        if(report.eaten.length) html += `<div class="rep-row"><span class="rep-label">Verbrauch</span><span class="rep-val minus">${report.eaten.join(', ')}</span></div>`;
+        html += `</div>`;
+        
+        UI.log(html, "report", true); // true = raw html
 
         UI.update();
     },
@@ -488,11 +507,18 @@ const Game = {
     checkCombat: function() {
         if(State.day < Config.combatStartDay || State.pop.current === 0) return;
         if(Math.random() < 0.1) {
-            State.paused = true; UI.showInfo("Angriff!", "Banditen!");
+            State.paused = true; 
+            
+            // Defense Calcs
+            let def = (State.pop.soldiers*10) + (State.pop.mercs*20);
+            let walls = (State.b.wall_wood||0)*10 + (State.b.wall_stone||0)*50 + (State.b.tower||0)*150;
+            let total = def + walls;
+            
             const enemy = Math.floor(State.day * 1.5);
-            const me = (State.pop.soldiers * 12) + (State.pop.mercs * 20);
-            if(me >= enemy) {
-                UI.log("SIEG! Feind abgewehrt.", "success"); State.factors.events = 10;
+            UI.showInfo("Angriff!", `Feind: ${enemy} vs Verteidigung: ${total}`);
+            
+            if(total >= enemy) {
+                UI.log(`SIEG! Feind abgewehrt. (Def: ${total})`, "success"); State.factors.events = 10;
             } else {
                 UI.log("NIEDERLAGE! Geplündert.", "error");
                 State.res.gold = Math.floor(State.res.gold/2); State.res.apple=0; State.res.meat=0; State.res.bread=0;
@@ -520,6 +546,7 @@ const UI = {
                 let pillText = `👷 ${workers}/${max}`;
                 
                 if(b.capacity || k==='barracks' || k==='merc_post' || k==='church' || k==='cathedral') pillText = `${max} Gebaut`;
+                if(b.defense) { pillText = `🛡️ +${b.defense}`; pillClass = "def-pill"; }
                 if(k === 'cathedral') pillText = max > 0 ? "GEBAUT" : "Im Bau";
 
                 let div = document.createElement('div'); div.className = "build-card"; div.onclick = () => Game.build(k);
@@ -623,11 +650,16 @@ const UI = {
         document.getElementById('day-bar').style.width = Math.min(pct, 100) + "%";
     },
 
-    log: function(msg, type='') {
+    log: function(msg, type='', raw=false) {
         const box = document.getElementById('center-log');
         const div = document.createElement('div');
-        div.className = `log-entry ${type}`;
-        div.innerHTML = `<strong>T${State.day}:</strong> ${msg}`;
+        if(raw) {
+            div.className = `log-card ${type}`;
+            div.innerHTML = msg;
+        } else {
+            div.className = `log-entry ${type}`;
+            div.innerHTML = `<strong>T${State.day}:</strong> ${msg}`;
+        }
         box.prepend(div);
     },
     showInfo: function(t, txt) {
