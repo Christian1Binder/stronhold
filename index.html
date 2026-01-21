@@ -73,13 +73,12 @@
         @keyframes floatUp { 0% { opacity: 1; top: -20px; transform: translateX(-50%); } 100% { opacity: 0; top: -50px; transform: translateX(-50%); } }
         @keyframes floatUpMap { 0% { opacity: 1; transform: translateY(0) scale(1); } 100% { opacity: 0; transform: translateY(-50px) scale(1.5); } }
 
-        /* TOOLTIP */
+        /* TOOLTIP (Nur noch für Desktop-Hover bei Lagern, Volk hat jetzt Klick) */
         .tooltip { 
             display: none; position: absolute; top: 100%; right: 0; margin-top: 5px; z-index: 2000;
             background: #e0e0e0; color: #000; padding: 10px; border: 2px solid var(--border); border-radius: 4px;
             width: 240px; text-align: left; box-shadow: 0 5px 15px rgba(0,0,0,0.5); pointer-events: none;
         }
-        /* Mobile Tooltip Fix */
         @media (max-width: 600px) {
             .tooltip { right: auto; left: 50%; transform: translateX(-50%); width: 280px; }
             .float-txt { top: -60px; animation: floatUpMobile 1.5s forwards; } 
@@ -295,14 +294,13 @@
             <div class="tooltip">Limit: <span id="tt-food">100</span></div>
         </div>
 
-        <div class="res-group">
-            <span class="res-label">Volk</span>
+        <div class="res-group" onclick="UI.showHappy()" style="cursor:pointer; border-color:#8d6e63;">
+            <span class="res-label">Volk (Info)</span>
             <div class="res-values pop-val">
                 <span title="Bürger">👨‍🌾 <span id="r-pop">0</span></span>
                 <span title="Beliebtheit">❤️ <span id="r-hap">0</span></span>
                 <span title="Untätig" class="idle-val">💤 <span id="r-idle">0</span></span>
             </div>
-            <div class="tooltip"><div id="hap-breakdown"></div></div>
         </div>
     </div>
 </header>
@@ -837,8 +835,8 @@ const UI = {
         
         let tIdx = Config.taxes[S.tax];
         document.getElementById('tax-name').innerText = tIdx.n;
-
-        // FIXED TAX DISPLAY HERE
+        
+        // Tax Impact Display
         let taxGold = S.pop.curr * tIdx.g;
         let taxHap = tIdx.h;
         let impactEl = document.getElementById('tax-impact');
@@ -846,12 +844,6 @@ const UI = {
             impactEl.innerHTML = `+${taxGold}💰 / ${taxHap}❤️`;
             impactEl.style.color = taxHap < 0 ? '#b71c1c' : '#2e7d32';
         }
-
-        document.getElementById('hap-breakdown').innerHTML = `
-            <div class="tt-row"><span>Essen:</span><span>${S.factors.food > 0 ? '+'+S.factors.food : S.factors.food}</span></div>
-            <div class="tt-row"><span>Steuer:</span><span>${S.factors.tax}</span></div>
-            <div class="tt-row"><span>Kirche:</span><span>+${(S.b.church||0)*5}</span></div>
-        `;
         
         let maxS = (S.b.stock||1)*50;
         let curS = 0; ['wood','stone','iron','wheat','flour'].forEach(k=>curS+=(S.res[k]||0));
@@ -879,6 +871,36 @@ const UI = {
         if(document.getElementById('war-mask').style.display === 'flex') {
             document.getElementById('army-str').innerText = Game.getArmyStr();
         }
+    },
+
+    showHappy: function() {
+        let tax = S.factors.tax;
+        let food = S.factors.food;
+        let church = (S.b.church||0) * 5;
+        let total = tax + food + church;
+        
+        const c = (v) => v > 0 ? '#2e7d32' : (v < 0 ? '#b71c1c' : '#000');
+        
+        let html = `
+            <div style="text-align:left; margin:10px 20px;">
+                <div style="display:flex;justify-content:space-between; border-bottom:1px solid #ccc; padding:5px 0;">
+                    <span>Nahrungsvielfalt:</span> <span style="font-weight:bold; color:${c(food)}">${food>0?'+':''}${food}</span>
+                </div>
+                <div style="display:flex;justify-content:space-between; border-bottom:1px solid #ccc; padding:5px 0;">
+                    <span>Steuern:</span> <span style="font-weight:bold; color:${c(tax)}">${tax}</span>
+                </div>
+                <div style="display:flex;justify-content:space-between; border-bottom:1px solid #ccc; padding:5px 0;">
+                    <span>Religion:</span> <span style="font-weight:bold; color:${c(church)}">+${church}</span>
+                </div>
+                <div style="display:flex;justify-content:space-between; margin-top:10px; font-weight:900; font-size:1.2rem;">
+                    <span>Änderung:</span> <span style="color:${c(total)}">${total>0?'+':''}${total}</span>
+                </div>
+            </div>
+            <p style="font-size:0.8rem; color:#666; margin-top:10px;">(Die Beliebtheit nähert sich diesem Wert an)</p>
+        `;
+        
+        UI.showModal("Volkslaune", "", "Schließen");
+        document.getElementById('m-body').innerHTML = html;
     },
 
     updateBuildState: function() {
