@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Castle Lord V4.0 - Tutorial, Raids & Expansion (CrazyGames)</title>
+  <title>STRONHOLD – Wirtschaft, Burg & Handel</title>
 
   <!-- CrazyGames SDK v2 -->
   <script src="https://sdk.crazygames.com/crazygames-sdk-v2.js"></script>
@@ -190,6 +190,58 @@
     .missing-res{color:var(--danger);font-weight:bold}
     .war-card{background:rgba(0,0,0,.1);padding:8px;margin-bottom:5px;border:1px solid #777;border-radius:4px;display:flex;justify-content:space-between;align-items:center;font-size:.9rem}
 
+    /* Economy expansion: seasons, combo, contracts, market automation and upgrades */
+    .season-badge{
+      display:inline-flex;align-items:center;gap:4px;margin-top:3px;padding:2px 6px;
+      border:1px solid rgba(255,255,255,.18);border-radius:999px;background:rgba(255,255,255,.06);
+      color:#ddd;font-size:.65rem;font-weight:700;
+    }
+    .combo-pill{
+      position:absolute;top:12px;left:50%;transform:translateX(-50%) translateY(-8px);
+      z-index:40;padding:6px 12px;border:2px solid rgba(255,179,0,.8);border-radius:999px;
+      background:rgba(25,18,8,.88);color:#ffd45b;font-size:.8rem;font-weight:900;
+      opacity:0;pointer-events:none;transition:.18s;box-shadow:0 5px 20px rgba(0,0,0,.35);
+    }
+    .combo-pill.show{opacity:1;transform:translateX(-50%) translateY(0)}
+    .system-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-bottom:5px}
+    .system-strip .btn{padding:7px 3px;font-size:.75rem;min-width:0}
+    .boost-active{background:#fff3cd!important;border-color:#ffb300!important;color:#6b4100!important}
+
+    .market-tools{
+      display:flex;justify-content:space-between;align-items:center;gap:8px;margin:10px 0;
+      padding:8px;border:1px solid #9e8f78;border-radius:6px;background:rgba(255,255,255,.45);
+      font-size:.78rem;text-align:left;
+    }
+    .market-tools input{width:75px;padding:5px;border:1px solid #8d7c65;border-radius:4px}
+    .market-grid{display:grid;grid-template-columns:1fr;gap:7px;margin:10px 0;text-align:left}
+    .market-card{
+      display:grid;grid-template-columns:minmax(90px,1fr) auto;gap:7px 10px;align-items:center;
+      padding:8px;border:1px solid #a39178;border-radius:6px;background:rgba(255,255,255,.52);
+    }
+    .market-name{font-weight:900}.market-stock{font-size:.72rem;color:#5d5043}
+    .market-trend{font-size:.68rem;font-weight:900}.market-trend.up{color:#b71c1c}.market-trend.down{color:#2e7d32}
+    .market-actions{display:flex;gap:4px}.market-actions button{padding:5px 7px;cursor:pointer}
+    .auto-rule{
+      grid-column:1/-1;display:grid;grid-template-columns:auto 1fr 1fr;gap:6px;align-items:center;
+      padding-top:6px;border-top:1px solid rgba(80,60,40,.2);font-size:.68rem;
+    }
+    .auto-rule label{display:flex;align-items:center;gap:4px;white-space:nowrap}
+    .auto-rule input[type=number]{width:58px;padding:4px}
+    .auto-rule input[type=checkbox]{width:17px;height:17px;accent-color:#d84315}
+
+    .contract-card,.upgrade-card{
+      padding:10px;border:1px solid #9e8f78;border-radius:7px;background:rgba(255,255,255,.5);
+      text-align:left;margin-bottom:7px;
+    }
+    .contract-head,.upgrade-head{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
+    .contract-title,.upgrade-title{font-weight:900}.contract-deadline{font-size:.72rem;color:#8b2d1f;font-weight:900}
+    .contract-body,.upgrade-body{margin:5px 0;color:#5d5043;font-size:.8rem;line-height:1.3}
+    .contract-foot,.upgrade-foot{display:flex;justify-content:space-between;gap:8px;align-items:center;font-size:.76rem}
+    .event-choice{display:grid;gap:6px;margin-top:12px}
+    .event-choice button{text-align:left;padding:10px}.event-choice small{display:block;margin-top:2px;color:#6d5c4b}
+    .rank-progress{height:8px;margin:8px 0;border-radius:99px;background:rgba(0,0,0,.18);overflow:hidden}
+    .rank-progress span{display:block;height:100%;background:linear-gradient(90deg,#d84315,#ffb300)}
+
     /* Tutorial overlay */
     #tut-overlay{
       position:fixed;inset:0;display:none;z-index:9000;
@@ -229,6 +281,7 @@
       .build-bar{width:100%;height:90px}
       .list-grid{grid-template-columns:1fr}
       .raid-pill{display:none}
+      .market-card{grid-template-columns:1fr}.market-actions{justify-content:flex-start}.auto-rule{grid-template-columns:1fr 1fr}.auto-rule label:first-child{grid-column:1/-1}
     }
   </style>
 </head>
@@ -279,9 +332,42 @@
 <!-- Market modal -->
 <div id="market-mask" class="modal-mask">
   <div class="modal-win">
-    <h2 style="font-family:'MedievalSharp'; margin:0">Markt</h2>
-    <div id="market-list" class="list-grid"></div>
-    <button onclick="UI.closeMarket()" class="btn" style="width:100%">Close</button>
+    <h2 style="font-family:'MedievalSharp'; margin:0">Markt & Handelskontor</h2>
+    <div class="market-tools">
+      <span><b>Automatischer Handel</b><br>Verkauft Überschüsse und kauft Fehlbestände je Tick.</span>
+      <label>Goldreserve<br><input id="market-reserve" type="number" min="0" step="10" onchange="Game.setMarketReserve(this.value)"></label>
+    </div>
+    <div id="market-list" class="market-grid"></div>
+    <button onclick="UI.closeMarket()" class="btn" style="width:100%">Schließen</button>
+  </div>
+</div>
+
+<!-- Contract modal -->
+<div id="contract-mask" class="modal-mask">
+  <div class="modal-win">
+    <h2 style="font-family:'MedievalSharp'; margin:0">📜 Handelsaufträge</h2>
+    <p style="font-size:.8rem;margin:6px 0 12px">Liefere Waren vor Ablauf der Frist. Diplomatie erhöht jede Belohnung.</p>
+    <div id="contract-list"></div>
+    <button onclick="UI.closeContracts()" class="btn" style="width:100%">Schließen</button>
+  </div>
+</div>
+
+<!-- Upgrade modal -->
+<div id="upgrade-mask" class="modal-mask">
+  <div class="modal-win">
+    <h2 style="font-family:'MedievalSharp'; margin:0">🏰 Burgausbau</h2>
+    <div id="rank-summary"></div>
+    <div id="upgrade-list"></div>
+    <button onclick="UI.closeUpgrades()" class="btn" style="width:100%">Schließen</button>
+  </div>
+</div>
+
+<!-- Event modal -->
+<div id="event-mask" class="modal-mask">
+  <div class="modal-win">
+    <h2 id="event-title" style="font-family:'MedievalSharp'; margin:0">Ereignis</h2>
+    <p id="event-text" style="line-height:1.4"></p>
+    <div id="event-choices" class="event-choice"></div>
   </div>
 </div>
 
@@ -301,9 +387,10 @@
 
 <header>
   <div class="header-info">
-    <div class="game-title">Castle Lord</div>
+    <div class="game-title">STRONHOLD</div>
+    <div class="season-badge"><span id="season-icon">🌱</span><span id="season-name">Frühling</span> · <span id="rank-name">Außenposten</span></div>
     <div class="objective" id="obj-disp">Lade…</div>
-    <div class="mil-stats">💂 <span id="s-sold">0</span> ⚔️ <span id="s-wep">0</span> 🧭 <span id="s-land">0</span></div>
+    <div class="mil-stats">💂 <span id="s-sold">0</span> ⚔️ <span id="s-wep">0</span> 🧭 <span id="s-land">0</span> 👑 <span id="s-renown">0</span></div>
   </div>
 
   <div class="raid-pill raid-ok tut-allow" id="raid-pill" onclick="UI.showRaidInfo()">
@@ -352,6 +439,7 @@
 
 <main>
   <div id="map-area">
+    <div id="combo-pill" class="combo-pill">Kombo x1 · +1</div>
     <div class="zone tut-allow" id="z-forest" onclick="Game.clickGather('wood', event)">
       <div class="zone-hint">🌲</div><div class="zone-label">Forest</div>
     </div>
@@ -378,6 +466,11 @@
         <button class="btn tut-allow" id="btn-mkt" onclick="UI.openMarket()">⚖️</button>
         <button class="btn tut-allow" id="btn-exp" onclick="UI.openExp()">🧭</button>
       </div>
+      <div class="system-strip">
+        <button class="btn" id="btn-contracts" onclick="UI.openContracts()" title="Handelsaufträge">📜 Aufträge</button>
+        <button class="btn" id="btn-upgrades" onclick="UI.openUpgrades()" title="Burgausbau">🏰 Ausbau</button>
+        <button class="btn" id="btn-boost" onclick="Game.activateBoost()" title="Drei Tage lang 50 % mehr Produktion">🔥 Schicht</button>
+      </div>
       <div style="background:rgba(255,255,255,0.5); padding:3px; border-radius:4px; font-size:0.7rem; margin:5px 0; text-align:center;">
         Tax: <strong id="tax-name">None</strong><br>
         <span id="tax-impact" style="font-size:0.65rem; font-weight:bold;"></span>
@@ -387,9 +480,9 @@
         </div>
       </div>
       <div style="text-align:center; font-size:0.7rem; margin-top:5px;">
-        Day <span id="day-disp">1</span> - Lvl <span id="lvl-disp">1</span><br>
-        <button class="tut-allow" onclick="Game.save()" style="margin-top:3px; padding:2px 5px;">Save</button>
-        <button class="tut-allow" onclick="Game.reset()" style="margin-top:3px; padding:2px 5px; color:red">Reset</button>
+        Tag <span id="day-disp">1</span> · Stufe <span id="lvl-disp">1</span><br>
+        <button class="tut-allow" onclick="Game.save()" style="margin-top:3px; padding:2px 5px;">Speichern</button>
+        <button class="tut-allow" onclick="Game.reset()" style="margin-top:3px; padding:2px 5px; color:red">Neu</button>
       </div>
     </div>
   </aside>
@@ -438,17 +531,53 @@ CG.init();
 
 /* ---------------- DATA ---------------- */
 const T = {
-  wood:"Wood", stone:"Stone", iron:"Iron", wheat:"Wheat", flour:"Flour", hops:"Hops",
-  bread:"Bread", meat:"Meat", cheese:"Cheese", apple:"Apples", beer:"Beer",
-  bow:"Bow", spear:"Spear", sword:"Sword", armor:"Armor",
-  gold:"Gold", pop:"Population", soldier:"Soldiers", land:"Land"
+  wood:"Holz", stone:"Stein", iron:"Eisen", wheat:"Weizen", flour:"Mehl", hops:"Hopfen",
+  bread:"Brot", meat:"Fleisch", cheese:"Käse", apple:"Äpfel", beer:"Bier",
+  bow:"Bogen", spear:"Speer", sword:"Schwert", armor:"Rüstung",
+  gold:"Gold", pop:"Bevölkerung", soldier:"Soldaten", land:"Land"
 };
 const SafeT = (k) => T[k] || k;
 
 const Rules = {
   storeTypes: ['wood','stone','iron','wheat','flour','hops'],
-  foodTypes:  ['bread','meat','apple','cheese','beer']
+  foodTypes:  ['bread','meat','apple','cheese','beer'],
+  marketTypes:['wood','stone','iron','wheat','flour','hops','bread','meat','cheese','apple','beer','bow','spear','sword','armor']
 };
+
+const MarketGoods = {
+  wood:{buy:12,sell:5}, stone:{buy:20,sell:9}, iron:{buy:35,sell:16},
+  wheat:{buy:10,sell:4}, flour:{buy:18,sell:8}, hops:{buy:14,sell:6},
+  bread:{buy:25,sell:11}, meat:{buy:28,sell:12}, cheese:{buy:30,sell:13},
+  apple:{buy:10,sell:4}, beer:{buy:35,sell:16}, bow:{buy:45,sell:20},
+  spear:{buy:55,sell:25}, sword:{buy:100,sell:48}, armor:{buy:120,sell:58}
+};
+
+const SeasonDefs = [
+  {n:"Frühling",i:"🌱",m:{wheat:1.2,apple:1.2}},
+  {n:"Sommer",i:"☀️",m:{wheat:1.25,hops:1.25}},
+  {n:"Herbst",i:"🍂",m:{apple:1.3,meat:1.3}},
+  {n:"Winter",i:"❄️",m:{wheat:.65,hops:.65,apple:.65,meat:.65,cheese:.65,stone:1.1}}
+];
+
+const UpgradeDefs = {
+  tools:{n:"Werkzeugmacher",i:"🛠️",base:150,max:10,desc:"Jede Stufe gibt +1 Ressource pro Kartenklick."},
+  guild:{n:"Zunfthaus",i:"🏛️",base:300,max:10,desc:"Jede Stufe steigert die gesamte Produktion um 10 %."},
+  logistics:{n:"Fuhrwesen",i:"🛞",base:200,max:10,desc:"Jede Stufe schafft 25 zusätzliche Lager- und Nahrungseinheiten."},
+  diplomacy:{n:"Gesandtschaft",i:"🤝",base:350,max:10,desc:"Jede Stufe erhöht Gold aus Aufträgen und Ereignissen um 8 %."}
+};
+
+const EventDefs = [
+  {id:"harvest",title:"🌾 Reiche Ernte",text:"Die Felder tragen mehr als erwartet. Was soll mit dem Überschuss geschehen?",choices:[
+    {label:"Vorräte einlagern",hint:"+25 Weizen, +10 Äpfel"},{label:"Auf dem Jahrmarkt verkaufen",hint:"+80 Gold"}]},
+  {id:"refugees",title:"🧳 Flüchtlinge am Tor",text:"Zwei Familien bitten um Schutz. Sie bringen Kenntnisse mit, brauchen aber sofort Nahrung.",choices:[
+    {label:"Tore öffnen",hint:"+2 Bevölkerung, −15 Nahrung"},{label:"Abweisen",hint:"−3 Zufriedenheit"}]},
+  {id:"caravan",title:"🐫 Fernhandelskarawane",text:"Eine Karawane bietet seltenes Eisen an und sucht zugleich bewaffneten Geleitschutz.",choices:[
+    {label:"Eisen kaufen",hint:"−40 Gold, +15 Eisen"},{label:"Geleitschutz stellen",hint:"+2 Ruhm, +35 Gold"}]},
+  {id:"fire",title:"🔥 Feuer im Lager",text:"Ein Funke hat das Holzlager entzündet. Schnelles Handeln kann die Vorräte retten.",choices:[
+    {label:"Handwerker bezahlen",hint:"−50 Gold"},{label:"Feuer ausbrennen lassen",hint:"bis zu −35 Holz"}]},
+  {id:"levy",title:"👑 Forderung der Krone",text:"Der König verlangt eine Sonderabgabe für seinen Feldzug.",choices:[
+    {label:"Abgabe leisten",hint:"−80 Gold, +3 Ruhm"},{label:"Zahlung verweigern",hint:"−8 Zufriedenheit, −1 Ruhm"}]}
+];
 
 const Units = {
   archer:   { n:"Archer",   cost:10, res:"bow",   str:5,  def:2 },
@@ -511,6 +640,7 @@ const Config = {
     house:{n:"House", c:"stadt", i:"🏠", z:"z-town", cost:{g:50,w:30,s:10}, pop:10, desc:"Housing +10"},
     church:{n:"Church", c:"stadt", i:"⛪", z:"z-town", cost:{g:500,s:100}, rel:10, desc:"Happiness +Religion"},
     outpost:{n:"Outpost", c:"stadt", i:"🧭", z:"z-forest", cost:{g:200,w:60,s:20}, gold:2, reqLand:1, desc:"+2 Gold/tick"},
+    market:{n:"Handelskontor", c:"stadt", i:"⚖️", z:"z-town", cost:{g:120,w:40}, unique:true, desc:"Markt, Automatik & Aufträge"},
 
     // WAFFEN
     fletch:{n:"Fletcher", c:"waffen", i:"🏹", z:"z-town", cost:{g:100,w:50}, use:"wood", out:"bow", amt:1},
@@ -538,6 +668,8 @@ const Storage = {
     try { return JSON.parse(raw); } catch(e){ return null; }
   },
   save() {
+    S.meta = S.meta || {};
+    S.meta.savedAt = Date.now();
     localStorage.setItem(this.key, JSON.stringify(S));
   },
   wipe() { localStorage.removeItem(this.key); }
@@ -545,12 +677,135 @@ const Storage = {
 
 function clamp(v,min,max){ return Math.max(min, Math.min(max, v)); }
 
+function getSeason(day = S.day||1) {
+  const length = 8;
+  const idx = Math.floor((Math.max(1,day)-1)/length) % SeasonDefs.length;
+  return {...SeasonDefs[idx],idx,dayInSeason:((Math.max(1,day)-1)%length)+1,length};
+}
+
+function seasonMultiplier(resource, day = S.day||1) {
+  return getSeason(day).m[resource] || 1;
+}
+
+function rankForLevel(level = S.lvl||1) {
+  const ranks = [
+    {lvl:1,n:"Außenposten"},{lvl:5,n:"Befestigtes Dorf"},{lvl:10,n:"Steinburg"},
+    {lvl:20,n:"Handelsstadt"},{lvl:35,n:"Königsfestung"}
+  ];
+  let current = ranks[0], next = null;
+  for (let i=0;i<ranks.length;i++) {
+    if (level >= ranks[i].lvl) current = ranks[i];
+    else { next = ranks[i]; break; }
+  }
+  const prevLvl = current.lvl;
+  const progress = next ? clamp(((level-prevLvl)/(next.lvl-prevLvl))*100,0,100) : 100;
+  return {current,next,progress};
+}
+
+function marketPrice(key, buy) {
+  const item = MarketGoods[key];
+  if (!item) return 0;
+  const pressure = clamp((S.market && S.market.pressure[key])||0,-.35,.65);
+  return Math.max(1,Math.round((buy?item.buy:item.sell)*(1+pressure)));
+}
+
+function upgradeCost(key) {
+  const def = UpgradeDefs[key];
+  const level = (S.upgrades && S.upgrades[key])||0;
+  return Math.round(def.base * Math.pow(1.7,level));
+}
+
+function migrateState() {
+  S.res = S.res || {};
+  ['gold',...Rules.marketTypes].forEach(k=>{ if (typeof S.res[k] !== 'number') S.res[k]=0; });
+  S.units = S.units || {archer:0,pikeman:0,swordsman:0,merc:0};
+  for (const k in Units) if (typeof S.units[k] !== 'number') S.units[k]=0;
+  S.pop = S.pop || {curr:6,max:5,hap:90};
+  S.b = S.b || {}; S.w = S.w || {};
+  for (const k in Config.b) {
+    if (typeof S.b[k] !== 'number') S.b[k]=0;
+    if (typeof S.w[k] !== 'number') S.w[k]=0;
+  }
+  // Der Markt war in älteren Spielständen frei zugänglich und bleibt es nach dem Update.
+  if (!S.b.market) S.b.market=1;
+  S.exp = S.exp || {land:0};
+  S.raid = S.raid || {next:0,warned:false};
+  S.goal = S.goal || goalForLevel(S.lvl||1);
+  S.tut = S.tut || {done:false,step:0,skipped:false};
+  S.rates = S.rates || {};
+  S.factors = S.factors || {hunger:0,variety:0,tax:0,beer:0,religion:0,overcrowd:0,idle:0,total:0};
+  S.renown = Number(S.renown)||0;
+  S.market = S.market || {pressure:{},auto:{},reserve:100};
+  S.market.pressure = S.market.pressure || {};
+  S.market.auto = S.market.auto || {};
+  S.market.reserve = Math.max(0,Number(S.market.reserve)||0);
+  Rules.marketTypes.forEach(k=>{
+    if (typeof S.market.pressure[k] !== 'number') S.market.pressure[k]=0;
+    S.market.auto[k] = S.market.auto[k] || {enabled:false,min:10,max:40};
+    S.market.auto[k].min = Math.max(0,Number(S.market.auto[k].min)||0);
+    S.market.auto[k].max = Math.max(S.market.auto[k].min+5,Number(S.market.auto[k].max)||40);
+  });
+  S.contracts = S.contracts || {items:[],completed:0,nextId:1};
+  S.contracts.items = Array.isArray(S.contracts.items) ? S.contracts.items : [];
+  S.contracts.nextId = Number(S.contracts.nextId)||1;
+  S.events = S.events || {nextDay:(S.day||1)+6,pending:null,seen:0};
+  S.upgrades = S.upgrades || {tools:0,guild:0,logistics:0,diplomacy:0};
+  for (const k in UpgradeDefs) S.upgrades[k]=clamp(Number(S.upgrades[k])||0,0,UpgradeDefs[k].max);
+  S.clicker = S.clicker || {combo:0,lastClick:0,total:0};
+  S.boostUntilDay = Number(S.boostUntilDay)||0;
+  S.meta = S.meta || {savedAt:Date.now(),version:5};
+  S.meta.version = 5;
+}
+
+function createContract() {
+  const level = S.lvl||1;
+  const pool = level < 4 ? ['wood','stone','wheat','apple','bread'] : Rules.marketTypes;
+  const resource = pool[Math.floor(Math.random()*pool.length)];
+  const lots = clamp(2+Math.floor(level/4)+Math.floor(Math.random()*3),2,12);
+  const qty = lots*5;
+  const rewardGold = Math.round(marketPrice(resource,false)*lots*1.8+15);
+  return {id:S.contracts.nextId++,resource,qty,rewardGold,rewardRenown:1+Math.floor(lots/4),deadline:(S.day||1)+6+Math.floor(Math.random()*7)};
+}
+
+function ensureContracts() {
+  while (S.contracts.items.length < 3) S.contracts.items.push(createContract());
+}
+
+function applyOfflineProgress(savedAt) {
+  if (!savedAt) return "";
+  const seconds = clamp((Date.now()-savedAt)/1000,0,7200);
+  const ticks = Math.floor(seconds/(Config.tick/1000));
+  if (ticks < 15) return "";
+  const efficiency = .45;
+  const guild = 1+((S.upgrades.guild||0)*.1);
+  const gains = {};
+  for (const key in Config.b) {
+    const b = Config.b[key], workers=S.w[key]||0;
+    if (workers<=0) continue;
+    if (b.gold) gains.gold=(gains.gold||0)+(workers*b.gold*ticks*efficiency);
+    if (b.prod) gains[b.prod]=(gains[b.prod]||0)+(workers*(b.amt||1)*ticks*efficiency*guild*seasonMultiplier(b.prod));
+  }
+  const caps=calcCaps();
+  let storeUsed=Rules.storeTypes.reduce((n,k)=>n+(S.res[k]||0),0);
+  let foodUsed=Rules.foodTypes.reduce((n,k)=>n+(S.res[k]||0),0);
+  const summary=[];
+  for (const key in gains) {
+    let amount=Math.floor(gains[key]);
+    if (Rules.storeTypes.includes(key)) { amount=Math.max(0,Math.min(amount,Math.floor(caps.store-storeUsed))); storeUsed+=amount; }
+    if (Rules.foodTypes.includes(key)) { amount=Math.max(0,Math.min(amount,Math.floor(caps.food-foodUsed))); foodUsed+=amount; }
+    if (amount>0) { S.res[key]=(S.res[key]||0)+amount; summary.push(`${amount} ${SafeT(key)}`); }
+  }
+  if (!summary.length) return "Während deiner Abwesenheit waren die Lager bereits voll.";
+  return `Deine Betriebe haben während deiner Abwesenheit mit 45 % Leistung gearbeitet (max. 2 Std.):\n${summary.join(', ')}`;
+}
+
 function calcCaps() {
   const baseStore = (S.b.stock||1)*50;
   const baseFood  = (S.b.gran||1)*50;
   const bonusStore = (S.exp.land||0) * Config.expansion.storeBonus;
   const bonusFood  = (S.exp.land||0) * Config.expansion.foodBonus;
-  return { store: baseStore + bonusStore, food: baseFood + bonusFood };
+  const logistics = ((S.upgrades&&S.upgrades.logistics)||0)*25;
+  return { store: baseStore + bonusStore + logistics, food: baseFood + bonusFood + logistics };
 }
 
 function recalcPopMax() {
@@ -657,17 +912,18 @@ const Game = {
   init() {
     const load = Storage.load();
     if (load) {
+      const savedAt = load.meta && load.meta.savedAt;
       S = load;
-      // backfill new fields
-      S.exp = S.exp || { land: 0 };
-      S.raid = S.raid || { next: 0, warned: false };
-      S.goal = S.goal || goalForLevel(S.lvl||1);
-      S.tut = S.tut || { done:false, step:0, skipped:false };
-      S.rates = S.rates || {};
+      migrateState();
       recalcPopMax();
       if (!S.raid.next) scheduleNextRaid();
+      ensureContracts();
+      const offline = applyOfflineProgress(savedAt);
+      S.paused = true;
       UI.init();
-      UI.showModal("Welcome back", "Your fief awaits you.", "Next", ()=>{});
+      UI.showModal("Willkommen zurück", offline || "Dein Lehen wartet auf dich.", "Weiter", ()=>{
+        if (S.events.pending) UI.openEvent(S.events.pending);
+      });
     } else {
       this.newGame();
     }
@@ -693,16 +949,26 @@ const Game = {
       factors: { hunger:0, variety:0, tax:0, beer:0, religion:0, overcrowd:0, idle:0, total:0 },
       rates: {},
       goal: {},
-      tut: { done:false, step:0, skipped:false }
+      tut: { done:false, step:0, skipped:false },
+      renown: 0,
+      market: {pressure:{},auto:{},reserve:100},
+      contracts: {items:[],completed:0,nextId:1},
+      events: {nextDay:7,pending:null,seen:0},
+      upgrades: {tools:0,guild:0,logistics:0,diplomacy:0},
+      clicker: {combo:0,lastClick:0,total:0},
+      boostUntilDay: 0,
+      meta: {savedAt:Date.now(),version:5}
     };
     // init building & worker counts
     for (let k in Config.b) { S.b[k]=0; S.w[k]=0; }
-    S.b.stock = 1; S.b.gran = 1;
+    S.b.stock = 1; S.b.gran = 1; S.b.market = 1;
+    migrateState();
     recalcPopMax();
     S.goal = goalForLevel(1);
     scheduleNextRaid();
+    ensureContracts();
     UI.init();
-    UI.showModal("Welcome, Castle Lord!", "You rule a small fief. Reach the goals above — and defend against raids!", "Start", ()=>{
+    UI.showModal("Willkommen, Burgherr!", "Baue eine Versorgungskette auf, erfülle Handelsaufträge und verteidige dein wachsendes Lehen.", "Beginnen", ()=>{
       Tutorial.maybeStart();
     });
   },
@@ -717,13 +983,24 @@ const Game = {
     const caps = calcCaps();
     let curS = 0; Rules.storeTypes.forEach(k=>curS += (S.res[k]||0));
     let curF = 0; Rules.foodTypes.forEach(k=>curF += (S.res[k]||0));
-    if ((type === 'wood' || type === 'stone') && curS >= caps.store) { UI.showFloatingText(type, "Storage full!", "neg"); return; }
-    if ((type === 'apple') && curF >= caps.food) { UI.showFloatingText(type, "Speicher voll!", "neg"); return; }
+    const now=Date.now();
+    S.clicker.combo = now-(S.clicker.lastClick||0) <= 1400 ? Math.min(25,(S.clicker.combo||0)+1) : 1;
+    S.clicker.lastClick=now;
+    S.clicker.total=(S.clicker.total||0)+1;
+    const gain=1+(S.upgrades.tools||0)+Math.floor(S.clicker.combo/5);
+    const room = (type==='apple') ? caps.food-curF : caps.store-curS;
+    if (room <= 0) { UI.showFloatingText(type, "Lager voll!", "neg"); return; }
+    const actual=Math.max(0,Math.min(gain,Math.floor(room)));
 
-    S.res[type] = (S.res[type]||0) + 1;
+    S.res[type] = (S.res[type]||0) + actual;
+    if (S.clicker.combo%10===0) {
+      S.res.gold=(S.res.gold||0)+5;
+      UI.log(`Klickserie ${S.clicker.combo}: +5 Gold`,"prod");
+    }
     UI.update();
-    UI.showFloatingText(type, "+1", "pos");
-    UI.showMapClickEffect(e.currentTarget, type==='apple'?'🍎':(type==='wood'?'🌲':'🧱'));
+    UI.updateCombo(actual);
+    UI.showFloatingText(type, `+${actual}`, "pos");
+    if (e && e.currentTarget) UI.showMapClickEffect(e.currentTarget, type==='apple'?'🍎':(type==='wood'?'🌲':'🧱'));
 
     Tutorial.onAction('gather', type);
   },
@@ -734,6 +1011,7 @@ const Game = {
 
     const b = Config.b[key];
     if (!b) return;
+    if (b.unique && (S.b[key]||0)>0) { UI.showModal("Bereits errichtet", `${b.n} kann nur einmal gebaut werden.`, "OK"); return; }
     if (b.reqLand && (S.exp.land||0) < b.reqLand) { UI.showModal("Locked", `You need at least ${b.reqLand} land expansion tier(s).`, "OK"); return; }
 
     const g = b.cost.g||0, w = b.cost.w||0, s = b.cost.s||0;
@@ -806,11 +1084,142 @@ const Game = {
     Tutorial.onAction('recruit', key);
   },
 
-  trade(k, buy) {
+  trade(k, buy, source='manual') {
     if (S.paused) return;
-    if (buy && (S.res.gold||0) >= 5) { S.res.gold -= 5; S.res[k]=(S.res[k]||0)+5; }
-    if (!buy && (S.res[k]||0) >= 5) { S.res[k]-=5; S.res.gold += 3; }
-    UI.update(); UI.renderMarket();
+    if ((S.b.market||0)<1 || !MarketGoods[k]) return false;
+    const amount=5;
+    const price=marketPrice(k,!!buy);
+    if (buy) {
+      if ((S.res.gold||0)<price) return false;
+      if (source==='auto' && (S.res.gold-price)<(S.market.reserve||0)) return false;
+      const caps=calcCaps();
+      if (Rules.storeTypes.includes(k)) {
+        const used=Rules.storeTypes.reduce((n,r)=>n+(S.res[r]||0),0);
+        if (caps.store-used<amount) return false;
+      }
+      if (Rules.foodTypes.includes(k)) {
+        const used=Rules.foodTypes.reduce((n,r)=>n+(S.res[r]||0),0);
+        if (caps.food-used<amount) return false;
+      }
+      S.res.gold-=price; S.res[k]=(S.res[k]||0)+amount;
+      S.market.pressure[k]=clamp((S.market.pressure[k]||0)+.045,-.35,.65);
+    } else {
+      if ((S.res[k]||0)<amount) return false;
+      S.res[k]-=amount; S.res.gold+=price;
+      S.market.pressure[k]=clamp((S.market.pressure[k]||0)-.035,-.35,.65);
+    }
+    if (source==='manual') {
+      UI.log(`${buy?'Gekauft':'Verkauft'}: 5 ${SafeT(k)} für ${price} Gold`,buy?'prod':'war');
+      UI.update(); UI.renderMarket();
+    }
+    return true;
+  },
+
+  setMarketReserve(value) {
+    S.market.reserve=Math.max(0,Math.floor(Number(value)||0));
+    UI.renderMarket(); UI.update();
+  },
+
+  setMarketAuto(key,enabled) {
+    if (!S.market.auto[key]) return;
+    S.market.auto[key].enabled=!!enabled;
+    UI.update();
+  },
+
+  setMarketTarget(key,field,value) {
+    const rule=S.market.auto[key]; if (!rule) return;
+    rule[field]=Math.max(0,Math.floor(Number(value)||0));
+    if (rule.max<rule.min+5) rule.max=rule.min+5;
+    UI.renderMarket(); UI.update();
+  },
+
+  runAutoMarket() {
+    if ((S.b.market||0)<1) return;
+    const actions=[];
+    Rules.marketTypes.forEach(k=>{
+      const rule=S.market.auto[k]; if (!rule || !rule.enabled) return;
+      if ((S.res[k]||0)<rule.min && this.trade(k,true,'auto')) actions.push(`+5 ${SafeT(k)}`);
+      else if ((S.res[k]||0)>rule.max && this.trade(k,false,'auto')) actions.push(`−5 ${SafeT(k)}`);
+    });
+    if (actions.length) UI.log(`Kontor: ${actions.join(', ')}`,"prod");
+  },
+
+  fulfillContract(id) {
+    if (S.paused) return;
+    const idx=S.contracts.items.findIndex(c=>c.id===id); if (idx<0) return;
+    const c=S.contracts.items[idx];
+    if ((S.res[c.resource]||0)<c.qty) { UI.log(`Für den Auftrag fehlen ${c.qty-(S.res[c.resource]||0)} ${SafeT(c.resource)}.`,"warn"); return; }
+    S.res[c.resource]-=c.qty;
+    const reward=Math.round(c.rewardGold*(1+(S.upgrades.diplomacy||0)*.08));
+    S.res.gold+=reward; S.renown+=c.rewardRenown; S.contracts.completed++;
+    S.contracts.items.splice(idx,1); ensureContracts();
+    UI.log(`Auftrag erfüllt: +${reward} Gold, +${c.rewardRenown} Ruhm`,"prod");
+    UI.update(); UI.renderContracts();
+  },
+
+  expireContracts() {
+    const expired=S.contracts.items.filter(c=>c.deadline<(S.day||1));
+    if (!expired.length) return;
+    S.contracts.items=S.contracts.items.filter(c=>c.deadline>=(S.day||1));
+    S.pop.hap=clamp(S.pop.hap-expired.length*2,0,100);
+    UI.log(`${expired.length} Handelsauftrag${expired.length>1?'e sind':' ist'} verfallen.`,"warn");
+    ensureContracts();
+  },
+
+  upgrade(key) {
+    if (S.paused || !UpgradeDefs[key]) return;
+    const def=UpgradeDefs[key], level=S.upgrades[key]||0;
+    if (level>=def.max) return;
+    const cost=upgradeCost(key);
+    if ((S.res.gold||0)<cost) { UI.log(`Für ${def.n} fehlen ${cost-(S.res.gold||0)} Gold.`,"warn"); return; }
+    S.res.gold-=cost; S.upgrades[key]=level+1;
+    UI.log(`${def.n} auf Stufe ${level+1} ausgebaut.`,"prod");
+    UI.update(); UI.renderUpgrades();
+  },
+
+  activateBoost() {
+    if (S.paused) return;
+    if ((S.boostUntilDay||0)>=(S.day||1)) { UI.log("Die Sonderschicht läuft bereits.","warn"); return; }
+    const cost=60+(S.upgrades.guild||0)*10;
+    if ((S.res.gold||0)<cost) { UI.log(`Die Sonderschicht kostet ${cost} Gold.`,"warn"); return; }
+    S.res.gold-=cost; S.boostUntilDay=(S.day||1)+3;
+    UI.log(`Sonderschicht bis Tag ${S.boostUntilDay}: +50 % Produktion.`,"prod"); UI.update();
+  },
+
+  checkRandomEvent() {
+    if (S.events.pending || (S.day||1)<(S.events.nextDay||7)) return false;
+    const def=EventDefs[Math.floor(Math.random()*EventDefs.length)];
+    S.events.pending={id:def.id}; S.paused=true; UI.openEvent(S.events.pending); return true;
+  },
+
+  chooseEvent(id,choice) {
+    if (!S.events.pending || S.events.pending.id!==id) return;
+    const diplomacy=1+(S.upgrades.diplomacy||0)*.08;
+    if (id==='harvest') {
+      if (choice===0) { S.res.wheat+=25; S.res.apple+=10; }
+      else S.res.gold+=Math.round(80*diplomacy);
+    } else if (id==='refugees') {
+      if (choice===0) {
+        const food=['bread','apple','meat','cheese']; let need=15;
+        food.forEach(k=>{const take=Math.min(need,S.res[k]||0);S.res[k]-=take;need-=take;});
+        S.pop.curr=Math.min(S.pop.max,S.pop.curr+2); if (need>0) S.pop.hap=clamp(S.pop.hap-need/2,0,100);
+      } else S.pop.hap=clamp(S.pop.hap-3,0,100);
+    } else if (id==='caravan') {
+      if (choice===0) { const paid=Math.min(40,S.res.gold||0); S.res.gold-=paid; S.res.iron+=Math.floor(15*(paid/40)); }
+      else { S.renown+=2; S.res.gold+=Math.round(35*diplomacy); }
+    } else if (id==='fire') {
+      if (choice===0 && S.res.gold>=50) S.res.gold-=50;
+      else S.res.wood=Math.max(0,S.res.wood-35);
+    } else if (id==='levy') {
+      if (choice===0 && S.res.gold>=80) { S.res.gold-=80; S.renown+=3; }
+      else { S.pop.hap=clamp(S.pop.hap-8,0,100); S.renown=Math.max(0,S.renown-1); }
+    }
+    const def=EventDefs.find(e=>e.id===id);
+    UI.log(`Entscheidung: ${def.choices[choice].label}`,choice===0?'prod':'war');
+    S.events.pending=null; S.events.seen=(S.events.seen||0)+1;
+    S.events.nextDay=(S.day||1)+6+Math.floor(Math.random()*5);
+    document.getElementById('event-mask').style.display='none';
+    S.paused=false; lastTickTime=Date.now(); UI.update();
   },
 
   tax(d) {
@@ -960,8 +1369,12 @@ const Game = {
     if (!S || !S.res) return;
     if (S.paused) { lastTickTime = Date.now(); return; }
 
+    const previousSeason=getSeason().idx;
     S.day++;
     lastTickTime = Date.now();
+    if (getSeason().idx!==previousSeason) UI.log(`${getSeason().i} Der ${getSeason().n} beginnt. Die Produktion verändert sich.`,"prod");
+    Rules.marketTypes.forEach(k=>S.market.pressure[k]=(S.market.pressure[k]||0)*.985);
+    Game.expireContracts();
 
     // warn about raid
     if ((S.lvl||1) >= Config.raid.startLevel) {
@@ -978,6 +1391,7 @@ const Game = {
     }
 
     const startRes = JSON.parse(JSON.stringify(S.res));
+    Game.runAutoMarket();
     recalcPopMax();
 
     const dRes = {}; for (let k in S.res) dRes[k]=0;
@@ -987,7 +1401,9 @@ const Game = {
     const maxS = caps.store;
     const maxF = caps.food;
 
-    // 1) Production
+    // 1) Production: Zunft, Jahreszeit und Sonderschicht greifen ineinander.
+    const guildMult=1+(S.upgrades.guild||0)*.1;
+    const boostMult=(S.boostUntilDay||0)>=(S.day||1)?1.5:1;
     for (let k in Config.b) {
       const b = Config.b[k];
       const n = S.w[k]||0;
@@ -995,18 +1411,18 @@ const Game = {
 
       // passive gold producers
       if (b.gold) {
-        dRes.gold = (dRes.gold||0) + (n * b.gold);
+        dRes.gold = (dRes.gold||0) + (n * b.gold * guildMult * boostMult);
       }
 
       if (b.prod) {
-        dRes[b.prod] = (dRes[b.prod]||0) + (n * (b.amt||1));
+        dRes[b.prod] = (dRes[b.prod]||0) + (n * (b.amt||1) * guildMult * boostMult * seasonMultiplier(b.prod));
       }
       if (b.proc) {
         const avail = (S.res[b.proc]||0) + (dRes[b.proc]||0);
         const actual = Math.min(avail, n);
         if (actual>0) {
           dRes[b.proc] -= actual;
-          dRes[b.out] = (dRes[b.out]||0) + (actual * (b.r||1));
+          dRes[b.out] = (dRes[b.out]||0) + (actual * (b.r||1) * guildMult * boostMult * seasonMultiplier(b.out));
         }
       }
       if (b.use) {
@@ -1014,7 +1430,7 @@ const Game = {
         const actual = Math.min(avail, n);
         if (actual>0) {
           dRes[b.use] -= actual;
-          dRes[b.out] = (dRes[b.out]||0) + (actual * (b.amt||1));
+          dRes[b.out] = (dRes[b.out]||0) + (actual * (b.amt||1) * guildMult * boostMult * seasonMultiplier(b.out));
         }
       }
     }
@@ -1150,9 +1566,12 @@ const Game = {
     if (checkGoal()) {
       S.paused = true;
       const old = S.lvl||1;
+      const oldRank=rankForLevel(old).current.n;
       S.lvl = old + 1;
       S.goal = goalForLevel(S.lvl);
-      UI.showModal("🏆 Level up!", `You reached level ${S.lvl}.\nNew goals await…`, "Next", ()=>{
+      const newRank=rankForLevel(S.lvl).current.n;
+      const rankLine=oldRank!==newRank?`\nNeuer Burgrang: ${newRank}!`:'';
+      UI.showModal("🏆 Stufenaufstieg!", `Du hast Stufe ${S.lvl} erreicht.${rankLine}\nNeue Ziele warten.`, "Weiter", ()=>{
         S.paused = false;
         lastTickTime = Date.now();
       });
@@ -1160,6 +1579,7 @@ const Game = {
     }
 
     UI.update();
+    if (!S.paused) Game.checkRandomEvent();
     Tutorial.tick();
   },
 
@@ -1329,6 +1749,7 @@ const Tutorial = {
 /* ---------------- UI ---------------- */
 const UI = {
   cat: 'burg',
+  comboTimer: null,
 
   init() {
     this.renderMap();
@@ -1368,12 +1789,25 @@ const UI = {
     document.getElementById('s-sold').innerText = cw.sold;
     document.getElementById('s-wep').innerText = weps;
     document.getElementById('s-land').innerText = S.exp.land||0;
+    document.getElementById('s-renown').innerText = S.renown||0;
+
+    const season=getSeason();
+    document.getElementById('season-icon').innerText=season.i;
+    document.getElementById('season-name').innerText=`${season.n} ${season.dayInSeason}/${season.length}`;
+    document.getElementById('rank-name').innerText=rankForLevel().current.n;
 
     document.getElementById('r-pop').innerText = `${S.pop.curr}/${S.pop.max}`;
     document.getElementById('r-idle').innerText = cw.idle;
     document.getElementById('r-hap').innerText = Math.floor(S.pop.hap||0);
     document.getElementById('day-disp').innerText = S.day||1;
     document.getElementById('lvl-disp').innerText = S.lvl||1;
+
+    const boost=document.getElementById('btn-boost');
+    const boostActive=(S.boostUntilDay||0)>=(S.day||1);
+    boost.classList.toggle('boost-active',boostActive);
+    boost.innerText=boostActive?`🔥 bis T${S.boostUntilDay}`:`🔥 Schicht ${60+(S.upgrades.guild||0)*10}g`;
+    const nearest=Math.min(...S.contracts.items.map(c=>c.deadline-(S.day||1)));
+    document.getElementById('btn-contracts').innerText=`📜 ${S.contracts.items.length} · ${Math.max(0,nearest)}T`;
 
     // happiness trend
     const trEl = document.getElementById('hap-trend');
@@ -1415,6 +1849,9 @@ const UI = {
       document.getElementById('army-str').innerText = getArmyStr();
       document.getElementById('def-str').innerText = getDefStr();
     }
+    if (document.getElementById('market-mask').style.display === 'flex') this.renderMarket();
+    if (document.getElementById('contract-mask').style.display === 'flex') this.renderContracts();
+    if (document.getElementById('upgrade-mask').style.display === 'flex') this.renderUpgrades();
 
     Storage.save();
   },
@@ -1425,7 +1862,7 @@ const UI = {
       const b = Config.b[key];
       if(!b) return;
 
-      const can = (S.res.gold||0) >= (b.cost.g||0) && (S.res.wood||0) >= (b.cost.w||0) && (S.res.stone||0) >= (b.cost.s||0) && (!b.reqLand || (S.exp.land||0)>=b.reqLand);
+      const can = (!b.unique || !(S.b[key]||0)) && (S.res.gold||0) >= (b.cost.g||0) && (S.res.wood||0) >= (b.cost.w||0) && (S.res.stone||0) >= (b.cost.s||0) && (!b.reqLand || (S.exp.land||0)>=b.reqLand);
       if (can) card.classList.add('can-build'); else card.classList.remove('can-build');
 
       const txt=[];
@@ -1542,6 +1979,14 @@ const UI = {
     setTimeout(()=>pop.remove(),800);
   },
 
+  updateCombo(gain) {
+    const el=document.getElementById('combo-pill');
+    el.innerText=`Kombo x${S.clicker.combo} · +${gain} pro Klick`;
+    el.classList.add('show');
+    clearTimeout(this.comboTimer);
+    this.comboTimer=setTimeout(()=>el.classList.remove('show'),1600);
+  },
+
   log(t, c) {
     const d = document.createElement('div');
     d.className = `log-entry ${c||''}`;
@@ -1652,6 +2097,7 @@ const UI = {
   closeWar(){ document.getElementById('war-mask').style.display='none'; },
 
   openMarket() {
+    if ((S.b.market||0)<1) { this.showModal("Kein Markt", "Baue zuerst ein Handelskontor in der Stadt.", "OK"); return; }
     document.getElementById('market-mask').style.display='flex';
     this.renderMarket();
     Tutorial.onAction('ui','market');
@@ -1660,12 +2106,66 @@ const UI = {
 
   renderMarket() {
     const l = document.getElementById('market-list'); l.innerHTML="";
-    ['wood','stone','iron','wheat','flour','hops','bread','meat','cheese','apple','beer','bow','spear','sword','armor'].forEach(k=>{
-      const row = document.createElement('div'); row.className='list-item';
-      row.innerHTML = `<span>${SafeT(k)}: ${Math.floor(S.res[k]||0)}</span>
-        <div><button onclick="Game.trade('${k}',1)">Kauf (5g)</button> <button onclick="Game.trade('${k}',0)">Verk (3g)</button></div>`;
+    document.getElementById('market-reserve').value=S.market.reserve||0;
+    Rules.marketTypes.forEach(k=>{
+      const row = document.createElement('div'); row.className='market-card';
+      const p=S.market.pressure[k]||0, rule=S.market.auto[k];
+      const trend=p>.015?`▲ ${Math.round(p*100)} %`:p<-.015?`▼ ${Math.abs(Math.round(p*100))} %`:'stabil';
+      const trendClass=p>.015?'up':p<-.015?'down':'';
+      const buy=marketPrice(k,true), sell=marketPrice(k,false);
+      row.innerHTML = `<div><div class="market-name">${SafeT(k)}</div><div class="market-stock">Bestand: ${Math.floor(S.res[k]||0)} · je 5 Einheiten</div><div class="market-trend ${trendClass}">${trend}</div></div>
+        <div class="market-actions"><button onclick="Game.trade('${k}',1)" ${(S.res.gold||0)<buy?'disabled':''}>Kaufen ${buy}g</button><button onclick="Game.trade('${k}',0)" ${(S.res[k]||0)<5?'disabled':''}>Verkaufen ${sell}g</button></div>
+        <div class="auto-rule"><label><input type="checkbox" ${rule.enabled?'checked':''} onchange="Game.setMarketAuto('${k}',this.checked)"> Automatik</label><label>Min. <input type="number" min="0" step="5" value="${rule.min}" onchange="Game.setMarketTarget('${k}','min',this.value)"></label><label>Max. <input type="number" min="5" step="5" value="${rule.max}" onchange="Game.setMarketTarget('${k}','max',this.value)"></label></div>`;
       l.appendChild(row);
     });
+  },
+
+  openContracts() {
+    ensureContracts(); document.getElementById('contract-mask').style.display='flex'; this.renderContracts();
+  },
+  closeContracts(){document.getElementById('contract-mask').style.display='none';},
+  renderContracts() {
+    const l=document.getElementById('contract-list'); l.innerHTML='';
+    S.contracts.items.forEach(c=>{
+      const have=Math.floor(S.res[c.resource]||0), days=Math.max(0,c.deadline-(S.day||1));
+      const reward=Math.round(c.rewardGold*(1+(S.upgrades.diplomacy||0)*.08));
+      const card=document.createElement('div'); card.className='contract-card';
+      card.innerHTML=`<div class="contract-head"><div class="contract-title">${SafeT(c.resource)} für die Nachbarburg</div><div class="contract-deadline">noch ${days} Tage</div></div>
+        <div class="contract-body">Lieferung: ${have}/${c.qty} ${SafeT(c.resource)}</div>
+        <div class="contract-foot"><span>Belohnung: ${reward}💰 · ${c.rewardRenown}👑</span><button class="btn" style="flex:0 0 auto;padding:6px 10px" onclick="Game.fulfillContract(${c.id})" ${have<c.qty?'disabled':''}>Liefern</button></div>`;
+      l.appendChild(card);
+    });
+  },
+
+  openUpgrades(){document.getElementById('upgrade-mask').style.display='flex';this.renderUpgrades();},
+  closeUpgrades(){document.getElementById('upgrade-mask').style.display='none';},
+  renderUpgrades() {
+    const rank=rankForLevel(), summary=document.getElementById('rank-summary');
+    summary.innerHTML=`<div style="margin-top:8px;font-weight:900">${rank.current.n} · Stufe ${S.lvl}</div><div class="rank-progress"><span style="width:${rank.progress}%"></span></div><div style="font-size:.75rem;color:#5d5043">${rank.next?`Nächster Rang „${rank.next.n}“ ab Stufe ${rank.next.lvl}`:'Höchster Burgrang erreicht'}</div>`;
+    const l=document.getElementById('upgrade-list'); l.innerHTML='';
+    Object.entries(UpgradeDefs).forEach(([key,def])=>{
+      const level=S.upgrades[key]||0, maxed=level>=def.max, cost=maxed?0:upgradeCost(key);
+      const card=document.createElement('div'); card.className='upgrade-card';
+      card.innerHTML=`<div class="upgrade-head"><div class="upgrade-title">${def.i} ${def.n}</div><b>Stufe ${level}/${def.max}</b></div><div class="upgrade-body">${def.desc}</div><div class="upgrade-foot"><span>${maxed?'Voll ausgebaut':`Nächste Stufe: ${cost} Gold`}</span><button class="btn" style="flex:0 0 auto;padding:6px 10px" onclick="Game.upgrade('${key}')" ${maxed||(S.res.gold||0)<cost?'disabled':''}>Ausbauen</button></div>`;
+      l.appendChild(card);
+    });
+  },
+
+  openEvent(pending) {
+    const def=EventDefs.find(e=>e.id===pending.id); if (!def) { S.events.pending=null; S.paused=false; return; }
+    S.paused=true;
+    document.getElementById('event-title').innerText=def.title;
+    document.getElementById('event-text').innerText=def.text;
+    const l=document.getElementById('event-choices'); l.innerHTML='';
+    def.choices.forEach((choice,idx)=>{
+      const needsGold=(def.id==='caravan'&&idx===0)?40:(def.id==='fire'&&idx===0)?50:(def.id==='levy'&&idx===0)?80:0;
+      const b=document.createElement('button'); b.className='btn';
+      b.disabled=needsGold>0&&(S.res.gold||0)<needsGold;
+      b.innerHTML=`${choice.label}<small>${choice.hint}${b.disabled?' · Nicht genug Gold':''}</small>`;
+      b.onclick=()=>Game.chooseEvent(def.id,idx); l.appendChild(b);
+    });
+    document.getElementById('event-mask').style.display='flex';
+    Storage.save();
   },
 
   openExp() {
