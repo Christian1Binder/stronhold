@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>STRONHOLD – Wirtschaft, Burg & Handel</title>
+  <title>STRONHOLD – Wirtschaft, Burg &amp; Handel</title>
 
   <!-- CrazyGames SDK v2 -->
   <script src="https://sdk.crazygames.com/crazygames-sdk-v2.js"></script>
@@ -196,6 +196,11 @@
       border:1px solid rgba(255,255,255,.18);border-radius:999px;background:rgba(255,255,255,.06);
       color:#ddd;font-size:.65rem;font-weight:700;
     }
+    .language-switch{
+      display:flex;align-items:center;gap:4px;flex-shrink:0;padding:4px 6px;border:1px solid #555;
+      border-radius:6px;background:#252525;color:#eee;font-size:.72rem;font-weight:900;
+    }
+    .language-switch select{background:#151515;color:#fff;border:1px solid #666;border-radius:4px;padding:4px;cursor:pointer}
     .combo-pill{
       position:absolute;top:12px;left:50%;transform:translateX(-50%) translateY(-8px);
       z-index:40;padding:6px 12px;border:2px solid rgba(255,179,0,.8);border-radius:999px;
@@ -281,6 +286,7 @@
       .build-bar{width:100%;height:90px}
       .list-grid{grid-template-columns:1fr}
       .raid-pill{display:none}
+      .language-switch{padding:2px 4px}.language-switch span{display:none}.language-switch select{padding:3px}
       .market-card{grid-template-columns:1fr}.market-actions{justify-content:flex-start}.auto-rule{grid-template-columns:1fr 1fr}.auto-rule label:first-child{grid-column:1/-1}
     }
   </style>
@@ -293,8 +299,8 @@
   <h3 id="tut-title">Tutorial</h3>
   <p id="tut-text">…</p>
   <div class="tut-actions">
-    <button class="btn" id="tut-skip" style="background:#fff">Skip</button>
-    <button class="btn" id="tut-next" style="background:var(--highlight)">Next</button>
+    <button class="btn" id="tut-skip" style="background:#fff" data-i18n="skip">Überspringen</button>
+    <button class="btn" id="tut-next" style="background:var(--highlight)" data-i18n="next">Weiter</button>
   </div>
 </div>
 
@@ -310,55 +316,55 @@
 <!-- War modal -->
 <div id="war-mask" class="modal-mask">
   <div class="modal-win">
-    <h2 style="font-family:'MedievalSharp'; margin:0">Campaigns</h2>
+    <h2 style="font-family:'MedievalSharp'; margin:0" data-i18n="campaigns">Feldzüge</h2>
     <div style="margin-bottom:10px; border-bottom:1px solid #999; padding-bottom:5px;">
-      Army: <span id="army-str" style="font-weight:bold; font-size:1.2rem">0</span> ⚔️
-      <span style="margin-left:10px">Defense: <span id="def-str" style="font-weight:bold; font-size:1.1rem">0</span> 🛡️</span>
+      <span data-i18n="army">Armee</span>: <span id="army-str" style="font-weight:bold; font-size:1.2rem">0</span> ⚔️
+      <span style="margin-left:10px"><span data-i18n="defense">Verteidigung</span>: <span id="def-str" style="font-weight:bold; font-size:1.1rem">0</span> 🛡️</span>
     </div>
     <div id="war-list" class="list-grid" style="grid-template-columns: 1fr;"></div>
-    <button onclick="UI.closeWar()" class="btn" style="width:100%">Retreat</button>
+    <button onclick="UI.closeWar()" class="btn" style="width:100%" data-i18n="retreat">Rückzug</button>
   </div>
 </div>
 
 <!-- Recruit modal -->
 <div id="recruit-mask" class="modal-mask">
   <div class="modal-win">
-    <h2 style="font-family:'MedievalSharp'; margin:0">Barracks</h2>
+    <h2 style="font-family:'MedievalSharp'; margin:0" data-i18n="barracks">Kaserne</h2>
     <div id="recruit-list" class="list-grid"></div>
-    <button onclick="UI.closeRecruit()" class="btn" style="width:100%">Close</button>
+    <button onclick="UI.closeRecruit()" class="btn" style="width:100%" data-i18n="close">Schließen</button>
   </div>
 </div>
 
 <!-- Market modal -->
 <div id="market-mask" class="modal-mask">
   <div class="modal-win">
-    <h2 style="font-family:'MedievalSharp'; margin:0">Markt & Handelskontor</h2>
+    <h2 style="font-family:'MedievalSharp'; margin:0" data-i18n="market_title">Markt & Handelskontor</h2>
     <div class="market-tools">
-      <span><b>Automatischer Handel</b><br>Verkauft Überschüsse und kauft Fehlbestände je Tick.</span>
-      <label>Goldreserve<br><input id="market-reserve" type="number" min="0" step="10" onchange="Game.setMarketReserve(this.value)"></label>
+      <span><b data-i18n="auto_trade">Automatischer Handel</b><br><span data-i18n="auto_trade_help">Verkauft Überschüsse und kauft Fehlbestände je Tick.</span></span>
+      <label><span data-i18n="gold_reserve">Goldreserve</span><br><input id="market-reserve" type="number" min="0" step="10" onchange="Game.setMarketReserve(this.value)"></label>
     </div>
     <div id="market-list" class="market-grid"></div>
-    <button onclick="UI.closeMarket()" class="btn" style="width:100%">Schließen</button>
+    <button onclick="UI.closeMarket()" class="btn" style="width:100%" data-i18n="close">Schließen</button>
   </div>
 </div>
 
 <!-- Contract modal -->
 <div id="contract-mask" class="modal-mask">
   <div class="modal-win">
-    <h2 style="font-family:'MedievalSharp'; margin:0">📜 Handelsaufträge</h2>
-    <p style="font-size:.8rem;margin:6px 0 12px">Liefere Waren vor Ablauf der Frist. Diplomatie erhöht jede Belohnung.</p>
+    <h2 style="font-family:'MedievalSharp'; margin:0" data-i18n="contracts_title">📜 Handelsaufträge</h2>
+    <p style="font-size:.8rem;margin:6px 0 12px" data-i18n="contracts_help">Liefere Waren vor Ablauf der Frist. Diplomatie erhöht jede Belohnung.</p>
     <div id="contract-list"></div>
-    <button onclick="UI.closeContracts()" class="btn" style="width:100%">Schließen</button>
+    <button onclick="UI.closeContracts()" class="btn" style="width:100%" data-i18n="close">Schließen</button>
   </div>
 </div>
 
 <!-- Upgrade modal -->
 <div id="upgrade-mask" class="modal-mask">
   <div class="modal-win">
-    <h2 style="font-family:'MedievalSharp'; margin:0">🏰 Burgausbau</h2>
+    <h2 style="font-family:'MedievalSharp'; margin:0" data-i18n="upgrades_title">🏰 Burgausbau</h2>
     <div id="rank-summary"></div>
     <div id="upgrade-list"></div>
-    <button onclick="UI.closeUpgrades()" class="btn" style="width:100%">Schließen</button>
+    <button onclick="UI.closeUpgrades()" class="btn" style="width:100%" data-i18n="close">Schließen</button>
   </div>
 </div>
 
@@ -374,11 +380,11 @@
 <!-- Expansion modal -->
 <div id="exp-mask" class="modal-mask">
   <div class="modal-win">
-    <h2 style="font-family:'MedievalSharp'; margin:0">Expansion</h2>
+    <h2 style="font-family:'MedievalSharp'; margin:0" data-i18n="expansion">Expansion</h2>
     <div id="exp-body" style="text-align:left; margin-top:10px"></div>
     <div style="display:flex; gap:8px; margin-top:12px">
-      <button class="btn" onclick="Game.expand()" style="background:var(--highlight);flex:1">Expand territory</button>
-      <button class="btn" onclick="UI.closeExp()" style="flex:1">Close</button>
+      <button class="btn" onclick="Game.expand()" style="background:var(--highlight);flex:1" data-i18n="expand_territory">Gebiet erweitern</button>
+      <button class="btn" onclick="UI.closeExp()" style="flex:1" data-i18n="close">Schließen</button>
     </div>
   </div>
 </div>
@@ -389,49 +395,51 @@
   <div class="header-info">
     <div class="game-title">STRONHOLD</div>
     <div class="season-badge"><span id="season-icon">🌱</span><span id="season-name">Frühling</span> · <span id="rank-name">Außenposten</span></div>
-    <div class="objective" id="obj-disp">Lade…</div>
+    <div class="objective" id="obj-disp" data-i18n="loading">Lade…</div>
     <div class="mil-stats">💂 <span id="s-sold">0</span> ⚔️ <span id="s-wep">0</span> 🧭 <span id="s-land">0</span> 👑 <span id="s-renown">0</span></div>
   </div>
 
   <div class="raid-pill raid-ok tut-allow" id="raid-pill" onclick="UI.showRaidInfo()">
-    <span>⚠️ Raid in</span><b id="raid-in">–</b><span>days</span>
+    <span data-i18n="raid_in">⚠️ Überfall in</span><b id="raid-in">–</b><span id="raid-unit" data-i18n="days">Tagen</span>
   </div>
+
+  <label class="language-switch" data-i18n-title="language" title="Sprache"><span>🌐</span><select id="language-select" onchange="I18N.set(this.value)" data-i18n-aria="language" aria-label="Sprache"><option value="de">Deutsch</option><option value="en">English</option></select></label>
 
   <div class="res-container">
     <div class="res-group tut-allow" id="rg-gold">
-      <span class="res-label">Treasure</span>
+      <span class="res-label" data-i18n="treasury">Schatzkammer</span>
       <div class="res-values">💰 <span id="r-gold">0</span></div>
     </div>
 
     <div class="res-group tut-allow" id="rg-store" onclick="UI.showStorage()">
-      <span class="res-label">Storage</span>
+      <span class="res-label" data-i18n="storage">Lager</span>
       <div class="res-values">
-        <span class="res-item" title="Wood">🌲<span id="r-wood">0</span><span id="d-wood" class="rate-ind"></span></span>
-        <span class="res-item" title="Stone">🧱<span id="r-stone">0</span><span id="d-stone" class="rate-ind"></span></span>
-        <span class="res-item" title="Iron">⛓️<span id="r-iron">0</span><span id="d-iron" class="rate-ind"></span></span>
-        <span class="res-item" title="Wheat">🌾<span id="r-wheat">0</span><span id="d-wheat" class="rate-ind"></span></span>
-        <span class="res-item" title="Flour">🥡<span id="r-flour">0</span><span id="d-flour" class="rate-ind"></span></span>
-        <span class="res-item" title="Hops">🌿<span id="r-hops">0</span><span id="d-hops" class="rate-ind"></span></span>
+        <span class="res-item" data-i18n-title="wood">🌲<span id="r-wood">0</span><span id="d-wood" class="rate-ind"></span></span>
+        <span class="res-item" data-i18n-title="stone">🧱<span id="r-stone">0</span><span id="d-stone" class="rate-ind"></span></span>
+        <span class="res-item" data-i18n-title="iron">⛓️<span id="r-iron">0</span><span id="d-iron" class="rate-ind"></span></span>
+        <span class="res-item" data-i18n-title="wheat">🌾<span id="r-wheat">0</span><span id="d-wheat" class="rate-ind"></span></span>
+        <span class="res-item" data-i18n-title="flour">🥡<span id="r-flour">0</span><span id="d-flour" class="rate-ind"></span></span>
+        <span class="res-item" data-i18n-title="hops">🌿<span id="r-hops">0</span><span id="d-hops" class="rate-ind"></span></span>
       </div>
     </div>
 
     <div class="res-group tut-allow" id="rg-food" onclick="UI.showFood()">
-      <span class="res-label">Food</span>
+      <span class="res-label" data-i18n="food">Nahrung</span>
       <div class="res-values">
-        <span class="res-item" title="Bread">🍞<span id="r-bread">0</span><span id="d-bread" class="rate-ind"></span></span>
-        <span class="res-item" title="Meat">🍖<span id="r-meat">0</span><span id="d-meat" class="rate-ind"></span></span>
-        <span class="res-item" title="Cheese">🧀<span id="r-cheese">0</span><span id="d-cheese" class="rate-ind"></span></span>
-        <span class="res-item" title="Apples">🍎<span id="r-apple">0</span><span id="d-apple" class="rate-ind"></span></span>
-        <span class="res-item" title="Beer">🍺<span id="r-beer">0</span><span id="d-beer" class="rate-ind"></span></span>
+        <span class="res-item" data-i18n-title="bread">🍞<span id="r-bread">0</span><span id="d-bread" class="rate-ind"></span></span>
+        <span class="res-item" data-i18n-title="meat">🍖<span id="r-meat">0</span><span id="d-meat" class="rate-ind"></span></span>
+        <span class="res-item" data-i18n-title="cheese">🧀<span id="r-cheese">0</span><span id="d-cheese" class="rate-ind"></span></span>
+        <span class="res-item" data-i18n-title="apple">🍎<span id="r-apple">0</span><span id="d-apple" class="rate-ind"></span></span>
+        <span class="res-item" data-i18n-title="beer">🍺<span id="r-beer">0</span><span id="d-beer" class="rate-ind"></span></span>
       </div>
     </div>
 
     <div class="res-group tut-allow" onclick="UI.showHappy()" style="cursor:pointer; border-color:#8d6e63;">
-      <span class="res-label">People (trend)</span>
+      <span class="res-label" data-i18n="people_trend">Volk (Trend)</span>
       <div class="res-values pop-val">
-        <span title="Population">👨‍🌾 <span id="r-pop">0</span></span>
-        <span title="Happiness">❤️ <span id="r-hap">0</span><span id="hap-trend" class="trend-val"></span></span>
-        <span title="Idle" class="idle-val">💤 <span id="r-idle">0</span></span>
+        <span data-i18n-title="population">👨‍🌾 <span id="r-pop">0</span></span>
+        <span data-i18n-title="happiness">❤️ <span id="r-hap">0</span><span id="hap-trend" class="trend-val"></span></span>
+        <span data-i18n-title="idle">💤 <span id="r-idle">0</span></span>
       </div>
     </div>
   </div>
@@ -441,16 +449,16 @@
   <div id="map-area">
     <div id="combo-pill" class="combo-pill">Kombo x1 · +1</div>
     <div class="zone tut-allow" id="z-forest" onclick="Game.clickGather('wood', event)">
-      <div class="zone-hint">🌲</div><div class="zone-label">Forest</div>
+      <div class="zone-hint">🌲</div><div class="zone-label" data-i18n="forest">Wald</div>
     </div>
     <div class="zone tut-allow" id="z-mountain" onclick="Game.clickGather('stone', event)">
-      <div class="zone-hint">⛰️</div><div class="zone-label">Mountains</div>
+      <div class="zone-hint">⛰️</div><div class="zone-label" data-i18n="mountains">Berge</div>
     </div>
     <div class="zone tut-allow" id="z-town" onclick="UI.openTown()">
-      <div class="zone-hint">🏰</div><div class="zone-label">Town</div>
+      <div class="zone-hint">🏰</div><div class="zone-label" data-i18n="town">Stadt</div>
     </div>
     <div class="zone tut-allow" id="z-farm" onclick="Game.clickGather('apple', event)">
-      <div class="zone-hint">🍎</div><div class="zone-label">Lands</div>
+      <div class="zone-hint">🍎</div><div class="zone-label" data-i18n="lands">Ländereien</div>
     </div>
   </div>
 
@@ -458,21 +466,21 @@
     <div class="log-box" id="log"></div>
     <div class="controls">
       <div class="c-row">
-        <button class="btn btn-gold tut-allow" id="btn-ad" onclick="Game.watchAdForReward()" style="flex:1.5;">💰 Treasure (+250g)</button>
+        <button class="btn btn-gold tut-allow" id="btn-ad" onclick="Game.watchAdForReward()" style="flex:1.5;" data-i18n="treasure_reward">💰 Schatz (+250g)</button>
       </div>
       <div class="c-row">
-        <button class="btn tut-allow" id="btn-rec" onclick="UI.openRecruit()">🛡️</button>
-        <button class="btn btn-war tut-allow" id="btn-war" onclick="UI.openWar()">⚔️</button>
-        <button class="btn tut-allow" id="btn-mkt" onclick="UI.openMarket()">⚖️</button>
-        <button class="btn tut-allow" id="btn-exp" onclick="UI.openExp()">🧭</button>
+        <button class="btn tut-allow" id="btn-rec" onclick="UI.openRecruit()" data-i18n-title="recruit">🛡️</button>
+        <button class="btn btn-war tut-allow" id="btn-war" onclick="UI.openWar()" data-i18n-title="campaigns">⚔️</button>
+        <button class="btn tut-allow" id="btn-mkt" onclick="UI.openMarket()" data-i18n-title="market">⚖️</button>
+        <button class="btn tut-allow" id="btn-exp" onclick="UI.openExp()" data-i18n-title="expansion">🧭</button>
       </div>
       <div class="system-strip">
-        <button class="btn" id="btn-contracts" onclick="UI.openContracts()" title="Handelsaufträge">📜 Aufträge</button>
-        <button class="btn" id="btn-upgrades" onclick="UI.openUpgrades()" title="Burgausbau">🏰 Ausbau</button>
-        <button class="btn" id="btn-boost" onclick="Game.activateBoost()" title="Drei Tage lang 50 % mehr Produktion">🔥 Schicht</button>
+        <button class="btn" id="btn-contracts" onclick="UI.openContracts()" data-i18n-title="contracts_title" title="Handelsaufträge">📜 Aufträge</button>
+        <button class="btn" id="btn-upgrades" onclick="UI.openUpgrades()" data-i18n-title="upgrades_title" title="Burgausbau">🏰 Ausbau</button>
+        <button class="btn" id="btn-boost" onclick="Game.activateBoost()" data-i18n-title="shift_help" title="Drei Tage lang 50 % mehr Produktion">🔥 Schicht</button>
       </div>
       <div style="background:rgba(255,255,255,0.5); padding:3px; border-radius:4px; font-size:0.7rem; margin:5px 0; text-align:center;">
-        Tax: <strong id="tax-name">None</strong><br>
+        <span data-i18n="tax">Steuer</span>: <strong id="tax-name">Keine</strong><br>
         <span id="tax-impact" style="font-size:0.65rem; font-weight:bold;"></span>
         <div>
           <button class="tut-allow" onclick="Game.tax(-1)" style="padding:2px 8px;cursor:pointer">➖</button>
@@ -480,9 +488,9 @@
         </div>
       </div>
       <div style="text-align:center; font-size:0.7rem; margin-top:5px;">
-        Tag <span id="day-disp">1</span> · Stufe <span id="lvl-disp">1</span><br>
-        <button class="tut-allow" onclick="Game.save()" style="margin-top:3px; padding:2px 5px;">Speichern</button>
-        <button class="tut-allow" onclick="Game.reset()" style="margin-top:3px; padding:2px 5px; color:red">Neu</button>
+        <span data-i18n="day">Tag</span> <span id="day-disp">1</span> · <span data-i18n="level">Stufe</span> <span id="lvl-disp">1</span><br>
+        <button class="tut-allow" onclick="Game.save()" style="margin-top:3px; padding:2px 5px;" data-i18n="save">Speichern</button>
+        <button class="tut-allow" onclick="Game.reset()" style="margin-top:3px; padding:2px 5px; color:red" data-i18n="new_game">Neu</button>
       </div>
     </div>
   </aside>
@@ -490,12 +498,12 @@
 
 <footer>
   <div class="cat-bar">
-    <div class="cat-btn active tut-allow" onclick="UI.setCat('burg')">🏰</div>
-    <div class="cat-btn tut-allow" onclick="UI.setCat('werk')">🔨</div>
-    <div class="cat-btn tut-allow" onclick="UI.setCat('farm')">🍎</div>
-    <div class="cat-btn tut-allow" onclick="UI.setCat('stadt')">🏠</div>
-    <div class="cat-btn tut-allow" onclick="UI.setCat('waffen')">⚔️</div>
-    <div class="cat-btn tut-allow" onclick="UI.setCat('nahrung')">🍞</div>  </div>
+    <div class="cat-btn active tut-allow" onclick="UI.setCat('burg')" data-i18n-title="castle">🏰</div>
+    <div class="cat-btn tut-allow" onclick="UI.setCat('werk')" data-i18n-title="industry">🔨</div>
+    <div class="cat-btn tut-allow" onclick="UI.setCat('farm')" data-i18n-title="agriculture">🍎</div>
+    <div class="cat-btn tut-allow" onclick="UI.setCat('stadt')" data-i18n-title="town">🏠</div>
+    <div class="cat-btn tut-allow" onclick="UI.setCat('waffen')" data-i18n-title="weapons">⚔️</div>
+    <div class="cat-btn tut-allow" onclick="UI.setCat('nahrung')" data-i18n-title="food">🍞</div>  </div>
   <div class="build-bar" id="build-list"></div>
 </footer>
 
@@ -529,14 +537,77 @@ const CG = {
 };
 CG.init();
 
+/* ---------------- LOCALIZATION ---------------- */
+const BI = (de,en) => ({de,en});
+const I18N = {
+  key:"stronhold_language",
+  lang:"de",
+  strings:{
+    page_title:BI("STRONHOLD – Wirtschaft, Burg & Handel","STRONHOLD – Economy, Castle & Trade"), language:BI("Sprache","Language"), loading:BI("Lade…","Loading…"),
+    skip:BI("Überspringen","Skip"), next:BI("Weiter","Next"), close:BI("Schließen","Close"), ok:BI("OK","OK"),
+    campaigns:BI("Feldzüge","Campaigns"), army:BI("Armee","Army"), defense:BI("Verteidigung","Defense"), retreat:BI("Rückzug","Retreat"), barracks:BI("Kaserne","Barracks"),
+    market:BI("Markt","Market"), recruit:BI("Soldaten ausbilden","Recruit soldiers"), castle:BI("Burg","Castle"), industry:BI("Handwerk","Industry"), agriculture:BI("Landwirtschaft","Agriculture"), weapons:BI("Waffen","Weapons"),
+    market_title:BI("Markt & Handelskontor","Market & Trading Post"), auto_trade:BI("Automatischer Handel","Automated Trading"),
+    auto_trade_help:BI("Verkauft Überschüsse und kauft Fehlbestände je Tick.","Sells surpluses and buys shortages every tick."), gold_reserve:BI("Goldreserve","Gold reserve"),
+    contracts_title:BI("📜 Handelsaufträge","📜 Trade Contracts"), contracts_help:BI("Liefere Waren vor Ablauf der Frist. Diplomatie erhöht jede Belohnung.","Deliver goods before the deadline. Diplomacy increases every reward."),
+    upgrades_title:BI("🏰 Burgausbau","🏰 Castle Upgrades"), expansion:BI("Expansion","Expansion"), expand_territory:BI("Gebiet erweitern","Expand territory"),
+    raid_in:BI("⚠️ Überfall in","⚠️ Raid in"), day_singular:BI("Tag","day"), days:BI("Tagen","days"), treasury:BI("Schatzkammer","Treasury"), storage:BI("Lager","Storage"), food:BI("Nahrung","Food"),
+    people_trend:BI("Volk (Trend)","People (trend)"), population:BI("Bevölkerung","Population"), happiness:BI("Zufriedenheit","Happiness"), idle:BI("Untätig","Idle"),
+    forest:BI("Wald","Forest"), mountains:BI("Berge","Mountains"), town:BI("Stadt","Town"), lands:BI("Ländereien","Lands"),
+    treasure_reward:BI("💰 Schatz (+250g)","💰 Treasure (+250g)"), tax:BI("Steuer","Tax"), day:BI("Tag","Day"), level:BI("Stufe","Level"), save:BI("Speichern","Save"), new_game:BI("Neu","Reset"),
+    wood:BI("Holz","Wood"), stone:BI("Stein","Stone"), iron:BI("Eisen","Iron"), wheat:BI("Weizen","Wheat"), flour:BI("Mehl","Flour"), hops:BI("Hopfen","Hops"),
+    bread:BI("Brot","Bread"), meat:BI("Fleisch","Meat"), cheese:BI("Käse","Cheese"), apple:BI("Äpfel","Apples"), beer:BI("Bier","Beer"),
+    bow:BI("Bogen","Bow"), spear:BI("Speer","Spear"), sword:BI("Schwert","Sword"), armor:BI("Rüstung","Armor"), gold:BI("Gold","Gold"), soldier:BI("Soldaten","Soldiers"), land:BI("Land","Land"),
+    contracts_short:BI("Aufträge","Contracts"), upgrades_short:BI("Ausbau","Upgrades"), shift:BI("Schicht","Shift"), shift_help:BI("Drei Tage lang 50 % mehr Produktion","50% more production for three days"), until_day:BI("bis T{{day}}","until D{{day}}"),
+    later:BI("später","later"), stock:BI("Bestand","Stock"), per_five:BI("je 5 Einheiten","per 5 units"), stable:BI("stabil","stable"),
+    buy_for:BI("Kaufen {{price}}g","Buy {{price}}g"), sell_for:BI("Verkaufen {{price}}g","Sell {{price}}g"), automation:BI("Automatik","Automation"), min:BI("Min.","Min."), max:BI("Max.","Max."),
+    neighboring_castle:BI("{{resource}} für die Nachbarburg","{{resource}} for the neighboring castle"), day_left:BI("noch 1 Tag","1 day left"), days_left:BI("noch {{days}} Tage","{{days}} days left"),
+    delivery:BI("Lieferung","Delivery"), reward:BI("Belohnung","Reward"), deliver:BI("Liefern","Deliver"),
+    rank_level:BI("{{rank}} · Stufe {{level}}","{{rank}} · Level {{level}}"), next_rank:BI("Nächster Rang „{{rank}}“ ab Stufe {{level}}","Next rank “{{rank}}” at level {{level}}"), max_rank:BI("Höchster Burgrang erreicht","Highest castle rank reached"),
+    upgrade_level:BI("Stufe {{level}}/{{max}}","Level {{level}}/{{max}}"), fully_upgraded:BI("Voll ausgebaut","Fully upgraded"), next_upgrade:BI("Nächste Stufe: {{cost}} Gold","Next level: {{cost}} gold"), upgrade:BI("Ausbauen","Upgrade"),
+    not_enough_gold:BI("Nicht genug Gold","Not enough gold"), train:BI("Ausbilden","Train"), loot:BI("Beute","Loot"), danger:BI("Gefahr","Danger"), attack:BI("Angriff","Attack"),
+    land_tier:BI("Landstufe","Land tier"), bonuses:BI("Boni","Bonuses"), current:BI("aktuell","current"), housing:BI("Wohnraum","Housing"), next_expansion_cost:BI("Kosten der nächsten Erweiterung","Next expansion cost"),
+    expansion_tip:BI("Tipp: Ab Landstufe 1 kannst du einen <b>Außenposten</b> bauen (+Gold/Tick).","Tip: At land tier 1 you can build an <b>Outpost</b> (+gold/tick)."),
+    combo:BI("Kombo x{{combo}} · +{{gain}} pro Klick","Combo x{{combo}} · +{{gain}} per click"),
+    hunger_supply:BI("Hunger/Versorgung","Hunger/Supply"), diversity:BI("Vielfalt","Variety"), taxes:BI("Steuern","Taxes"), religion:BI("Religion","Religion"), overcrowding:BI("Überbelegung","Overcrowding"), idleness:BI("Untätigkeit","Idleness"), change_per_tick:BI("Änderung pro Tick","Change per tick"),
+    storage_capacity:BI("Belegt: {{used}} / {{max}}\nBaue Lagerhäuser (+50) oder erweitere dein Land (+{{bonus}}/Landstufe).","Used: {{used}} / {{max}}\nBuild warehouses (+50) or expand your land (+{{bonus}}/land tier)."),
+    food_capacity:BI("Nahrung: {{used}} / {{max}}\nBaue Kornspeicher (+50) oder erweitere dein Land (+{{bonus}}/Landstufe).","Food: {{used}} / {{max}}\nBuild granaries (+50) or expand your land (+{{bonus}}/land tier).")
+  },
+  init(){ try { const saved=localStorage.getItem(this.key); if (saved==='de'||saved==='en') this.lang=saved; } catch(e){} },
+  set(code){
+    this.lang=code==='en'?'en':'de';
+    try { localStorage.setItem(this.key,this.lang); } catch(e){}
+    document.documentElement.lang=this.lang;
+    if (typeof UI!=='undefined') UI.applyLanguage();
+  },
+  applyStatic(){
+    document.documentElement.lang=this.lang;
+    document.title=tr('page_title');
+    const select=document.getElementById('language-select'); if(select) select.value=this.lang;
+    document.querySelectorAll('[data-i18n]').forEach(el=>el.innerText=tr(el.dataset.i18n));
+    document.querySelectorAll('[data-i18n-title]').forEach(el=>el.title=tr(el.dataset.i18nTitle));
+    document.querySelectorAll('[data-i18n-aria]').forEach(el=>el.setAttribute('aria-label',tr(el.dataset.i18nAria)));
+  }
+};
+I18N.init();
+
+function loc(value,lang=I18N.lang){
+  if (value && typeof value==='object' && Object.prototype.hasOwnProperty.call(value,'de')) return value[lang] || value.de;
+  return value==null?'':String(value);
+}
+function formatText(text,vars={}){ return String(text).replace(/\{\{(\w+)\}\}/g,(_,k)=>vars[k]??''); }
+function tr(key,vars={}){ return formatText(loc(I18N.strings[key]||key),vars); }
+function trl(key,lang,vars={}){ return formatText(loc(I18N.strings[key]||key,lang),vars); }
+function dual(build){ return BI(build('de'),build('en')); }
+
 /* ---------------- DATA ---------------- */
 const T = {
-  wood:"Holz", stone:"Stein", iron:"Eisen", wheat:"Weizen", flour:"Mehl", hops:"Hopfen",
-  bread:"Brot", meat:"Fleisch", cheese:"Käse", apple:"Äpfel", beer:"Bier",
-  bow:"Bogen", spear:"Speer", sword:"Schwert", armor:"Rüstung",
-  gold:"Gold", pop:"Bevölkerung", soldier:"Soldaten", land:"Land"
+  wood:BI("Holz","Wood"), stone:BI("Stein","Stone"), iron:BI("Eisen","Iron"), wheat:BI("Weizen","Wheat"), flour:BI("Mehl","Flour"), hops:BI("Hopfen","Hops"),
+  bread:BI("Brot","Bread"), meat:BI("Fleisch","Meat"), cheese:BI("Käse","Cheese"), apple:BI("Äpfel","Apples"), beer:BI("Bier","Beer"),
+  bow:BI("Bogen","Bow"), spear:BI("Speer","Spear"), sword:BI("Schwert","Sword"), armor:BI("Rüstung","Armor"),
+  gold:BI("Gold","Gold"), pop:BI("Bevölkerung","Population"), soldier:BI("Soldaten","Soldiers"), land:BI("Land","Land")
 };
-const SafeT = (k) => T[k] || k;
+const SafeT = (k,lang=I18N.lang) => loc(T[k] || k,lang);
 
 const Rules = {
   storeTypes: ['wood','stone','iron','wheat','flour','hops'],
@@ -553,55 +624,52 @@ const MarketGoods = {
 };
 
 const SeasonDefs = [
-  {n:"Frühling",i:"🌱",m:{wheat:1.2,apple:1.2}},
-  {n:"Sommer",i:"☀️",m:{wheat:1.25,hops:1.25}},
-  {n:"Herbst",i:"🍂",m:{apple:1.3,meat:1.3}},
-  {n:"Winter",i:"❄️",m:{wheat:.65,hops:.65,apple:.65,meat:.65,cheese:.65,stone:1.1}}
+  {n:BI("Frühling","Spring"),i:"🌱",m:{wheat:1.2,apple:1.2}},
+  {n:BI("Sommer","Summer"),i:"☀️",m:{wheat:1.25,hops:1.25}},
+  {n:BI("Herbst","Autumn"),i:"🍂",m:{apple:1.3,meat:1.3}},
+  {n:BI("Winter","Winter"),i:"❄️",m:{wheat:.65,hops:.65,apple:.65,meat:.65,cheese:.65,stone:1.1}}
 ];
 
 const UpgradeDefs = {
-  tools:{n:"Werkzeugmacher",i:"🛠️",base:150,max:10,desc:"Jede Stufe gibt +1 Ressource pro Kartenklick."},
-  guild:{n:"Zunfthaus",i:"🏛️",base:300,max:10,desc:"Jede Stufe steigert die gesamte Produktion um 10 %."},
-  logistics:{n:"Fuhrwesen",i:"🛞",base:200,max:10,desc:"Jede Stufe schafft 25 zusätzliche Lager- und Nahrungseinheiten."},
-  diplomacy:{n:"Gesandtschaft",i:"🤝",base:350,max:10,desc:"Jede Stufe erhöht Gold aus Aufträgen und Ereignissen um 8 %."}
+  tools:{n:BI("Werkzeugmacher","Toolmaker"),i:"🛠️",base:150,max:10,desc:BI("Jede Stufe gibt +1 Ressource pro Kartenklick.","Each level grants +1 resource per map click.")},
+  guild:{n:BI("Zunfthaus","Guild Hall"),i:"🏛️",base:300,max:10,desc:BI("Jede Stufe steigert die gesamte Produktion um 10 %.","Each level increases all production by 10%.")},
+  logistics:{n:BI("Fuhrwesen","Logistics"),i:"🛞",base:200,max:10,desc:BI("Jede Stufe schafft 25 zusätzliche Lager- und Nahrungseinheiten.","Each level adds 25 storage and food capacity.")},
+  diplomacy:{n:BI("Gesandtschaft","Embassy"),i:"🤝",base:350,max:10,desc:BI("Jede Stufe erhöht Gold aus Aufträgen und Ereignissen um 8 %.","Each level increases gold from contracts and events by 8%.")}
 };
 
 const EventDefs = [
-  {id:"harvest",title:"🌾 Reiche Ernte",text:"Die Felder tragen mehr als erwartet. Was soll mit dem Überschuss geschehen?",choices:[
-    {label:"Vorräte einlagern",hint:"+25 Weizen, +10 Äpfel"},{label:"Auf dem Jahrmarkt verkaufen",hint:"+80 Gold"}]},
-  {id:"refugees",title:"🧳 Flüchtlinge am Tor",text:"Zwei Familien bitten um Schutz. Sie bringen Kenntnisse mit, brauchen aber sofort Nahrung.",choices:[
-    {label:"Tore öffnen",hint:"+2 Bevölkerung, −15 Nahrung"},{label:"Abweisen",hint:"−3 Zufriedenheit"}]},
-  {id:"caravan",title:"🐫 Fernhandelskarawane",text:"Eine Karawane bietet seltenes Eisen an und sucht zugleich bewaffneten Geleitschutz.",choices:[
-    {label:"Eisen kaufen",hint:"−40 Gold, +15 Eisen"},{label:"Geleitschutz stellen",hint:"+2 Ruhm, +35 Gold"}]},
-  {id:"fire",title:"🔥 Feuer im Lager",text:"Ein Funke hat das Holzlager entzündet. Schnelles Handeln kann die Vorräte retten.",choices:[
-    {label:"Handwerker bezahlen",hint:"−50 Gold"},{label:"Feuer ausbrennen lassen",hint:"bis zu −35 Holz"}]},
-  {id:"levy",title:"👑 Forderung der Krone",text:"Der König verlangt eine Sonderabgabe für seinen Feldzug.",choices:[
-    {label:"Abgabe leisten",hint:"−80 Gold, +3 Ruhm"},{label:"Zahlung verweigern",hint:"−8 Zufriedenheit, −1 Ruhm"}]}
+  {id:"harvest",title:BI("🌾 Reiche Ernte","🌾 Bountiful Harvest"),text:BI("Die Felder tragen mehr als erwartet. Was soll mit dem Überschuss geschehen?","The fields yield more than expected. What should happen to the surplus?"),choices:[
+    {label:BI("Vorräte einlagern","Store the supplies"),hint:BI("+25 Weizen, +10 Äpfel","+25 wheat, +10 apples")},{label:BI("Auf dem Jahrmarkt verkaufen","Sell at the fair"),hint:BI("+80 Gold","+80 gold")}]},
+  {id:"refugees",title:BI("🧳 Flüchtlinge am Tor","🧳 Refugees at the Gate"),text:BI("Zwei Familien bitten um Schutz. Sie bringen Kenntnisse mit, brauchen aber sofort Nahrung.","Two families ask for shelter. They bring useful skills but need food immediately."),choices:[
+    {label:BI("Tore öffnen","Open the gates"),hint:BI("+2 Bevölkerung, −15 Nahrung","+2 population, −15 food")},{label:BI("Abweisen","Turn them away"),hint:BI("−3 Zufriedenheit","−3 happiness")}]},
+  {id:"caravan",title:BI("🐫 Fernhandelskarawane","🐫 Distant Trade Caravan"),text:BI("Eine Karawane bietet seltenes Eisen an und sucht zugleich bewaffneten Geleitschutz.","A caravan offers rare iron and is also seeking an armed escort."),choices:[
+    {label:BI("Eisen kaufen","Buy iron"),hint:BI("−40 Gold, +15 Eisen","−40 gold, +15 iron")},{label:BI("Geleitschutz stellen","Provide an escort"),hint:BI("+2 Ruhm, +35 Gold","+2 renown, +35 gold")}]},
+  {id:"fire",title:BI("🔥 Feuer im Lager","🔥 Warehouse Fire"),text:BI("Ein Funke hat das Holzlager entzündet. Schnelles Handeln kann die Vorräte retten.","A spark has set the timber store ablaze. Quick action may save the supplies."),choices:[
+    {label:BI("Handwerker bezahlen","Pay the craftsmen"),hint:BI("−50 Gold","−50 gold")},{label:BI("Feuer ausbrennen lassen","Let it burn out"),hint:BI("bis zu −35 Holz","up to −35 wood")}]},
+  {id:"levy",title:BI("👑 Forderung der Krone","👑 Royal Levy"),text:BI("Der König verlangt eine Sonderabgabe für seinen Feldzug.","The king demands a special levy for his campaign."),choices:[
+    {label:BI("Abgabe leisten","Pay the levy"),hint:BI("−80 Gold, +3 Ruhm","−80 gold, +3 renown")},{label:BI("Zahlung verweigern","Refuse payment"),hint:BI("−8 Zufriedenheit, −1 Ruhm","−8 happiness, −1 renown")}]}
 ];
 
 const Units = {
-  archer:   { n:"Archer",   cost:10, res:"bow",   str:5,  def:2 },
-  pikeman:  { n:"Pikeman",  cost:15, res:"spear", str:8,  def:3 },
-  swordsman:{ n:"Swordsman", cost:30, res:"sword", arm:"armor", str:15, def:6 },
-  merc:     { n:"Mercenaries",   cost:50, str:10, def:5 }
+  archer:   { n:BI("Bogenschütze","Archer"), cost:10, res:"bow", str:5,def:2 },
+  pikeman:  { n:BI("Pikenier","Pikeman"), cost:15, res:"spear", str:8,def:3 },
+  swordsman:{ n:BI("Schwertkämpfer","Swordsman"), cost:30, res:"sword", arm:"armor",str:15,def:6 },
+  merc:     { n:BI("Söldner","Mercenary"), cost:50,str:10,def:5 }
 };
 
 const Missions = [
-  {n:"Bandit Camp", str:20,  loot:{gold:50, wood:20, bread:15}, risk:"Low"},
-  {n:"Highwaymen",   str:50,  loot:{gold:120, iron:10, meat:15}, risk:"Medium"},
-  {n:"Robber Baron Keep",str:150, loot:{gold:350, stone:50, sword:5, armor:2}, risk:"High"},
-  {n:"Hostile County",str:500, loot:{gold:1200, iron:100}, risk:"Extreme"}
+  {n:BI("Banditenlager","Bandit Camp"),str:20,loot:{gold:50,wood:20,bread:15},risk:BI("Niedrig","Low")},
+  {n:BI("Wegelagerer","Highwaymen"),str:50,loot:{gold:120,iron:10,meat:15},risk:BI("Mittel","Medium")},
+  {n:BI("Burg des Raubritters","Robber Baron Keep"),str:150,loot:{gold:350,stone:50,sword:5,armor:2},risk:BI("Hoch","High")},
+  {n:BI("Feindliche Grafschaft","Hostile County"),str:500,loot:{gold:1200,iron:100},risk:BI("Extrem","Extreme")}
 ];
 
 const Config = {
   tick: 4000,
   maxTax: 4,
   taxes: [
-    {n:"None",   g:0, h:+1},
-    {n:"Low",  g:1, h:-1},
-    {n:"Normal",  g:2, h:-2},
-    {n:"High",    g:4, h:-4},
-    {n:"Extortion",  g:8, h:-10}
+    {n:BI("Keine","None"),g:0,h:+1}, {n:BI("Niedrig","Low"),g:1,h:-1}, {n:BI("Normal","Normal"),g:2,h:-2},
+    {n:BI("Hoch","High"),g:4,h:-4}, {n:BI("Erpressung","Extortion"),g:8,h:-10}
   ],
   expansion: {
     baseCost: { gold: 250, wood: 50, stone: 50 },
@@ -617,42 +685,42 @@ const Config = {
   },
   b: {
     // BURG / CORE
-    wall_w: {n:"Wooden Wall", c:"burg", i:"🪵", z:"z-town", cost:{g:10,w:20}, def:3, desc:"Defense +3"},
-    tower:  {n:"Tower", c:"burg", i:"🗼", z:"z-mountain", cost:{g:100,s:50}, def:10, desc:"Defense +10"},
-    barrack:{n:"Barracks", c:"burg", i:"⛺", z:"z-town", cost:{g:150,s:20}, desc:"Army"},
-    mercCamp:{n:"Mercenary Camp", c:"burg", i:"🎪", z:"z-town", cost:{g:500,w:100}, desc:"Mercenaries"},
+    wall_w:{n:BI("Holzwall","Wooden Wall"),c:"burg",i:"🪵",z:"z-town",cost:{g:10,w:20},def:3,desc:BI("Verteidigung +3","Defense +3")},
+    tower:{n:BI("Turm","Tower"),c:"burg",i:"🗼",z:"z-mountain",cost:{g:100,s:50},def:10,desc:BI("Verteidigung +10","Defense +10")},
+    barrack:{n:BI("Kaserne","Barracks"),c:"burg",i:"⛺",z:"z-town",cost:{g:150,s:20},desc:BI("Armee","Army")},
+    mercCamp:{n:BI("Söldnerlager","Mercenary Camp"),c:"burg",i:"🎪",z:"z-town",cost:{g:500,w:100},desc:BI("Söldner","Mercenaries")},
 
     // WORK
-    wood:{n:"Lumberjack", c:"werk", i:"🪓", z:"z-forest", cost:{g:10}, prod:"wood", amt:3, type:"mat"},
-    stock:{n:"Warehouse", c:"werk", i:"📦", z:"z-town", cost:{w:20}, desc:"Storage +50"},
-    quarry:{n:"Stonebruch", c:"werk", i:"⛏️", z:"z-mountain", cost:{g:50,w:50}, prod:"stone", amt:2, type:"mat"},
-    iron:{n:"Ironmine", c:"werk", i:"⛓️", z:"z-mountain", cost:{g:100,w:100}, prod:"iron", amt:1, type:"mat"},
+    wood:{n:BI("Holzfäller","Lumberjack"),c:"werk",i:"🪓",z:"z-forest",cost:{g:10},prod:"wood",amt:3,type:"mat"},
+    stock:{n:BI("Lagerhaus","Warehouse"),c:"werk",i:"📦",z:"z-town",cost:{w:20},desc:BI("Lager +50","Storage +50")},
+    quarry:{n:BI("Steinbruch","Quarry"),c:"werk",i:"⛏️",z:"z-mountain",cost:{g:50,w:50},prod:"stone",amt:2,type:"mat"},
+    iron:{n:BI("Eisenmine","Iron Mine"),c:"werk",i:"⛓️",z:"z-mountain",cost:{g:100,w:100},prod:"iron",amt:1,type:"mat"},
 
     // FARM
-    apple:{n:"Orchard", c:"farm", i:"🍎", z:"z-farm", cost:{g:30,w:10}, prod:"apple", amt:3, type:"food"},
-    hunter:{n:"Hunter", c:"farm", i:"🏹", z:"z-forest", cost:{g:20,w:5}, prod:"meat", amt:2, type:"food"},
-    dairy:{n:"Dairy", c:"farm", i:"🧀", z:"z-farm", cost:{g:40,w:20}, prod:"cheese", amt:2, type:"food"},
-    wheat:{n:"Wheat Field", c:"farm", i:"🌾", z:"z-farm", cost:{g:40,w:10}, prod:"wheat", amt:2, type:"mat"},
-    hops:{n:"Hops", c:"farm", i:"🌿", z:"z-farm", cost:{g:40,w:10}, prod:"hops", amt:2, type:"mat"},
+    apple:{n:BI("Obstgarten","Orchard"),c:"farm",i:"🍎",z:"z-farm",cost:{g:30,w:10},prod:"apple",amt:3,type:"food"},
+    hunter:{n:BI("Jäger","Hunter"),c:"farm",i:"🏹",z:"z-forest",cost:{g:20,w:5},prod:"meat",amt:2,type:"food"},
+    dairy:{n:BI("Käserei","Dairy"),c:"farm",i:"🧀",z:"z-farm",cost:{g:40,w:20},prod:"cheese",amt:2,type:"food"},
+    wheat:{n:BI("Weizenfeld","Wheat Field"),c:"farm",i:"🌾",z:"z-farm",cost:{g:40,w:10},prod:"wheat",amt:2,type:"mat"},
+    hops:{n:BI("Hopfenfeld","Hop Field"),c:"farm",i:"🌿",z:"z-farm",cost:{g:40,w:10},prod:"hops",amt:2,type:"mat"},
 
     // STADT
-    hovel:{n:"Hut", c:"stadt", i:"🛖", z:"z-town", cost:{w:10}, pop:5, desc:"Housing +5"},
-    house:{n:"House", c:"stadt", i:"🏠", z:"z-town", cost:{g:50,w:30,s:10}, pop:10, desc:"Housing +10"},
-    church:{n:"Church", c:"stadt", i:"⛪", z:"z-town", cost:{g:500,s:100}, rel:10, desc:"Happiness +Religion"},
-    outpost:{n:"Outpost", c:"stadt", i:"🧭", z:"z-forest", cost:{g:200,w:60,s:20}, gold:2, reqLand:1, desc:"+2 Gold/tick"},
-    market:{n:"Handelskontor", c:"stadt", i:"⚖️", z:"z-town", cost:{g:120,w:40}, unique:true, desc:"Markt, Automatik & Aufträge"},
+    hovel:{n:BI("Hütte","Hut"),c:"stadt",i:"🛖",z:"z-town",cost:{w:10},pop:5,desc:BI("Wohnraum +5","Housing +5")},
+    house:{n:BI("Haus","House"),c:"stadt",i:"🏠",z:"z-town",cost:{g:50,w:30,s:10},pop:10,desc:BI("Wohnraum +10","Housing +10")},
+    church:{n:BI("Kirche","Church"),c:"stadt",i:"⛪",z:"z-town",cost:{g:500,s:100},rel:10,desc:BI("Zufriedenheit + Religion","Happiness + religion")},
+    outpost:{n:BI("Außenposten","Outpost"),c:"stadt",i:"🧭",z:"z-forest",cost:{g:200,w:60,s:20},gold:2,reqLand:1,desc:BI("+2 Gold/Tick","+2 gold/tick")},
+    market:{n:BI("Handelskontor","Trading Post"),c:"stadt",i:"⚖️",z:"z-town",cost:{g:120,w:40},unique:true,desc:BI("Markt, Automatik & Aufträge","Market, automation & contracts")},
 
     // WAFFEN
-    fletch:{n:"Fletcher", c:"waffen", i:"🏹", z:"z-town", cost:{g:100,w:50}, use:"wood", out:"bow", amt:1},
-    pole:{n:"Pike Maker", c:"waffen", i:"🔱", z:"z-town", cost:{g:100,w:50}, use:"wood", out:"spear", amt:1},
-    smith:{n:"Blacksmith", c:"waffen", i:"⚔️", z:"z-town", cost:{g:200,w:100}, use:"iron", out:"sword", amt:1},
-    armor:{n:"Armorer", c:"waffen", i:"🛡️", z:"z-town", cost:{g:200,w:100}, use:"iron", out:"armor", amt:1},
+    fletch:{n:BI("Bogenmacher","Fletcher"),c:"waffen",i:"🏹",z:"z-town",cost:{g:100,w:50},use:"wood",out:"bow",amt:1},
+    pole:{n:BI("Speermacher","Pike Maker"),c:"waffen",i:"🔱",z:"z-town",cost:{g:100,w:50},use:"wood",out:"spear",amt:1},
+    smith:{n:BI("Schmied","Blacksmith"),c:"waffen",i:"⚔️",z:"z-town",cost:{g:200,w:100},use:"iron",out:"sword",amt:1},
+    armor:{n:BI("Rüstungsschmied","Armorer"),c:"waffen",i:"🛡️",z:"z-town",cost:{g:200,w:100},use:"iron",out:"armor",amt:1},
 
     // NAHRUNG
-    gran:{n:"Granary", c:"nahrung", i:"🛖", z:"z-town", cost:{w:20}, desc:"Food +50"},
-    mill:{n:"Mill", c:"nahrung", i:"⚙️", z:"z-town", cost:{g:100,w:50}, proc:"wheat", out:"flour", r:1},
-    bake:{n:"Bakery", c:"nahrung", i:"🍞", z:"z-town", cost:{g:50,w:20}, proc:"flour", out:"bread", r:4, type:"food"},
-    brew:{n:"Brewery", c:"nahrung", i:"🍺", z:"z-town", cost:{g:100,w:20}, proc:"hops", out:"beer", r:2, type:"food"}
+    gran:{n:BI("Kornspeicher","Granary"),c:"nahrung",i:"🛖",z:"z-town",cost:{w:20},desc:BI("Nahrung +50","Food +50")},
+    mill:{n:BI("Mühle","Mill"),c:"nahrung",i:"⚙️",z:"z-town",cost:{g:100,w:50},proc:"wheat",out:"flour",r:1},
+    bake:{n:BI("Bäckerei","Bakery"),c:"nahrung",i:"🍞",z:"z-town",cost:{g:50,w:20},proc:"flour",out:"bread",r:4,type:"food"},
+    brew:{n:BI("Brauerei","Brewery"),c:"nahrung",i:"🍺",z:"z-town",cost:{g:100,w:20},proc:"hops",out:"beer",r:2,type:"food"}
   }
 };
 
@@ -689,8 +757,8 @@ function seasonMultiplier(resource, day = S.day||1) {
 
 function rankForLevel(level = S.lvl||1) {
   const ranks = [
-    {lvl:1,n:"Außenposten"},{lvl:5,n:"Befestigtes Dorf"},{lvl:10,n:"Steinburg"},
-    {lvl:20,n:"Handelsstadt"},{lvl:35,n:"Königsfestung"}
+    {lvl:1,n:BI("Außenposten","Outpost")},{lvl:5,n:BI("Befestigtes Dorf","Fortified Village")},{lvl:10,n:BI("Steinburg","Stone Castle")},
+    {lvl:20,n:BI("Handelsstadt","Trading Town")},{lvl:35,n:BI("Königsfestung","Royal Fortress")}
   ];
   let current = ranks[0], next = null;
   for (let i=0;i<ranks.length;i++) {
@@ -755,6 +823,7 @@ function migrateState() {
   S.boostUntilDay = Number(S.boostUntilDay)||0;
   S.meta = S.meta || {savedAt:Date.now(),version:5};
   S.meta.version = 5;
+  S.logs = Array.isArray(S.logs) ? S.logs : [];
 }
 
 function createContract() {
@@ -793,10 +862,13 @@ function applyOfflineProgress(savedAt) {
     let amount=Math.floor(gains[key]);
     if (Rules.storeTypes.includes(key)) { amount=Math.max(0,Math.min(amount,Math.floor(caps.store-storeUsed))); storeUsed+=amount; }
     if (Rules.foodTypes.includes(key)) { amount=Math.max(0,Math.min(amount,Math.floor(caps.food-foodUsed))); foodUsed+=amount; }
-    if (amount>0) { S.res[key]=(S.res[key]||0)+amount; summary.push(`${amount} ${SafeT(key)}`); }
+    if (amount>0) { S.res[key]=(S.res[key]||0)+amount; summary.push({key,amount}); }
   }
-  if (!summary.length) return "Während deiner Abwesenheit waren die Lager bereits voll.";
-  return `Deine Betriebe haben während deiner Abwesenheit mit 45 % Leistung gearbeitet (max. 2 Std.):\n${summary.join(', ')}`;
+  if (!summary.length) return BI("Während deiner Abwesenheit waren die Lager bereits voll.","Your stores were already full while you were away.");
+  return dual(lang=>{
+    const items=summary.map(x=>`${x.amount} ${SafeT(x.key,lang)}`).join(', ');
+    return lang==='de'?`Deine Betriebe haben während deiner Abwesenheit mit 45 % Leistung gearbeitet (max. 2 Std.):\n${items}`:`Your businesses worked at 45% efficiency while you were away (max. 2 hours):\n${items}`;
+  });
 }
 
 function calcCaps() {
@@ -874,7 +946,7 @@ function goalText(goal) {
     else if (k === 'land') cur = S.exp.land;
     else cur = S.res[k]||0;
     const ok = cur >= goal[k];
-    parts.push(`<span style="${ok?'color:#4caf50':''}">${k==='def'?'Defense':SafeT(k)}: ${Math.floor(cur)}/${goal[k]}</span>`);
+    parts.push(`<span style="${ok?'color:#4caf50':''}">${k==='def'?tr('defense'):SafeT(k)}: ${Math.floor(cur)}/${goal[k]}</span>`);
   }
   return parts.join(' ');
 }
@@ -921,7 +993,7 @@ const Game = {
       const offline = applyOfflineProgress(savedAt);
       S.paused = true;
       UI.init();
-      UI.showModal("Willkommen zurück", offline || "Dein Lehen wartet auf dich.", "Weiter", ()=>{
+      UI.showModal(BI("Willkommen zurück","Welcome back"), offline || BI("Dein Lehen wartet auf dich.","Your fief awaits you."), BI("Weiter","Continue"), ()=>{
         if (S.events.pending) UI.openEvent(S.events.pending);
       });
     } else {
@@ -957,7 +1029,8 @@ const Game = {
       upgrades: {tools:0,guild:0,logistics:0,diplomacy:0},
       clicker: {combo:0,lastClick:0,total:0},
       boostUntilDay: 0,
-      meta: {savedAt:Date.now(),version:5}
+      meta: {savedAt:Date.now(),version:5},
+      logs: []
     };
     // init building & worker counts
     for (let k in Config.b) { S.b[k]=0; S.w[k]=0; }
@@ -968,12 +1041,12 @@ const Game = {
     scheduleNextRaid();
     ensureContracts();
     UI.init();
-    UI.showModal("Willkommen, Burgherr!", "Baue eine Versorgungskette auf, erfülle Handelsaufträge und verteidige dein wachsendes Lehen.", "Beginnen", ()=>{
+    UI.showModal(BI("Willkommen, Burgherr!","Welcome, Castle Lord!"), BI("Baue eine Versorgungskette auf, erfülle Handelsaufträge und verteidige dein wachsendes Lehen.","Build supply chains, fulfill trade contracts, and defend your growing fief."), BI("Beginnen","Begin"), ()=>{
       Tutorial.maybeStart();
     });
   },
 
-  save() { Storage.save(); UI.log("Gespeichert.", "prod"); },
+  save() { Storage.save(); UI.log(BI("Gespeichert.","Game saved."), "prod"); },
   reset() { Storage.wipe(); location.reload(); },
 
   clickGather(type, e) {
@@ -989,13 +1062,13 @@ const Game = {
     S.clicker.total=(S.clicker.total||0)+1;
     const gain=1+(S.upgrades.tools||0)+Math.floor(S.clicker.combo/5);
     const room = (type==='apple') ? caps.food-curF : caps.store-curS;
-    if (room <= 0) { UI.showFloatingText(type, "Lager voll!", "neg"); return; }
+    if (room <= 0) { UI.showFloatingText(type, loc(BI("Lager voll!","Storage full!")), "neg"); return; }
     const actual=Math.max(0,Math.min(gain,Math.floor(room)));
 
     S.res[type] = (S.res[type]||0) + actual;
     if (S.clicker.combo%10===0) {
       S.res.gold=(S.res.gold||0)+5;
-      UI.log(`Klickserie ${S.clicker.combo}: +5 Gold`,"prod");
+      UI.log(BI(`Klickserie ${S.clicker.combo}: +5 Gold`,`Click streak ${S.clicker.combo}: +5 gold`),"prod");
     }
     UI.update();
     UI.updateCombo(actual);
@@ -1011,8 +1084,8 @@ const Game = {
 
     const b = Config.b[key];
     if (!b) return;
-    if (b.unique && (S.b[key]||0)>0) { UI.showModal("Bereits errichtet", `${b.n} kann nur einmal gebaut werden.`, "OK"); return; }
-    if (b.reqLand && (S.exp.land||0) < b.reqLand) { UI.showModal("Locked", `You need at least ${b.reqLand} land expansion tier(s).`, "OK"); return; }
+    if (b.unique && (S.b[key]||0)>0) { UI.showModal(BI("Bereits errichtet","Already built"), dual(lang=>lang==='de'?`${loc(b.n,lang)} kann nur einmal gebaut werden.`:`Only one ${loc(b.n,lang)} can be built.`), BI("OK","OK")); return; }
+    if (b.reqLand && (S.exp.land||0) < b.reqLand) { UI.showModal(BI("Gesperrt","Locked"), BI(`Du benötigst mindestens Landstufe ${b.reqLand}.`,`You need at least land expansion tier ${b.reqLand}.`), BI("OK","OK")); return; }
 
     const g = b.cost.g||0, w = b.cost.w||0, s = b.cost.s||0;
     if ((S.res.gold||0) < g || (S.res.wood||0) < w || (S.res.stone||0) < s) return;
@@ -1030,7 +1103,7 @@ const Game = {
     UI.addMapIcon(key);
     UI.renderBuild();
     UI.update();
-    UI.log(`${b.n} built.`, "prod");
+    UI.log(dual(lang=>lang==='de'?`${loc(b.n,lang)} gebaut.`:`${loc(b.n,lang)} built.`), "prod");
     Tutorial.onAction('build', key);
   },
 
@@ -1045,7 +1118,7 @@ const Game = {
     const cw = countWorkers();
     if (dir > 0) {
       if (cw.idle > 0 && (S.w[key]||0) < (S.b[key]||0)) S.w[key] = (S.w[key]||0) + 1;
-      else if (cw.idle <= 0) UI.showFloatingText('gold', "None Population!", "neg");
+      else if (cw.idle <= 0) UI.showFloatingText('gold', loc(BI("Keine freie Bevölkerung!","No idle population!")), "neg");
     } else {
       if ((S.w[key]||0) > 0) S.w[key] = (S.w[key]||0) - 1;
     }
@@ -1064,11 +1137,11 @@ const Game = {
     const cw = countWorkers();
 
     if (key === 'merc') {
-      if ((S.b.mercCamp||0) < 1) return UI.showModal("None Mercenaries", "Build a Mercenary Camp first.", "OK");
-      if ((S.res.gold||0) >= u.cost) { S.res.gold -= u.cost; S.units.merc++; UI.log("Mercenaries hired.", "prod"); }
+      if ((S.b.mercCamp||0) < 1) return UI.showModal(BI("Keine Söldner","No mercenaries"), BI("Baue zuerst ein Söldnerlager.","Build a Mercenary Camp first."), BI("OK","OK"));
+      if ((S.res.gold||0) >= u.cost) { S.res.gold -= u.cost; S.units.merc++; UI.log(BI("Söldner angeheuert.","Mercenary hired."), "prod"); }
     } else {
-      if ((S.b.barrack||0) < 1) return UI.showModal("None Barracks", "Build Barracks first.", "OK");
-      if (cw.idle < 1) return UI.showModal("No recruits", "You need idle population. Unassign workers or build more housing.", "OK");
+      if ((S.b.barrack||0) < 1) return UI.showModal(BI("Keine Kaserne","No barracks"), BI("Baue zuerst eine Kaserne.","Build barracks first."), BI("OK","OK"));
+      if (cw.idle < 1) return UI.showModal(BI("Keine Rekruten","No recruits"), BI("Du benötigst freie Bevölkerung. Ziehe Arbeiter ab oder baue mehr Wohnraum.","You need idle population. Unassign workers or build more housing."), BI("OK","OK"));
 
       if ((S.res.gold||0) < u.cost) return;
       if (u.res && (S.res[u.res]||0) < 1) return;
@@ -1078,7 +1151,7 @@ const Game = {
       if (u.res) S.res[u.res]--;
       if (u.arm) S.res[u.arm]--;
       S.units[key]++;
-      UI.log(`${u.n} ausgebildet.`, "prod");
+      UI.log(dual(lang=>lang==='de'?`${loc(u.n,lang)} ausgebildet.`:`${loc(u.n,lang)} trained.`), "prod");
     }
     UI.update();
     Tutorial.onAction('recruit', key);
@@ -1109,7 +1182,7 @@ const Game = {
       S.market.pressure[k]=clamp((S.market.pressure[k]||0)-.035,-.35,.65);
     }
     if (source==='manual') {
-      UI.log(`${buy?'Gekauft':'Verkauft'}: 5 ${SafeT(k)} für ${price} Gold`,buy?'prod':'war');
+      UI.log(dual(lang=>lang==='de'?`${buy?'Gekauft':'Verkauft'}: 5 ${SafeT(k,lang)} für ${price} Gold`:`${buy?'Bought':'Sold'}: 5 ${SafeT(k,lang)} for ${price} gold`),buy?'prod':'war');
       UI.update(); UI.renderMarket();
     }
     return true;
@@ -1138,22 +1211,22 @@ const Game = {
     const actions=[];
     Rules.marketTypes.forEach(k=>{
       const rule=S.market.auto[k]; if (!rule || !rule.enabled) return;
-      if ((S.res[k]||0)<rule.min && this.trade(k,true,'auto')) actions.push(`+5 ${SafeT(k)}`);
-      else if ((S.res[k]||0)>rule.max && this.trade(k,false,'auto')) actions.push(`−5 ${SafeT(k)}`);
+      if ((S.res[k]||0)<rule.min && this.trade(k,true,'auto')) actions.push({k,sign:'+'});
+      else if ((S.res[k]||0)>rule.max && this.trade(k,false,'auto')) actions.push({k,sign:'−'});
     });
-    if (actions.length) UI.log(`Kontor: ${actions.join(', ')}`,"prod");
+    if (actions.length) UI.log(dual(lang=>`${lang==='de'?'Kontor':'Trading post'}: ${actions.map(a=>`${a.sign}5 ${SafeT(a.k,lang)}`).join(', ')}`),"prod");
   },
 
   fulfillContract(id) {
     if (S.paused) return;
     const idx=S.contracts.items.findIndex(c=>c.id===id); if (idx<0) return;
     const c=S.contracts.items[idx];
-    if ((S.res[c.resource]||0)<c.qty) { UI.log(`Für den Auftrag fehlen ${c.qty-(S.res[c.resource]||0)} ${SafeT(c.resource)}.`,"warn"); return; }
+    if ((S.res[c.resource]||0)<c.qty) { const missing=c.qty-(S.res[c.resource]||0); UI.log(dual(lang=>lang==='de'?`Für den Auftrag fehlen ${missing} ${SafeT(c.resource,lang)}.`:`The contract is missing ${missing} ${SafeT(c.resource,lang)}.`),"warn"); return; }
     S.res[c.resource]-=c.qty;
     const reward=Math.round(c.rewardGold*(1+(S.upgrades.diplomacy||0)*.08));
     S.res.gold+=reward; S.renown+=c.rewardRenown; S.contracts.completed++;
     S.contracts.items.splice(idx,1); ensureContracts();
-    UI.log(`Auftrag erfüllt: +${reward} Gold, +${c.rewardRenown} Ruhm`,"prod");
+    UI.log(BI(`Auftrag erfüllt: +${reward} Gold, +${c.rewardRenown} Ruhm`,`Contract fulfilled: +${reward} gold, +${c.rewardRenown} renown`),"prod");
     UI.update(); UI.renderContracts();
   },
 
@@ -1162,7 +1235,7 @@ const Game = {
     if (!expired.length) return;
     S.contracts.items=S.contracts.items.filter(c=>c.deadline>=(S.day||1));
     S.pop.hap=clamp(S.pop.hap-expired.length*2,0,100);
-    UI.log(`${expired.length} Handelsauftrag${expired.length>1?'e sind':' ist'} verfallen.`,"warn");
+    UI.log(BI(`${expired.length} ${expired.length===1?'Handelsauftrag ist':'Handelsaufträge sind'} verfallen.`,`${expired.length} trade contract${expired.length===1?' has':'s have'} expired.`),"warn");
     ensureContracts();
   },
 
@@ -1171,19 +1244,19 @@ const Game = {
     const def=UpgradeDefs[key], level=S.upgrades[key]||0;
     if (level>=def.max) return;
     const cost=upgradeCost(key);
-    if ((S.res.gold||0)<cost) { UI.log(`Für ${def.n} fehlen ${cost-(S.res.gold||0)} Gold.`,"warn"); return; }
+    if ((S.res.gold||0)<cost) { const missing=cost-(S.res.gold||0); UI.log(dual(lang=>lang==='de'?`Für ${loc(def.n,lang)} fehlen ${missing} Gold.`:`${loc(def.n,lang)} needs ${missing} more gold.`),"warn"); return; }
     S.res.gold-=cost; S.upgrades[key]=level+1;
-    UI.log(`${def.n} auf Stufe ${level+1} ausgebaut.`,"prod");
+    UI.log(dual(lang=>lang==='de'?`${loc(def.n,lang)} auf Stufe ${level+1} ausgebaut.`:`${loc(def.n,lang)} upgraded to level ${level+1}.`),"prod");
     UI.update(); UI.renderUpgrades();
   },
 
   activateBoost() {
     if (S.paused) return;
-    if ((S.boostUntilDay||0)>=(S.day||1)) { UI.log("Die Sonderschicht läuft bereits.","warn"); return; }
+    if ((S.boostUntilDay||0)>=(S.day||1)) { UI.log(BI("Die Sonderschicht läuft bereits.","The extra shift is already active."),"warn"); return; }
     const cost=60+(S.upgrades.guild||0)*10;
-    if ((S.res.gold||0)<cost) { UI.log(`Die Sonderschicht kostet ${cost} Gold.`,"warn"); return; }
+    if ((S.res.gold||0)<cost) { UI.log(BI(`Die Sonderschicht kostet ${cost} Gold.`,`The extra shift costs ${cost} gold.`),"warn"); return; }
     S.res.gold-=cost; S.boostUntilDay=(S.day||1)+3;
-    UI.log(`Sonderschicht bis Tag ${S.boostUntilDay}: +50 % Produktion.`,"prod"); UI.update();
+    UI.log(BI(`Sonderschicht bis Tag ${S.boostUntilDay}: +50 % Produktion.`,`Extra shift until day ${S.boostUntilDay}: +50% production.`),"prod"); UI.update();
   },
 
   checkRandomEvent() {
@@ -1215,7 +1288,7 @@ const Game = {
       else { S.pop.hap=clamp(S.pop.hap-8,0,100); S.renown=Math.max(0,S.renown-1); }
     }
     const def=EventDefs.find(e=>e.id===id);
-    UI.log(`Entscheidung: ${def.choices[choice].label}`,choice===0?'prod':'war');
+    UI.log(dual(lang=>`${lang==='de'?'Entscheidung':'Decision'}: ${loc(def.choices[choice].label,lang)}`),choice===0?'prod':'war');
     S.events.pending=null; S.events.seen=(S.events.seen||0)+1;
     S.events.nextDay=(S.day||1)+6+Math.floor(Math.random()*5);
     document.getElementById('event-mask').style.display='none';
@@ -1232,7 +1305,7 @@ const Game = {
     if (S.paused) return;
     const cost = this.expandCost();
     if ((S.res.gold||0) < cost.gold || (S.res.wood||0) < cost.wood || (S.res.stone||0) < cost.stone) {
-      UI.showModal("Too expensive", "You don't have enough resources to expand.", "OK");
+      UI.showModal(BI("Zu teuer","Too expensive"), BI("Du hast nicht genug Ressourcen für die Erweiterung.","You do not have enough resources to expand."), BI("OK","OK"));
       return;
     }
     S.res.gold -= cost.gold;
@@ -1240,7 +1313,7 @@ const Game = {
     S.res.stone -= cost.stone;
     S.exp.land = (S.exp.land||0) + 1;
     recalcPopMax();
-    UI.log(`Territory expanded! (Land tier ${S.exp.land})`, "prod");
+    UI.log(BI(`Gebiet erweitert! (Landstufe ${S.exp.land})`,`Territory expanded! (Land tier ${S.exp.land})`), "prod");
     UI.update();
     UI.renderBuild();
     UI.renderMap(); // shows icons in zones
@@ -1260,7 +1333,7 @@ const Game = {
   townAction() {
     // reserved: open build category 'stadt' quickly
     UI.setCat('stadt');
-    UI.showModal("Town", "Here you build housing and important infrastructure.\nTip: More housing = more people = more production.", "OK");
+    UI.showModal(BI("Stadt","Town"), BI("Hier baust du Wohnraum und wichtige Infrastruktur.\nTipp: Mehr Wohnraum bedeutet mehr Menschen und mehr Produktion.","Build housing and important infrastructure here.\nTip: More housing means more people and more production."), BI("OK","OK"));
   },
 
   watchAdForReward() {
@@ -1268,7 +1341,7 @@ const Game = {
     // pause and show placeholder
     S.paused = true;
     CG.gameplayStop();
-    UI.showModal("Royal Herald", "A message arrives from distant lands…", "…", ()=>{});
+    UI.showModal(BI("Königlicher Herold","Royal Herald"), BI("Eine Botschaft aus fernen Landen trifft ein …","A message arrives from distant lands…"), "…", ()=>{});
 
     CG.requestRewarded({
       adStarted: ()=>{},
@@ -1278,14 +1351,14 @@ const Game = {
         lastTickTime = Date.now();
         CG.gameplayStart();
         UI.update();
-        UI.showModal("Reward received!", "Der Treasurer layed 250 Gold in your treasury.", "Fantastic", ()=>{});
-        UI.log("Royal reward received (+250g)", "prod");
+        UI.showModal(BI("Belohnung erhalten!","Reward received!"), BI("Der Schatzmeister legt 250 Gold in deine Schatzkammer.","The treasurer has placed 250 gold in your treasury."), BI("Hervorragend","Fantastic"), ()=>{});
+        UI.log(BI("Königliche Belohnung erhalten (+250 Gold)","Royal reward received (+250 gold)"), "prod");
       },
       adError: ()=>{
         S.paused = false;
         lastTickTime = Date.now();
         CG.gameplayStart();
-        UI.showModal("No ad available", "No ad is available right now. Try again later.", "OK", ()=>{});
+        UI.showModal(BI("Keine Werbung verfügbar","No ad available"), BI("Zurzeit ist keine Werbung verfügbar. Versuche es später erneut.","No ad is available right now. Try again later."), BI("OK","OK"), ()=>{});
       }
     });
   },
@@ -1304,20 +1377,20 @@ const Game = {
       const c = S.units[k]||0;
       if (c>0) {
         const kill = Math.ceil(c * lossRate * Math.random());
-        if (kill>0) { S.units[k]-=kill; lost.push(`${kill} ${Units[k].n}`); }
+        if (kill>0) { S.units[k]-=kill; lost.push({k,kill}); }
       }
     }
 
     if (win) {
       const lootTxt = [];
-      for (let k in m.loot) { S.res[k]=(S.res[k]||0)+m.loot[k]; lootTxt.push(`${m.loot[k]} ${SafeT(k)}`); }
-      UI.log(`Sieg gegen ${m.n}! Beute: ${lootTxt.join(', ')}`, 'war');
+      for (let k in m.loot) { S.res[k]=(S.res[k]||0)+m.loot[k]; lootTxt.push({k,amount:m.loot[k]}); }
+      UI.log(dual(lang=>`${lang==='de'?'Sieg gegen':'Victory over'} ${loc(m.n,lang)}! ${lang==='de'?'Beute':'Loot'}: ${lootTxt.map(x=>`${x.amount} ${SafeT(x.k,lang)}`).join(', ')}`), 'war');
       S.pop.hap = clamp((S.pop.hap||0)+2, 0, 100);
     } else {
-      UI.log(`Niederlage gegen ${m.n}.`, 'warn');
+      UI.log(dual(lang=>`${lang==='de'?'Niederlage gegen':'Defeat against'} ${loc(m.n,lang)}.`), 'warn');
       S.pop.hap = clamp((S.pop.hap||0)-4, 0, 100);
     }
-    if (lost.length) UI.log(`Losts: ${lost.join(', ')}`, 'death');
+    if (lost.length) UI.log(dual(lang=>`${lang==='de'?'Verluste':'Losses'}: ${lost.map(x=>`${x.kill} ${loc(Units[x.k].n,lang)}`).join(', ')}`), 'death');
     UI.update();
     UI.closeWar();
   },
@@ -1338,7 +1411,7 @@ const Game = {
       const reward = Math.floor(30 + lvl*4);
       S.res.gold = (S.res.gold||0) + reward;
       S.pop.hap = clamp((S.pop.hap||0)+3, 0, 100);
-      UI.log(`Raid repelled! (+${reward} Gold)`, 'raid');
+      UI.log(BI(`Überfall abgewehrt! (+${reward} Gold)`,`Raid repelled! (+${reward} gold)`), 'raid');
     } else {
       // steal resources
       const stealPct = clamp(0.10 + lvl/200, 0.10, 0.35);
@@ -1348,7 +1421,7 @@ const Game = {
         const have = S.res[k]||0;
         if (have>0) {
           const amt = Math.max(0, Math.floor(have*stealPct*Math.random()));
-          if (amt>0) { S.res[k]-=amt; stolen.push(`${amt} ${SafeT(k)}`); }
+          if (amt>0) { S.res[k]-=amt; stolen.push({k,amt}); }
         }
       });
       // pop loss
@@ -1357,8 +1430,8 @@ const Game = {
       // happiness hit
       S.pop.hap = clamp((S.pop.hap||0) - (6 + Math.floor(lvl/15)), 0, 100);
 
-      UI.log(`Raid! Verluste: ${stolen.length?stolen.join(', '):'Ressourcen'}; ${popLoss} Population verloren.`, 'warn');
-      UI.log("Your villagers are terrified. Build walls/towers or train soldiers!", "raid");
+      UI.log(dual(lang=>`${lang==='de'?'Überfall! Verluste':'Raid! Losses'}: ${stolen.length?stolen.map(x=>`${x.amt} ${SafeT(x.k,lang)}`).join(', '):(lang==='de'?'Ressourcen':'resources')}; ${popLoss} ${lang==='de'?'Bevölkerung verloren':'population lost'}.`), 'warn');
+      UI.log(BI("Deine Bewohner sind verängstigt. Baue Wälle und Türme oder bilde Soldaten aus!","Your villagers are terrified. Build walls and towers or train soldiers!"), "raid");
     }
 
     S.raid.warned = false;
@@ -1372,7 +1445,7 @@ const Game = {
     const previousSeason=getSeason().idx;
     S.day++;
     lastTickTime = Date.now();
-    if (getSeason().idx!==previousSeason) UI.log(`${getSeason().i} Der ${getSeason().n} beginnt. Die Produktion verändert sich.`,"prod");
+    if (getSeason().idx!==previousSeason) { const season=getSeason(); UI.log(dual(lang=>lang==='de'?`${season.i} Der ${loc(season.n,lang)} beginnt. Die Produktion verändert sich.`:`${season.i} ${loc(season.n,lang)} begins. Production changes.`),"prod"); }
     Rules.marketTypes.forEach(k=>S.market.pressure[k]=(S.market.pressure[k]||0)*.985);
     Game.expireContracts();
 
@@ -1381,11 +1454,11 @@ const Game = {
       const inDays = (S.raid.next||0) - (S.day||0);
       if (inDays <= 2 && !S.raid.warned) {
         S.raid.warned = true;
-        UI.log("Scouts report: a raid is coming!", "raid");
-        UI.showModal("⚠️ Raid incoming", "In 1–2 days raiders attack.\nTip: Build Wooden Walls/towers or train soldiers.", "Got it", ()=>{});
+        UI.log(BI("Späher melden: Ein Überfall naht!","Scouts report: a raid is coming!"), "raid");
+        UI.showModal(BI("⚠️ Überfall naht","⚠️ Raid incoming"), BI("In 1–2 Tagen greifen Plünderer an.\nTipp: Baue Holzwälle und Türme oder bilde Soldaten aus.","Raiders will attack in 1–2 days.\nTip: Build wooden walls and towers or train soldiers."), BI("Verstanden","Got it"), ()=>{});
       }
       if ((S.day||0) >= (S.raid.next||0)) {
-        UI.showModal("⚔️ Raid!", "Raiders descend on your fief…", "Fight", ()=>{ Game.resolveRaid(); UI.update(); });
+        UI.showModal(BI("⚔️ Überfall!","⚔️ Raid!"), BI("Plünderer fallen in dein Lehen ein …","Raiders descend on your fief…"), BI("Kämpfen","Fight"), ()=>{ Game.resolveRaid(); UI.update(); });
         return;
       }
     }
@@ -1459,11 +1532,11 @@ const Game = {
     const h = { hunger:0, variety:0, tax:0, beer:0, religion:0, overcrowd:0, idle:0, raid:0, total:0 };
 
     if (eat>0) {
-      UI.log(`${eat} hungern!`, 'warn');
+      UI.log(BI(`${eat} Bewohner hungern!`,`${eat} villagers are starving!`), 'warn');
       h.hunger = -8;
       if (Math.random() < 0.18) {
         S.pop.curr = Math.max(0, S.pop.curr-1);
-        UI.log("Resident starved.", "death");
+        UI.log(BI("Ein Bewohner ist verhungert.","A villager starved."), "death");
         Game.unassignWorker(true);
       }
     } else h.hunger = +2;
@@ -1523,7 +1596,7 @@ const Game = {
         }
         if(!del) break;
       }
-      UI.log("Storage full: surplus spoils.", "warn");
+      UI.log(BI("Lager voll: Überschüsse verderben.","Storage full: surplus spoils."), "warn");
     }
     if (curF > maxF) {
       let over = curF - maxF;
@@ -1535,23 +1608,23 @@ const Game = {
         }
         if(!del) break;
       }
-      UI.log("Storage full: food spoils.", "warn");
+      UI.log(BI("Nahrungslager voll: Lebensmittel verderben.","Food storage full: food spoils."), "warn");
     }
 
     // 7) Population dynamics
     if (S.pop.curr <= 0) {
       S.pop.curr = 0; S.paused = true;
       UI.update();
-      UI.showModal("GAME OVER", "Das Dorf ist ausgestorben.", "Neustart", ()=>Game.reset());
+      UI.showModal(BI("SPIEL VORBEI","GAME OVER"), BI("Das Dorf ist ausgestorben.","The village has died out."), BI("Neustart","Restart"), ()=>Game.reset());
       return;
     }
 
     if (S.pop.hap > 70 && S.pop.curr < S.pop.max && Math.random() > 0.58) {
       S.pop.curr++;
-      UI.log("New population", "prod");
+      UI.log(BI("Neue Bewohner sind eingetroffen.","New villagers have arrived."), "prod");
     } else if (S.pop.hap < 18 && S.pop.curr > 0 && Math.random() > 0.6) {
       S.pop.curr--;
-      UI.log("Population geflohen", "warn");
+      UI.log(BI("Bewohner sind geflohen.","Villagers have fled."), "warn");
       Game.unassignWorker(true);
     }
 
@@ -1566,16 +1639,17 @@ const Game = {
     if (checkGoal()) {
       S.paused = true;
       const old = S.lvl||1;
-      const oldRank=rankForLevel(old).current.n;
+      const oldRank=rankForLevel(old).current;
       S.lvl = old + 1;
       S.goal = goalForLevel(S.lvl);
-      const newRank=rankForLevel(S.lvl).current.n;
-      const rankLine=oldRank!==newRank?`\nNeuer Burgrang: ${newRank}!`:'';
-      UI.showModal("🏆 Stufenaufstieg!", `Du hast Stufe ${S.lvl} erreicht.${rankLine}\nNeue Ziele warten.`, "Weiter", ()=>{
+      const newRank=rankForLevel(S.lvl).current;
+      const rankChanged=oldRank.lvl!==newRank.lvl;
+      const levelBody=dual(lang=>lang==='de'?`Du hast Stufe ${S.lvl} erreicht.${rankChanged?`\nNeuer Burgrang: ${loc(newRank.n,lang)}!`:''}\nNeue Ziele warten.`:`You reached level ${S.lvl}.${rankChanged?`\nNew castle rank: ${loc(newRank.n,lang)}!`:''}\nNew objectives await.`);
+      UI.showModal(BI("🏆 Stufenaufstieg!","🏆 Level up!"), levelBody, BI("Weiter","Continue"), ()=>{
         S.paused = false;
         lastTickTime = Date.now();
       });
-      UI.log(`Level ${old} abgeschlossen → Level ${S.lvl}`, "prod");
+      UI.log(BI(`Stufe ${old} abgeschlossen → Stufe ${S.lvl}`,`Level ${old} complete → Level ${S.lvl}`), "prod");
     }
 
     UI.update();
@@ -1604,60 +1678,60 @@ const Tutorial = {
     // Clear, visible, tooltip-based tutorial
     this.steps = [
       {
-        title: "Welcome",
-        text: "Quick and simple: I'll guide you in 2–3 minutes through the basics.\nYou can skip.",
+        title: BI("Willkommen","Welcome"),
+        text: BI("Kurz und einfach: Ich führe dich in 2–3 Minuten durch die Grundlagen.\nDu kannst das Tutorial überspringen.","Quick and simple: I will guide you through the basics in 2–3 minutes.\nYou can skip the tutorial."),
         allow: ["#tut-next", "#tut-skip"],
         onStart: ()=>{},
         done: ()=>false,
         autoNext: false
       },
       {
-        title: "Gather resources",
-        text: "Click the <b>Forest 🌲</b> 5× to collect wood.",
+        title: BI("Ressourcen sammeln","Gather resources"),
+        text: BI("Klicke 5× auf den <b>Wald 🌲</b>, um Holz zu sammeln.","Click the <b>Forest 🌲</b> 5 times to collect wood."),
         allow: ["#z-forest"],
         highlight: "#z-forest",
         done: ()=> (S.tut.gWood||0) >= 5
       },
       {
-        title: "Build housing",
-        text: "Build a <b>Hut 🛖</b> (Category 🏠). More housing = more population = more production.",
+        title: BI("Wohnraum bauen","Build housing"),
+        text: BI("Baue eine <b>Hütte 🛖</b> in der Kategorie 🏠. Mehr Wohnraum bedeutet mehr Bevölkerung und mehr Produktion.","Build a <b>Hut 🛖</b> in category 🏠. More housing means more population and more production."),
         allow: [".cat-btn[onclick*=\"stadt\"]", ".b-card[data-key=\"hovel\"]"],
         highlight: ".b-card[data-key=\"hovel\"]",
         onStart: ()=> UI.setCat('stadt'),
         done: ()=> (S.b.hovel||0) >= 1
       },
       {
-        title: "save Food",
-        text: "Click the <b>Lands 🍎</b> 5× to gather food.",
+        title: BI("Nahrung sammeln","Gather food"),
+        text: BI("Klicke 5× auf die <b>Ländereien 🍎</b>, um Nahrung zu sammeln.","Click the <b>Lands 🍎</b> 5 times to gather food."),
         allow: ["#z-farm"],
         highlight: "#z-farm",
         done: ()=> (S.tut.gApple||0) >= 5
       },
       {
-        title: "Understanding the Production",
-        text: "Build an <b>Orchard 🍎</b> (Category 🍎). It produces automatically each tick — as long as a citizen is assigned.",
+        title: BI("Produktion verstehen","Understanding production"),
+        text: BI("Baue einen <b>Obstgarten 🍎</b> in der Kategorie 🍎. Er produziert in jedem Tick automatisch, solange ein Bewohner dort arbeitet.","Build an <b>Orchard 🍎</b> in category 🍎. It produces automatically every tick while a villager is assigned."),
         allow: [".cat-btn[onclick*=\"farm\"]", ".b-card[data-key=\"apple\"]"],
         highlight: ".cat-btn[onclick*=\"farm\"]",
         onStart: ()=> UI.setCat('farm'),
         done: ()=> (S.b.apple||0) >= 1
       },
       {
-        title: "Assign Workers",
-        text: "At the bottom, on the Orchard card, you will see a small <b>W</b> field (e.g., 1/1). Tap <b>+</b> or <b>-</b> to assign/unassign workers.",
+        title: BI("Arbeiter zuweisen","Assign workers"),
+        text: BI("Auf der Karte des Obstgartens findest du unten die Arbeiteranzeige, etwa 1/1. Mit <b>+</b> und <b>−</b> weist du Arbeiter zu oder ziehst sie ab.","At the bottom of the Orchard card you will see the worker count, such as 1/1. Use <b>+</b> and <b>−</b> to assign or remove workers."),
         allow: [".b-card[data-key=\"apple\"]"],
         highlight: ".b-card[data-key=\"apple\"]",
         done: ()=> (S.w.apple||0) >= 1
       },
       {
-        title: "Public mood",
-        text: "Tap <b>People (trend)</b> at the top. If food/taxes are bad, people will leave — or die.",
+        title: BI("Stimmung des Volkes","Public mood"),
+        text: BI("Tippe oben auf <b>Volk (Trend)</b>. Bei Nahrungsmangel oder zu hohen Steuern fliehen Bewohner oder sterben.","Tap <b>People (trend)</b> at the top. With food shortages or excessive taxes, people will leave or die."),
         allow: ["[onclick*=\"UI.showHappy\"]"],
         highlight: "[onclick*=\"UI.showHappy\"]",
         done: ()=> (S.tut.openHappy === true)
       },
       {
-        title: "Midgame essentials",
-        text: "From level 6 onwards <b>Raids</b>. Build <b>Wooden Walls/towers</b> (🛡️) or train soldiers.\nReady? Let's go!",
+        title: BI("Wichtig für das weitere Spiel","Midgame essentials"),
+        text: BI("Ab Stufe 6 beginnen <b>Überfälle</b>. Baue <b>Holzwälle und Türme</b> (🛡️) oder bilde Soldaten aus.\nBereit? Los geht’s!","<b>Raids</b> begin at level 6. Build <b>Wooden Walls and Towers</b> (🛡️) or train soldiers.\nReady? Let's go!"),
         allow: ["#tut-next"],
         highlight: "#raid-pill",
         done: ()=>false,
@@ -1682,7 +1756,7 @@ const Tutorial = {
     document.body.classList.remove("tutorial-active");
     UI.clearTutorialMarks();
     UI.hideTutorial();
-    UI.log(skipped ? "Tutorial skipped." : "Tutorial completed.", "prod");
+    UI.log(skipped ? BI("Tutorial übersprungen.","Tutorial skipped.") : BI("Tutorial abgeschlossen.","Tutorial completed."), "prod");
   },
 
   isBlocking(action, payload) {
@@ -1739,7 +1813,7 @@ const Tutorial = {
         if (this.current >= this.steps.length) this.finish(false);
         else this.showStep(this.current);
       } else {
-        UI.flashHint("Complete the step – then it will continue automatically.");
+        UI.flashHint(BI("Schließe zuerst diesen Schritt ab – danach geht es automatisch weiter.","Complete this step first, then the tutorial will continue automatically."));
       }
     };
     btnSkip.onclick = () => this.finish(true);
@@ -1750,11 +1824,36 @@ const Tutorial = {
 const UI = {
   cat: 'burg',
   comboTimer: null,
+  activeModal: null,
 
   init() {
+    I18N.applyStatic();
     this.renderMap();
     this.renderBuild();
+    this.renderLog();
     this.update();
+  },
+
+  applyLanguage() {
+    I18N.applyStatic();
+    this.renderBuild();
+    this.renderMapTitles();
+    this.renderLog();
+    this.update();
+    if (this.activeModal && document.getElementById('modal-mask').style.display==='flex') {
+      document.getElementById('m-title').innerText=loc(this.activeModal.title);
+      document.getElementById('m-body').innerText=loc(this.activeModal.body);
+      document.getElementById('m-btn').innerText=loc(this.activeModal.button)||tr('ok');
+    }
+    if (document.getElementById('recruit-mask').style.display==='flex') this.renderRecruit();
+    if (document.getElementById('war-mask').style.display==='flex') this.renderWar();
+    if (document.getElementById('exp-mask').style.display==='flex') this.openExp();
+    if (S.events.pending && document.getElementById('event-mask').style.display==='flex') this.openEvent(S.events.pending);
+    if (Tutorial.active) {
+      Tutorial.buildSteps();
+      const step=Tutorial.steps[Tutorial.current];
+      if(step) this.showTutorial(step.title,step.text,step.highlight);
+    }
   },
 
   animateTick() {
@@ -1793,8 +1892,8 @@ const UI = {
 
     const season=getSeason();
     document.getElementById('season-icon').innerText=season.i;
-    document.getElementById('season-name').innerText=`${season.n} ${season.dayInSeason}/${season.length}`;
-    document.getElementById('rank-name').innerText=rankForLevel().current.n;
+    document.getElementById('season-name').innerText=`${loc(season.n)} ${season.dayInSeason}/${season.length}`;
+    document.getElementById('rank-name').innerText=loc(rankForLevel().current.n);
 
     document.getElementById('r-pop').innerText = `${S.pop.curr}/${S.pop.max}`;
     document.getElementById('r-idle').innerText = cw.idle;
@@ -1805,9 +1904,10 @@ const UI = {
     const boost=document.getElementById('btn-boost');
     const boostActive=(S.boostUntilDay||0)>=(S.day||1);
     boost.classList.toggle('boost-active',boostActive);
-    boost.innerText=boostActive?`🔥 bis T${S.boostUntilDay}`:`🔥 Schicht ${60+(S.upgrades.guild||0)*10}g`;
+    boost.innerText=boostActive?`🔥 ${tr('until_day',{day:S.boostUntilDay})}`:`🔥 ${tr('shift')} ${60+(S.upgrades.guild||0)*10}g`;
     const nearest=Math.min(...S.contracts.items.map(c=>c.deadline-(S.day||1)));
-    document.getElementById('btn-contracts').innerText=`📜 ${S.contracts.items.length} · ${Math.max(0,nearest)}T`;
+    document.getElementById('btn-contracts').innerText=`📜 ${tr('contracts_short')} · ${Math.max(0,nearest)}${I18N.lang==='de'?'T':'D'}`;
+    document.getElementById('btn-upgrades').innerText=`🏰 ${tr('upgrades_short')}`;
 
     // happiness trend
     const trEl = document.getElementById('hap-trend');
@@ -1820,7 +1920,7 @@ const UI = {
 
     // taxes
     const tx = Config.taxes[S.tax||0];
-    document.getElementById('tax-name').innerText = tx.n;
+    document.getElementById('tax-name').innerText = loc(tx.n);
     const taxGold = (S.pop.curr||0) * tx.g;
     const taxHap = tx.h;
     const impactEl = document.getElementById('tax-impact');
@@ -1837,10 +1937,13 @@ const UI = {
     const pill = document.getElementById('raid-pill');
     if ((S.lvl||1) < Config.raid.startLevel) {
       pill.classList.remove('raid-warn');
-      document.getElementById('raid-in').innerText = "later";
+      document.getElementById('raid-in').innerText = tr('later');
+      document.getElementById('raid-unit').innerText = '';
     } else {
       const inDays = (S.raid.next||0) - (S.day||0);
-      document.getElementById('raid-in').innerText = `${Math.max(0,inDays)}`;
+      const displayDays=Math.max(0,inDays);
+      document.getElementById('raid-in').innerText = `${displayDays}`;
+      document.getElementById('raid-unit').innerText = tr(displayDays===1?'day_singular':'days');
       if (inDays <= 2) pill.classList.add('raid-warn'); else pill.classList.remove('raid-warn');
     }
 
@@ -1908,12 +2011,12 @@ const UI = {
           </div>`;
       }
 
-      const extra = b.desc ? `<div style="font-size:.62rem;color:#5d4037;opacity:.9;margin-top:2px">${b.desc}</div>` : "";
+      const extra = b.desc ? `<div style="font-size:.62rem;color:#5d4037;opacity:.9;margin-top:2px">${loc(b.desc)}</div>` : "";
 
       el.innerHTML = `
         ${(S.b[k]||0)>0 ? `<div class="b-count">${S.b[k]}</div>`:''}
         <div style="font-size:2rem">${b.i}</div>
-        <div style="font-size:0.72rem;font-weight:900;text-align:center;padding:0 4px">${b.n}</div>
+        <div style="font-size:0.72rem;font-weight:900;text-align:center;padding:0 4px">${loc(b.n)}</div>
         ${extra}
         <div class="cost-disp" style="font-size:0.62rem;color:#666;margin-top:2px"></div>
         ${workerHtml}
@@ -1934,6 +2037,12 @@ const UI = {
     }
   },
 
+  renderMapTitles() {
+    document.querySelectorAll('.map-b[data-building]').forEach(el=>{
+      const b=Config.b[el.dataset.building]; if(b) el.title=loc(b.n);
+    });
+  },
+
   addMapIcon(k) {
     const b = Config.b[k];
     if(!b) return;
@@ -1941,8 +2050,9 @@ const UI = {
     if(zone) {
       const d = document.createElement('div');
       d.className='map-b';
+      d.dataset.building=k;
       d.innerText = b.i;
-      d.title = b.n;
+      d.title = loc(b.n);
       d.style.left = (10 + Math.random()*70) + '%';
       d.style.top  = (10 + Math.random()*70) + '%';
       zone.appendChild(d);
@@ -1981,32 +2091,43 @@ const UI = {
 
   updateCombo(gain) {
     const el=document.getElementById('combo-pill');
-    el.innerText=`Kombo x${S.clicker.combo} · +${gain} pro Klick`;
+    el.innerText=tr('combo',{combo:S.clicker.combo,gain});
     el.classList.add('show');
     clearTimeout(this.comboTimer);
     this.comboTimer=setTimeout(()=>el.classList.remove('show'),1600);
   },
 
   log(t, c) {
-    const d = document.createElement('div');
-    d.className = `log-entry ${c||''}`;
-    d.innerText = `Day ${S.day}: ${t}`;
-    const log = document.getElementById('log');
-    log.prepend(d);
-    if (log.childNodes.length > 24) log.removeChild(log.lastChild);
+    S.logs=S.logs||[];
+    S.logs.unshift({day:S.day,message:t,style:c||''});
+    S.logs=S.logs.slice(0,24);
+    this.renderLog();
+  },
+
+  renderLog() {
+    const log=document.getElementById('log'); if(!log) return;
+    log.innerHTML='';
+    (S.logs||[]).forEach(entry=>{
+      const d=document.createElement('div');
+      d.className=`log-entry ${entry.style||''}`;
+      d.innerText=`${tr('day')} ${entry.day}: ${loc(entry.message)}`;
+      log.appendChild(d);
+    });
   },
 
   showModal(t, b, btnTxt, cb) {
-    document.getElementById('m-title').innerText = t;
-    document.getElementById('m-body').innerText = b;
+    this.activeModal={title:t,body:b,button:btnTxt||BI("OK","OK")};
+    document.getElementById('m-title').innerText = loc(t);
+    document.getElementById('m-body').innerText = loc(b);
 
     const btn = document.getElementById('m-btn');
-    btn.innerText = btnTxt || "OK";
+    btn.innerText = loc(btnTxt) || tr('ok');
     const newBtn = btn.cloneNode(true);
     btn.parentNode.replaceChild(newBtn, btn);
 
     newBtn.onclick = function() {
       document.getElementById('modal-mask').style.display = 'none';
+      UI.activeModal=null;
       S.paused = false;
       lastTickTime = Date.now();
       if (cb) cb();
@@ -2018,63 +2139,71 @@ const UI = {
     S.tut.openHappy = true;
     const f = S.factors || {};
     const rows = [
-      ["Hunger/Supply", f.hunger],
-      ["Diversity", f.variety],
-      ["Taxes", f.tax],
-      ["Beer", f.beer],
-      ["Religion", f.religion],
-      ["Overcrowding", f.overcrowd],
-      ["Vanity", f.idle],
+      ["hunger_supply", f.hunger], ["diversity", f.variety], ["taxes", f.tax], ["beer", f.beer],
+      ["religion", f.religion], ["overcrowding", f.overcrowd], ["idleness", f.idle],
     ];
-    const c = (v)=> v>0 ? '#2e7d32' : (v<0 ? '#b71c1c' : '#000');
-    let html = `\n`;
-    rows.forEach(([name,val])=>{
-      if (val===0) return;
-      html += `${name}: ${val>0?'+':''}${val}\n`;
+    const body=dual(lang=>{
+      let text='\n';
+      rows.forEach(([key,val])=>{ if(val!==0) text+=`${trl(key,lang)}: ${val>0?'+':''}${val}\n`; });
+      text+=`\n${trl('change_per_tick',lang)}: ${(f.total||0)>0?'+':''}${Math.round((f.total||0)*10)/10}`;
+      return text;
     });
-    html += `\nΔ pro Tick: ${(f.total||0)>0?'+':''}${Math.round((f.total||0)*10)/10}`;
-    this.showModal("Public mood (details)", html, "Close", ()=>{});
+    this.showModal(BI("Stimmung des Volkes","Public mood"), body, BI("Schließen","Close"), ()=>{});
     Tutorial.onAction('ui','happy');
   },
 
   showStorage() {
     const caps = calcCaps();
     let curS=0; Rules.storeTypes.forEach(k=>curS+=(S.res[k]||0));
-    this.showModal("Storage", `Capacity used: ${Math.floor(curS)} / ${caps.store}\nBuild Warehouse (+50) or expand (+${Config.expansion.storeBonus}/Land tier).`, "Close", ()=>{});
+    const body=dual(lang=>trl('storage_capacity',lang,{used:Math.floor(curS),max:caps.store,bonus:Config.expansion.storeBonus}));
+    this.showModal(BI("Lager","Storage"), body, BI("Schließen","Close"), ()=>{});
   },
 
   showFood() {
     const caps = calcCaps();
     let curF=0; Rules.foodTypes.forEach(k=>curF+=(S.res[k]||0));
-    this.showModal("Granary", `Food: ${Math.floor(curF)} / ${caps.food}\nBuild Granary (+50) oder expandiere (+${Config.expansion.foodBonus}/Land tier).`, "Close", ()=>{});
+    const body=dual(lang=>trl('food_capacity',lang,{used:Math.floor(curF),max:caps.food,bonus:Config.expansion.foodBonus}));
+    this.showModal(BI("Kornspeicher","Granary"), body, BI("Schließen","Close"), ()=>{});
   },
 
   showRaidInfo() {
     if ((S.lvl||1) < Config.raid.startLevel) {
-      this.showModal("Raids", "Raids start from Level 6.\nPrepare with walls/towers (🛡️) and Soldiers.", "OK", ()=>{});
+      this.showModal(BI("Überfälle","Raids"), BI("Überfälle beginnen ab Stufe 6.\nBereite dich mit Wällen, Türmen (🛡️) und Soldaten vor.","Raids begin at level 6.\nPrepare with walls, towers (🛡️), and soldiers."), BI("OK","OK"), ()=>{});
       return;
     }
     const inDays = (S.raid.next||0) - (S.day||0);
-    this.showModal("Raids", `Next raid in: ${Math.max(0,inDays)} days\nDefense: ${getDefStr()} 🛡️\nTip: Walls/towers + soldiers increase your chance.`, "OK", ()=>{});
+    const displayDays=Math.max(0,inDays);
+    const body=BI(
+      `Nächster Überfall in ${displayDays} ${displayDays===1?'Tag':'Tagen'}\nVerteidigung: ${getDefStr()} 🛡️\nTipp: Wälle, Türme und Soldaten erhöhen deine Chance.`,
+      `Next raid in ${displayDays} ${displayDays===1?'day':'days'}\nDefense: ${getDefStr()} 🛡️\nTip: Walls, towers, and soldiers increase your chance.`
+    );
+    this.showModal(BI("Überfälle","Raids"), body, BI("OK","OK"), ()=>{});
   },
 
   openRecruit() {
     document.getElementById('recruit-mask').style.display='flex';
+    this.renderRecruit();
+    Tutorial.onAction('ui','recruit');
+  },
+  renderRecruit() {
     const l = document.getElementById('recruit-list'); l.innerHTML="";
     for (let k in Units) {
       const u = Units[k];
       const row = document.createElement('div'); row.className='list-item';
       const cost = `${u.cost}💰` + (u.res ? ` +1 ${SafeT(u.res)}` : "");
-      row.innerHTML = `<span>${u.n} (${u.str}⚔️ / ${u.def||0}🛡️)</span>
-        <button class="btn" style="padding:2px 8px" onclick="Game.recruit('${k}')">Train (${cost})</button>`;
+      row.innerHTML = `<span>${loc(u.n)} (${u.str}⚔️ / ${u.def||0}🛡️)</span>
+        <button class="btn" style="padding:2px 8px" onclick="Game.recruit('${k}')">${tr('train')} (${cost})</button>`;
       l.appendChild(row);
     }
-    Tutorial.onAction('ui','recruit');
   },
   closeRecruit(){ document.getElementById('recruit-mask').style.display='none'; },
 
   openWar() {
     document.getElementById('war-mask').style.display='flex';
+    this.renderWar();
+    Tutorial.onAction('ui','war');
+  },
+  renderWar() {
     const l = document.getElementById('war-list'); l.innerHTML="";
     document.getElementById('army-str').innerText = getArmyStr();
     document.getElementById('def-str').innerText = getDefStr();
@@ -2083,21 +2212,20 @@ const UI = {
       const lootTxt=[]; for(let k in m.loot) lootTxt.push(`${m.loot[k]} ${SafeT(k)}`);
       row.innerHTML = `
         <div>
-          <div style="font-weight:bold">${m.n}</div>
-          <div style="font-size:0.8rem; color:#555">Beute: ${lootTxt.join(', ')}</div>
+          <div style="font-weight:bold">${loc(m.n)}</div>
+          <div style="font-size:0.8rem; color:#555">${tr('loot')}: ${lootTxt.join(', ')}</div>
         </div>
         <div style="text-align:right">
-          <div style="font-weight:bold; color:#b71c1c">Danger: ${m.risk}</div>
-          <button class="btn" style="margin-top:5px; background:var(--danger); color:#fff" onclick="Game.launchWar(${idx})">Angriff (${m.str}⚔️)</button>
+          <div style="font-weight:bold; color:#b71c1c">${tr('danger')}: ${loc(m.risk)}</div>
+          <button class="btn" style="margin-top:5px; background:var(--danger); color:#fff" onclick="Game.launchWar(${idx})">${tr('attack')} (${m.str}⚔️)</button>
         </div>`;
       l.appendChild(row);
     });
-    Tutorial.onAction('ui','war');
   },
   closeWar(){ document.getElementById('war-mask').style.display='none'; },
 
   openMarket() {
-    if ((S.b.market||0)<1) { this.showModal("Kein Markt", "Baue zuerst ein Handelskontor in der Stadt.", "OK"); return; }
+    if ((S.b.market||0)<1) { this.showModal(BI("Kein Markt","No market"), BI("Baue zuerst ein Handelskontor in der Stadt.","Build a Trading Post in the town first."), BI("OK","OK")); return; }
     document.getElementById('market-mask').style.display='flex';
     this.renderMarket();
     Tutorial.onAction('ui','market');
@@ -2110,12 +2238,12 @@ const UI = {
     Rules.marketTypes.forEach(k=>{
       const row = document.createElement('div'); row.className='market-card';
       const p=S.market.pressure[k]||0, rule=S.market.auto[k];
-      const trend=p>.015?`▲ ${Math.round(p*100)} %`:p<-.015?`▼ ${Math.abs(Math.round(p*100))} %`:'stabil';
+      const trend=p>.015?`▲ ${Math.round(p*100)} %`:p<-.015?`▼ ${Math.abs(Math.round(p*100))} %`:tr('stable');
       const trendClass=p>.015?'up':p<-.015?'down':'';
       const buy=marketPrice(k,true), sell=marketPrice(k,false);
-      row.innerHTML = `<div><div class="market-name">${SafeT(k)}</div><div class="market-stock">Bestand: ${Math.floor(S.res[k]||0)} · je 5 Einheiten</div><div class="market-trend ${trendClass}">${trend}</div></div>
-        <div class="market-actions"><button onclick="Game.trade('${k}',1)" ${(S.res.gold||0)<buy?'disabled':''}>Kaufen ${buy}g</button><button onclick="Game.trade('${k}',0)" ${(S.res[k]||0)<5?'disabled':''}>Verkaufen ${sell}g</button></div>
-        <div class="auto-rule"><label><input type="checkbox" ${rule.enabled?'checked':''} onchange="Game.setMarketAuto('${k}',this.checked)"> Automatik</label><label>Min. <input type="number" min="0" step="5" value="${rule.min}" onchange="Game.setMarketTarget('${k}','min',this.value)"></label><label>Max. <input type="number" min="5" step="5" value="${rule.max}" onchange="Game.setMarketTarget('${k}','max',this.value)"></label></div>`;
+      row.innerHTML = `<div><div class="market-name">${SafeT(k)}</div><div class="market-stock">${tr('stock')}: ${Math.floor(S.res[k]||0)} · ${tr('per_five')}</div><div class="market-trend ${trendClass}">${trend}</div></div>
+        <div class="market-actions"><button onclick="Game.trade('${k}',1)" ${(S.res.gold||0)<buy?'disabled':''}>${tr('buy_for',{price:buy})}</button><button onclick="Game.trade('${k}',0)" ${(S.res[k]||0)<5?'disabled':''}>${tr('sell_for',{price:sell})}</button></div>
+        <div class="auto-rule"><label><input type="checkbox" ${rule.enabled?'checked':''} onchange="Game.setMarketAuto('${k}',this.checked)"> ${tr('automation')}</label><label>${tr('min')} <input type="number" min="0" step="5" value="${rule.min}" onchange="Game.setMarketTarget('${k}','min',this.value)"></label><label>${tr('max')} <input type="number" min="5" step="5" value="${rule.max}" onchange="Game.setMarketTarget('${k}','max',this.value)"></label></div>`;
       l.appendChild(row);
     });
   },
@@ -2130,9 +2258,9 @@ const UI = {
       const have=Math.floor(S.res[c.resource]||0), days=Math.max(0,c.deadline-(S.day||1));
       const reward=Math.round(c.rewardGold*(1+(S.upgrades.diplomacy||0)*.08));
       const card=document.createElement('div'); card.className='contract-card';
-      card.innerHTML=`<div class="contract-head"><div class="contract-title">${SafeT(c.resource)} für die Nachbarburg</div><div class="contract-deadline">noch ${days} Tage</div></div>
-        <div class="contract-body">Lieferung: ${have}/${c.qty} ${SafeT(c.resource)}</div>
-        <div class="contract-foot"><span>Belohnung: ${reward}💰 · ${c.rewardRenown}👑</span><button class="btn" style="flex:0 0 auto;padding:6px 10px" onclick="Game.fulfillContract(${c.id})" ${have<c.qty?'disabled':''}>Liefern</button></div>`;
+      card.innerHTML=`<div class="contract-head"><div class="contract-title">${tr('neighboring_castle',{resource:SafeT(c.resource)})}</div><div class="contract-deadline">${tr(days===1?'day_left':'days_left',{days})}</div></div>
+        <div class="contract-body">${tr('delivery')}: ${have}/${c.qty} ${SafeT(c.resource)}</div>
+        <div class="contract-foot"><span>${tr('reward')}: ${reward}💰 · ${c.rewardRenown}👑</span><button class="btn" style="flex:0 0 auto;padding:6px 10px" onclick="Game.fulfillContract(${c.id})" ${have<c.qty?'disabled':''}>${tr('deliver')}</button></div>`;
       l.appendChild(card);
     });
   },
@@ -2141,12 +2269,12 @@ const UI = {
   closeUpgrades(){document.getElementById('upgrade-mask').style.display='none';},
   renderUpgrades() {
     const rank=rankForLevel(), summary=document.getElementById('rank-summary');
-    summary.innerHTML=`<div style="margin-top:8px;font-weight:900">${rank.current.n} · Stufe ${S.lvl}</div><div class="rank-progress"><span style="width:${rank.progress}%"></span></div><div style="font-size:.75rem;color:#5d5043">${rank.next?`Nächster Rang „${rank.next.n}“ ab Stufe ${rank.next.lvl}`:'Höchster Burgrang erreicht'}</div>`;
+    summary.innerHTML=`<div style="margin-top:8px;font-weight:900">${tr('rank_level',{rank:loc(rank.current.n),level:S.lvl})}</div><div class="rank-progress"><span style="width:${rank.progress}%"></span></div><div style="font-size:.75rem;color:#5d5043">${rank.next?tr('next_rank',{rank:loc(rank.next.n),level:rank.next.lvl}):tr('max_rank')}</div>`;
     const l=document.getElementById('upgrade-list'); l.innerHTML='';
     Object.entries(UpgradeDefs).forEach(([key,def])=>{
       const level=S.upgrades[key]||0, maxed=level>=def.max, cost=maxed?0:upgradeCost(key);
       const card=document.createElement('div'); card.className='upgrade-card';
-      card.innerHTML=`<div class="upgrade-head"><div class="upgrade-title">${def.i} ${def.n}</div><b>Stufe ${level}/${def.max}</b></div><div class="upgrade-body">${def.desc}</div><div class="upgrade-foot"><span>${maxed?'Voll ausgebaut':`Nächste Stufe: ${cost} Gold`}</span><button class="btn" style="flex:0 0 auto;padding:6px 10px" onclick="Game.upgrade('${key}')" ${maxed||(S.res.gold||0)<cost?'disabled':''}>Ausbauen</button></div>`;
+      card.innerHTML=`<div class="upgrade-head"><div class="upgrade-title">${def.i} ${loc(def.n)}</div><b>${tr('upgrade_level',{level,max:def.max})}</b></div><div class="upgrade-body">${loc(def.desc)}</div><div class="upgrade-foot"><span>${maxed?tr('fully_upgraded'):tr('next_upgrade',{cost})}</span><button class="btn" style="flex:0 0 auto;padding:6px 10px" onclick="Game.upgrade('${key}')" ${maxed||(S.res.gold||0)<cost?'disabled':''}>${tr('upgrade')}</button></div>`;
       l.appendChild(card);
     });
   },
@@ -2154,14 +2282,14 @@ const UI = {
   openEvent(pending) {
     const def=EventDefs.find(e=>e.id===pending.id); if (!def) { S.events.pending=null; S.paused=false; return; }
     S.paused=true;
-    document.getElementById('event-title').innerText=def.title;
-    document.getElementById('event-text').innerText=def.text;
+    document.getElementById('event-title').innerText=loc(def.title);
+    document.getElementById('event-text').innerText=loc(def.text);
     const l=document.getElementById('event-choices'); l.innerHTML='';
     def.choices.forEach((choice,idx)=>{
       const needsGold=(def.id==='caravan'&&idx===0)?40:(def.id==='fire'&&idx===0)?50:(def.id==='levy'&&idx===0)?80:0;
       const b=document.createElement('button'); b.className='btn';
       b.disabled=needsGold>0&&(S.res.gold||0)<needsGold;
-      b.innerHTML=`${choice.label}<small>${choice.hint}${b.disabled?' · Nicht genug Gold':''}</small>`;
+      b.innerHTML=`${loc(choice.label)}<small>${loc(choice.hint)}${b.disabled?` · ${tr('not_enough_gold')}`:''}</small>`;
       b.onclick=()=>Game.chooseEvent(def.id,idx); l.appendChild(b);
     });
     document.getElementById('event-mask').style.display='flex';
@@ -2174,18 +2302,18 @@ const UI = {
     const caps = calcCaps();
     const html = `
       <div style="background:rgba(255,255,255,.5); padding:10px; border-radius:10px; border:1px solid #999">
-        <div style="font-weight:900; font-size:1.05rem">Land tier: 🧭 ${S.exp.land||0}</div>
+        <div style="font-weight:900; font-size:1.05rem">${tr('land_tier')}: 🧭 ${S.exp.land||0}</div>
         <div style="margin-top:8px; font-size:.95rem; line-height:1.25">
-          <b>Bonuses:</b><br>
-          • Storage +${Config.expansion.storeBonus} (current: ${caps.store})<br>
-          • Food +${Config.expansion.foodBonus} (current: ${caps.food})<br>
-          • Housing +${Config.expansion.popBonus} (PopMax: ${S.pop.max})<br>
+          <b>${tr('bonuses')}:</b><br>
+          • ${tr('storage')} +${Config.expansion.storeBonus} (${tr('current')}: ${caps.store})<br>
+          • ${tr('food')} +${Config.expansion.foodBonus} (${tr('current')}: ${caps.food})<br>
+          • ${tr('housing')} +${Config.expansion.popBonus} (${tr('population')}: ${S.pop.max})<br>
           <br>
-          <b>Next expansion cost:</b><br>
+          <b>${tr('next_expansion_cost')}:</b><br>
           • ${cost.gold}💰  • ${cost.wood}🌲  • ${cost.stone}🧱
         </div>
         <div style="margin-top:10px; font-size:.85rem; color:#5d4037">
-          Tip: Mit Land tier 1 you can build an <b>Outpost</b> (+Gold/Tick).
+          ${tr('expansion_tip')}
         </div>
       </div>`;
     document.getElementById('exp-body').innerHTML = html;
@@ -2230,8 +2358,8 @@ const UI = {
 
   showTutorial(title, text, highlightSel) {
     const box = document.getElementById('tut-box');
-    document.getElementById('tut-title').innerText = title;
-    document.getElementById('tut-text').innerHTML = text;
+    document.getElementById('tut-title').innerText = loc(title);
+    document.getElementById('tut-text').innerHTML = loc(text);
 
     // Make sure we can measure the box
     box.style.display = 'block';
