@@ -250,6 +250,8 @@
     .stat-button{background:none;border:0;color:inherit;font:inherit;padding:0 2px;cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px}
     .supply-line{font-size:.64rem;color:#d8c7a6;margin-top:3px;white-space:nowrap}
     .production-win{max-width:820px!important;text-align:left!important}
+    .modal-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;position:sticky;top:0;z-index:3;background:var(--panel-bg);padding:5px 0}
+    .modal-close{flex:0 0 auto;min-width:34px;padding:4px 8px;font-size:1.3rem}
     .production-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin:12px 0}
     .production-summary>div,.ledger-card{background:rgba(255,255,255,.55);padding:9px;border:1px solid #b7a68d;border-radius:7px}
     .production-summary b{display:block;font-size:1.2rem;margin-top:4px}
@@ -358,7 +360,7 @@
 <!-- Market modal -->
 <div id="market-mask" class="modal-mask">
   <div class="modal-win">
-    <h2 style="font-family:'MedievalSharp'; margin:0" data-i18n="market_title">Markt & Handelskontor</h2>
+    <div class="modal-heading"><h2 style="font-family:'MedievalSharp'; margin:0" data-i18n="market_title">Markt & Handelskontor</h2><button class="btn modal-close" onclick="UI.closeMarket()" aria-label="Schließen" data-i18n-aria="close" data-i18n-title="close">×</button></div>
     <div class="market-tools">
       <span><b data-i18n="auto_trade">Automatischer Handel</b><br><span data-i18n="auto_trade_help">Verkauft Überschüsse und kauft Fehlbestände je Tick.</span></span>
       <label><span data-i18n="gold_reserve">Goldreserve</span><br><input id="market-reserve" type="number" min="0" step="10" onchange="Game.setMarketReserve(this.value)"></label>
@@ -391,7 +393,7 @@
 <!-- Event modal -->
 <div id="production-mask" class="modal-mask">
   <div class="modal-win production-win">
-    <h2 style="font-family:'MedievalSharp';margin:0" data-i18n="production_title">📊 Produktion & Versorgung</h2>
+    <div class="modal-heading"><h2 style="font-family:'MedievalSharp';margin:0" data-i18n="production_title">📊 Produktion & Versorgung</h2><button class="btn modal-close" onclick="UI.closeProduction()" aria-label="Schließen" data-i18n-aria="close" data-i18n-title="close">×</button></div>
     <div id="production-body"></div>
     <button onclick="UI.closeProduction()" class="btn" style="width:100%;margin-top:12px" data-i18n="close">Schließen</button>
   </div>
@@ -591,7 +593,7 @@ const I18N = {
     bread:BI("Brot","Bread"), meat:BI("Fleisch","Meat"), cheese:BI("Käse","Cheese"), apple:BI("Äpfel","Apples"), beer:BI("Bier","Beer"),
     bow:BI("Bogen","Bow"), spear:BI("Speer","Spear"), sword:BI("Schwert","Sword"), armor:BI("Metallrüstung","Metal armor"), gold:BI("Gold","Gold"), soldier:BI("Soldaten","Soldiers"), land:BI("Land","Land"),
     contracts_short:BI("Aufträge","Contracts"), upgrades_short:BI("Ausbau","Upgrades"), shift:BI("Schicht","Shift"), shift_help:BI("Drei Tage lang 50 % mehr Produktion","50% more production for three days"), until_day:BI("bis T{{day}}","until D{{day}}"),
-    later:BI("später","later"), stock:BI("Bestand","Stock"), per_five:BI("je 5 Einheiten","per 5 units"), stable:BI("stabil","stable"),
+    later:BI("später","later"), stock:BI("Bestand","Stock"), per_five:BI("manuell je 5 Einheiten","manual trades: 5 units"), stable:BI("stabil","stable"),
     buy_for:BI("Kaufen {{price}}g","Buy {{price}}g"), sell_for:BI("Verkaufen {{price}}g","Sell {{price}}g"), automation:BI("Automatik","Automation"), min:BI("Min.","Min."), max:BI("Max.","Max."),
     neighboring_castle:BI("{{resource}} für die Nachbarburg","{{resource}} for the neighboring castle"), day_left:BI("noch 1 Tag","1 day left"), days_left:BI("noch {{days}} Tage","{{days}} days left"),
     delivery:BI("Lieferung","Delivery"), reward:BI("Belohnung","Reward"), deliver:BI("Liefern","Deliver"),
@@ -1026,7 +1028,10 @@ function productionMultiplier(state=S){
 }
 function goodsText(goods,lang=I18N.lang){
   const values=Object.entries(goods).filter(([,n])=>Math.abs(n)>EPSILON);
-  return values.length?values.map(([key,n])=>numberText(n,lang)+' '+SafeT(key,lang)).join(' + '):'—';
+  return values.length?values.map(([key,n])=>{
+    const name=Math.abs(n)===1&&key==='hides'?loc(BI('Rohhaut','Hide'),lang):Math.abs(n)===1&&key==='apple'?loc(BI('Apfel','Apple'),lang):SafeT(key,lang);
+    return numberText(n,lang)+' '+name;
+  }).join(' + '):'—';
 }
 function recipeText(building,lang=I18N.lang){
   const recipe=productionRecipe(building);

@@ -206,6 +206,11 @@ test('market rendering preserves the focused number field while refreshing its s
   sandbox.document.activeElement={tagName:'INPUT',type:'number'};nodes.get('market-mask').contains=()=>true;
   api.UI.renderMarket();assert.equal(nodes.get('market-list').children[0],firstCard);
 });
+test('leather recipes use singular hide names in both languages',()=>{
+  const {api,nodes}=loadGame();
+  api.I18N.lang='de';api.UI.renderProduction();assert.ok(nodes.get('production-body').innerHTML.includes('1 Rohhaut → 1 Leder'));
+  api.I18N.lang='en';api.UI.renderProduction();assert.ok(nodes.get('production-body').innerHTML.includes('1 Hide → 1 Leather'));
+});
 test('new-game startup initializes all new systems without resetting language',()=>{
   const {api,storage,updateUI}=loadGame();api.I18N.set('en');api.Game.newGame();updateUI();
   near(api.state().meta.version,6);near(api.state().res.leather,0);near(api.state().units.guard,0);assert.equal(storage.get('stronhold_language'),'en');
