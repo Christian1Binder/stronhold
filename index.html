@@ -247,6 +247,26 @@
     .rank-progress{height:8px;margin:8px 0;border-radius:99px;background:rgba(0,0,0,.18);overflow:hidden}
     .rank-progress span{display:block;height:100%;background:linear-gradient(90deg,#d84315,#ffb300)}
 
+    .stat-button{background:none;border:0;color:inherit;font:inherit;padding:0 2px;cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px}
+    .supply-line{font-size:.64rem;color:#d8c7a6;margin-top:3px;white-space:nowrap}
+    .production-win{max-width:820px!important;text-align:left!important}
+    .production-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin:12px 0}
+    .production-summary>div,.ledger-card{background:rgba(255,255,255,.55);padding:9px;border:1px solid #b7a68d;border-radius:7px}
+    .production-summary b{display:block;font-size:1.2rem;margin-top:4px}
+    .production-summary small,.muted{color:#655540;font-size:.76rem}
+    .chain-card{padding:10px;margin:8px 0;background:#efe5d1;border:1px solid #b7a68d;border-left:4px solid #8b663d;border-radius:6px;font-size:.8rem;line-height:1.55}
+    .chain-card b{display:block}.chain-path{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}.chain-path span{background:#fff8eb;padding:4px 6px;border-radius:4px}
+    .ledger-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:10px 0}
+    .ledger-card strong{display:block;margin-bottom:5px}.ledger-line{display:flex;justify-content:space-between;gap:6px;font-size:.73rem;line-height:1.6}
+    .ledger-net{border-top:1px solid #c2b298;margin-top:4px;padding-top:3px;font-weight:900}
+    .production-row{border:1px solid #b7a68d;border-radius:6px;padding:9px;margin:6px 0;background:rgba(255,255,255,.4);font-size:.8rem;line-height:1.5}
+    .production-row-head{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}.production-status{font-size:.72rem;color:#6c532e}.production-status.warn{color:#a62920}
+    .production-row .worker-controls{display:inline-flex;gap:5px;align-items:center}.worker-controls button{padding:3px 9px;cursor:pointer}
+    .renown-panel{margin:12px 0;padding:10px;background:#fff3cf;border:1px solid #c6a353;border-radius:7px;font-size:.8rem;line-height:1.5}
+    .market-limit-note{grid-column:1/-1;font-size:.72rem;color:#a62920;padding-top:4px}
+    .res-container{min-width:0}
+    @media(max-width:600px){.production-summary{grid-template-columns:repeat(2,1fr)}.ledger-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.production-win{padding:12px!important}}
+
     /* Tutorial overlay */
     #tut-overlay{
       position:fixed;inset:0;display:none;z-index:9000;
@@ -369,6 +389,14 @@
 </div>
 
 <!-- Event modal -->
+<div id="production-mask" class="modal-mask">
+  <div class="modal-win production-win">
+    <h2 style="font-family:'MedievalSharp';margin:0" data-i18n="production_title">📊 Produktion & Versorgung</h2>
+    <div id="production-body"></div>
+    <button onclick="UI.closeProduction()" class="btn" style="width:100%;margin-top:12px" data-i18n="close">Schließen</button>
+  </div>
+</div>
+
 <div id="event-mask" class="modal-mask">
   <div class="modal-win">
     <h2 id="event-title" style="font-family:'MedievalSharp'; margin:0">Ereignis</h2>
@@ -396,7 +424,7 @@
     <div class="game-title">STRONHOLD</div>
     <div class="season-badge"><span id="season-icon">🌱</span><span id="season-name">Frühling</span> · <span id="rank-name">Außenposten</span></div>
     <div class="objective" id="obj-disp" data-i18n="loading">Lade…</div>
-    <div class="mil-stats">💂 <span id="s-sold">0</span> ⚔️ <span id="s-wep">0</span> 🧭 <span id="s-land">0</span> 👑 <span id="s-renown">0</span></div>
+    <div class="mil-stats">💂 <span id="s-sold">0</span> ⚔️ <span id="s-wep">0</span> 🧭 <span id="s-land">0</span> <button class="stat-button" id="renown-info" onclick="UI.showRenown()" data-i18n-title="renown" aria-label="Ruhm" data-i18n-aria="renown">👑 <span id="s-renown">0</span></button></div>
   </div>
 
   <div class="raid-pill raid-ok tut-allow" id="raid-pill" onclick="UI.showRaidInfo()">
@@ -420,6 +448,8 @@
         <span class="res-item" data-i18n-title="wheat">🌾<span id="r-wheat">0</span><span id="d-wheat" class="rate-ind"></span></span>
         <span class="res-item" data-i18n-title="flour">🥡<span id="r-flour">0</span><span id="d-flour" class="rate-ind"></span></span>
         <span class="res-item" data-i18n-title="hops">🌿<span id="r-hops">0</span><span id="d-hops" class="rate-ind"></span></span>
+        <span class="res-item" data-i18n-title="hides">🐄<span id="r-hides">0</span><span id="d-hides" class="rate-ind"></span></span>
+        <span class="res-item" data-i18n-title="leather">🟫<span id="r-leather">0</span><span id="d-leather" class="rate-ind"></span></span>
       </div>
     </div>
 
@@ -432,6 +462,7 @@
         <span class="res-item" data-i18n-title="apple">🍎<span id="r-apple">0</span><span id="d-apple" class="rate-ind"></span></span>
         <span class="res-item" data-i18n-title="beer">🍺<span id="r-beer">0</span><span id="d-beer" class="rate-ind"></span></span>
       </div>
+      <div id="food-flow" class="supply-line" data-i18n="production_details">Produktionsdetails öffnen</div>
     </div>
 
     <div class="res-group tut-allow" onclick="UI.showHappy()" style="cursor:pointer; border-color:#8d6e63;">
@@ -479,6 +510,7 @@
         <button class="btn" id="btn-upgrades" onclick="UI.openUpgrades()" data-i18n-title="upgrades_title" title="Burgausbau">🏰 Ausbau</button>
         <button class="btn" id="btn-boost" onclick="Game.activateBoost()" data-i18n-title="shift_help" title="Drei Tage lang 50 % mehr Produktion">🔥 Schicht</button>
       </div>
+      <div class="c-row"><button class="btn" id="btn-production" onclick="UI.openProduction()" data-i18n="production_title">📊 Produktion & Versorgung</button></div>
       <div style="background:rgba(255,255,255,0.5); padding:3px; border-radius:4px; font-size:0.7rem; margin:5px 0; text-align:center;">
         <span data-i18n="tax">Steuer</span>: <strong id="tax-name">Keine</strong><br>
         <span id="tax-impact" style="font-size:0.65rem; font-weight:bold;"></span>
@@ -548,8 +580,8 @@ const I18N = {
     campaigns:BI("Feldzüge","Campaigns"), army:BI("Armee","Army"), defense:BI("Verteidigung","Defense"), retreat:BI("Rückzug","Retreat"), barracks:BI("Kaserne","Barracks"),
     market:BI("Markt","Market"), recruit:BI("Soldaten ausbilden","Recruit soldiers"), castle:BI("Burg","Castle"), industry:BI("Handwerk","Industry"), agriculture:BI("Landwirtschaft","Agriculture"), weapons:BI("Waffen","Weapons"),
     market_title:BI("Markt & Handelskontor","Market & Trading Post"), auto_trade:BI("Automatischer Handel","Automated Trading"),
-    auto_trade_help:BI("Verkauft Überschüsse und kauft Fehlbestände je Tick.","Sells surpluses and buys shortages every tick."), gold_reserve:BI("Goldreserve","Gold reserve"),
-    contracts_title:BI("📜 Handelsaufträge","📜 Trade Contracts"), contracts_help:BI("Liefere Waren vor Ablauf der Frist. Diplomatie erhöht jede Belohnung.","Deliver goods before the deadline. Diplomacy increases every reward."),
+    auto_trade_help:BI("Gleicht sofort sowie vor und nach der Produktion bis Min./Max. aus. Erst Verkauf, dann Einkauf. Goldreserve und Lagerplatz begrenzen Käufe; Preise bleiben fest.","Balances to min./max. immediately and before and after production. Sells first, then buys. Gold reserve and storage capacity limit purchases; prices stay fixed."), gold_reserve:BI("Goldreserve","Gold reserve"),
+    contracts_title:BI("📜 Handelsaufträge","📜 Trade Contracts"), contracts_help:BI("Liefere Waren vor Ablauf der Frist. Gesandtschaft und Ruhm erhöhen die Goldbelohnung.","Deliver goods before the deadline. Embassy upgrades and renown increase the gold reward."),
     upgrades_title:BI("🏰 Burgausbau","🏰 Castle Upgrades"), expansion:BI("Expansion","Expansion"), expand_territory:BI("Gebiet erweitern","Expand territory"),
     raid_in:BI("⚠️ Überfall in","⚠️ Raid in"), day_singular:BI("Tag","day"), days:BI("Tagen","days"), treasury:BI("Schatzkammer","Treasury"), storage:BI("Lager","Storage"), food:BI("Nahrung","Food"),
     people_trend:BI("Volk (Trend)","People (trend)"), population:BI("Bevölkerung","Population"), happiness:BI("Zufriedenheit","Happiness"), idle:BI("Untätig","Idle"),
@@ -557,7 +589,7 @@ const I18N = {
     treasure_reward:BI("💰 Schatz (+250g)","💰 Treasure (+250g)"), tax:BI("Steuer","Tax"), day:BI("Tag","Day"), level:BI("Stufe","Level"), save:BI("Speichern","Save"), new_game:BI("Neu","Reset"),
     wood:BI("Holz","Wood"), stone:BI("Stein","Stone"), iron:BI("Eisen","Iron"), wheat:BI("Weizen","Wheat"), flour:BI("Mehl","Flour"), hops:BI("Hopfen","Hops"),
     bread:BI("Brot","Bread"), meat:BI("Fleisch","Meat"), cheese:BI("Käse","Cheese"), apple:BI("Äpfel","Apples"), beer:BI("Bier","Beer"),
-    bow:BI("Bogen","Bow"), spear:BI("Speer","Spear"), sword:BI("Schwert","Sword"), armor:BI("Rüstung","Armor"), gold:BI("Gold","Gold"), soldier:BI("Soldaten","Soldiers"), land:BI("Land","Land"),
+    bow:BI("Bogen","Bow"), spear:BI("Speer","Spear"), sword:BI("Schwert","Sword"), armor:BI("Metallrüstung","Metal armor"), gold:BI("Gold","Gold"), soldier:BI("Soldaten","Soldiers"), land:BI("Land","Land"),
     contracts_short:BI("Aufträge","Contracts"), upgrades_short:BI("Ausbau","Upgrades"), shift:BI("Schicht","Shift"), shift_help:BI("Drei Tage lang 50 % mehr Produktion","50% more production for three days"), until_day:BI("bis T{{day}}","until D{{day}}"),
     later:BI("später","later"), stock:BI("Bestand","Stock"), per_five:BI("je 5 Einheiten","per 5 units"), stable:BI("stabil","stable"),
     buy_for:BI("Kaufen {{price}}g","Buy {{price}}g"), sell_for:BI("Verkaufen {{price}}g","Sell {{price}}g"), automation:BI("Automatik","Automation"), min:BI("Min.","Min."), max:BI("Max.","Max."),
@@ -589,6 +621,37 @@ const I18N = {
     document.querySelectorAll('[data-i18n-aria]').forEach(el=>el.setAttribute('aria-label',tr(el.dataset.i18nAria)));
   }
 };
+Object.assign(I18N.strings,{
+  hides:BI("Rohhäute","Hides"),leather:BI("Leder","Leather"),leatherArmor:BI("Lederrüstung","Leather armor"),renown:BI("Ruhm & Vorteile","Renown & Benefits"),
+  fixed_price:BI("Festpreis · keine Mengenaufschläge","Fixed price · no volume surcharges"),
+  market_blocked:BI("Mindestbestand noch nicht erreicht: Goldreserve oder Lagerplatz begrenzen den Einkauf.","Minimum stock not yet reached: the gold reserve or storage capacity limits purchases."),
+  market_min_help:BI("Unter diesem Bestand wird bis zum Mindestbestand nachgekauft.","Below this stock level, purchases refill up to the minimum."),
+  market_max_help:BI("Alles oberhalb dieses Bestands wird direkt verkauft.","Everything above this stock level is sold immediately."),
+  production_title:BI("📊 Produktion & Versorgung","📊 Production & Supply"),production_details:BI("Produktionsdetails öffnen","Open production details"),
+  production_tick:BI("Letzter abgeschlossener Tick: Tag {{day}} · 1 Tick = 4 Sekunden","Last completed tick: day {{day}} · 1 tick = 4 seconds"),
+  production_wait:BI("Noch kein abgeschlossener Tick. Die Bilanz erscheint nach dem nächsten Spieltag.","No completed tick yet. The ledger appears after the next game day."),
+  food_flow:BI("+{{made}} erzeugt · −{{need}} Bedarf","+{{made}} produced · −{{need}} demand"),
+  food_produced:BI("Nahrung erzeugt","Food produced"),food_demand:BI("Rationenbedarf","Ration demand"),food_missing:BI("Fehlende Rationen","Missing rations"),food_stored:BI("Essbare Vorräte","Edible stocks"),
+  food_balance:BI("Erzeugung minus Bedarf: {{value}} pro Tick. Handel ist hier nicht eingerechnet.","Production minus demand: {{value}} per tick. Trading is not included here."),
+  food_explain:BI("Auch bei leerem Vorrat arbeiten besetzte Betriebe weiter. Sofort verzehrte Nahrung wird als Erzeugung und Verbrauch getrennt angezeigt.","Staffed businesses keep working with empty food stocks. Food eaten immediately is shown separately as production and consumption."),
+  recipe_base:BI("Grundrezepte je Arbeiter und Tick. Zunft, Sonderschicht und Ruhm steigern den Durchsatz: Verbrauch und Erzeugung wachsen im gleichen Verhältnis. Jahreszeiten verändern die Rohstofferzeugung.","Base recipes per worker and tick. Guild, extra shift and renown increase throughput: input use and output grow in the same proportion. Seasons change raw-material production."),
+  bread_chain:BI("Brotkette","Bread chain"),beer_chain:BI("Bierkette","Beer chain"),leather_chain:BI("Lederkette","Leather chain"),
+  beer_explain:BI("Bier ist kein Nahrungsersatz. Pro Bewohner werden höchstens 0,2 Bier je Tick ausgeschenkt; volle Versorgung gibt +3 Zufriedenheit. Getränke lagern separat und blockieren den Kornspeicher nicht.","Beer does not replace food. At most 0.2 beer is served per resident per tick; full supply grants +3 happiness. Drinks are stored separately and do not block the granary."),
+  dairy_explain:BI("Käse bleibt ein eigenes Milchprodukt. Rohhäute stammen aus dem Viehhof, nicht aus der Käseherstellung. Burgwachen benötigen Speer und Lederrüstung.","Cheese remains a separate dairy product. Hides come from the cattle farm, not from cheese-making. Castle Guards need a spear and leather armor."),
+  resource_ledger:BI("Warenbilanz des letzten Ticks","Goods ledger for the last tick"),businesses:BI("Betriebe & Engpässe","Businesses & bottlenecks"),
+  gross_produced:BI("Erzeugt","Produced"),processing_used:BI("Verarbeitet","Processing inputs"),people_used:BI("Verzehrt / ausgeschenkt","Eaten / served"),trade_flow:BI("Handel (netto)","Trading (net)"),overflow_loss:BI("Überlaufverlust","Overflow loss"),stock_change:BI("Bestandsänderung","Stock change"),
+  staff_count:BI("Arbeiter {{actual}}/{{built}} · gewünschte Besetzung {{target}}","Workers {{actual}}/{{built}} · intended staffing {{target}}"),
+  staffing_help:BI("Bei Bevölkerungsverlusten werden zuerst freie Bewohner berücksichtigt, dann andere Betriebe entlastet. Versorgungsbetriebe haben Vorrang. Zugewiesene, vorübergehend fehlende Arbeiter werden bei Zuzug ersetzt; bewusst pausierte Betriebe bleiben pausiert.","Population losses use idle residents first, then reduce other workforces. Supply businesses have priority. Temporarily vacant assigned jobs are refilled when new residents arrive; deliberately paused businesses remain paused."),
+  not_built:BI("Noch nicht gebaut","Not built yet"),no_workers:BI("Unbesetzt","No workers"),no_inputs:BI("Rohstoffe fehlen","Missing inputs"),partial:BI("Teilbetrieb: Rohstoffe begrenzen","Partial: limited by inputs"),running:BI("Produziert","Running"),
+  output_last:BI("Zuletzt erzeugt: {{goods}}","Last output: {{goods}}"),missing_inputs:BI("Engpass: {{goods}}","Bottleneck: {{goods}}"),
+  material_stock:BI("Materiallager {{used}}/{{cap}}","Material storage {{used}}/{{cap}}"),drink_stock:BI("Getränkevorrat {{used}}/{{cap}}","Drink storage {{used}}/{{cap}}"),
+  renown_auto:BI("Diese Vorteile gelten automatisch. Ruhm wird nicht ausgegeben und verändert keine Marktpreise.","These benefits apply automatically. Renown is not spent and does not change market prices."),
+  renown_current:BI("{{amount}} Ruhm · {{rank}}","{{amount}} renown · {{rank}}"),renown_next:BI("Nächster Ruf: {{rank}} bei {{amount}} Ruhm","Next reputation: {{rank}} at {{amount}} renown"),
+  renown_max:BI("Höchster Ruf erreicht","Highest reputation reached"),renown_bonuses:BI("Auftragsgold +{{contracts}} % · Produktion +{{production}} % · Steuergold +{{tax}} % · Verteidigung +{{defense}} %","Contract gold +{{contracts}}% · Production +{{production}}% · Tax gold +{{tax}}% · Defense +{{defense}}%"),
+  renown_tiers:BI("Ruhmesstufen (Vorteile jeweils insgesamt)","Reputation tiers (total benefits at each tier)"),
+  recruiting_missing:BI("Voraussetzungen fehlen: {{items}}","Requirements missing: {{items}}"),
+  need_barracks:BI("Kaserne","Barracks"),need_camp:BI("Söldnerlager","Mercenary Camp"),need_worker:BI("freie Bevölkerung","idle population")
+});
 I18N.init();
 
 function loc(value,lang=I18N.lang){
@@ -604,24 +667,38 @@ function dual(build){ return BI(build('de'),build('en')); }
 const T = {
   wood:BI("Holz","Wood"), stone:BI("Stein","Stone"), iron:BI("Eisen","Iron"), wheat:BI("Weizen","Wheat"), flour:BI("Mehl","Flour"), hops:BI("Hopfen","Hops"),
   bread:BI("Brot","Bread"), meat:BI("Fleisch","Meat"), cheese:BI("Käse","Cheese"), apple:BI("Äpfel","Apples"), beer:BI("Bier","Beer"),
-  bow:BI("Bogen","Bow"), spear:BI("Speer","Spear"), sword:BI("Schwert","Sword"), armor:BI("Rüstung","Armor"),
+  bow:BI("Bogen","Bow"), spear:BI("Speer","Spear"), sword:BI("Schwert","Sword"), armor:BI("Metallrüstung","Metal armor"),
+  hides:BI("Rohhäute","Hides"), leather:BI("Leder","Leather"), leatherArmor:BI("Lederrüstung","Leather armor"),
   gold:BI("Gold","Gold"), pop:BI("Bevölkerung","Population"), soldier:BI("Soldaten","Soldiers"), land:BI("Land","Land")
 };
 const SafeT = (k,lang=I18N.lang) => loc(T[k] || k,lang);
 
 const Rules = {
   storeTypes: ['wood','stone','iron','wheat','flour','hops'],
-  foodTypes:  ['bread','meat','apple','cheese','beer'],
-  marketTypes:['wood','stone','iron','wheat','flour','hops','bread','meat','cheese','apple','beer','bow','spear','sword','armor']
+  foodTypes:  ['bread','meat','apple','cheese'],
+  drinkTypes: ['beer'],
+  marketTypes:['wood','stone','iron','wheat','flour','hops','bread','meat','cheese','apple','beer','hides','leather','bow','spear','sword','armor','leatherArmor']
 };
+Rules.storeTypes.push('hides','leather');
 
 const MarketGoods = {
   wood:{buy:12,sell:5}, stone:{buy:20,sell:9}, iron:{buy:35,sell:16},
   wheat:{buy:10,sell:4}, flour:{buy:18,sell:8}, hops:{buy:14,sell:6},
   bread:{buy:25,sell:11}, meat:{buy:28,sell:12}, cheese:{buy:30,sell:13},
   apple:{buy:10,sell:4}, beer:{buy:35,sell:16}, bow:{buy:45,sell:20},
-  spear:{buy:55,sell:25}, sword:{buy:100,sell:48}, armor:{buy:120,sell:58}
+  spear:{buy:55,sell:25}, sword:{buy:100,sell:48}, armor:{buy:120,sell:58},
+  hides:{buy:25,sell:10}, leather:{buy:50,sell:22}, leatherArmor:{buy:80,sell:36}
 };
+
+// Renown is an automatic, cumulative reputation bonus; it never alters market prices.
+const RenownTiers = [
+  {at:0,n:BI("Unbekanntes Lehen","Unknown Fief"),contracts:0,production:0,tax:0,defense:0},
+  {at:25,n:BI("Aufstrebendes Lehen","Rising Fief"),contracts:.05,production:0,tax:0,defense:0},
+  {at:75,n:BI("Angesehenes Lehen","Respected Fief"),contracts:.10,production:.05,tax:0,defense:0},
+  {at:150,n:BI("Einflussreiche Grafschaft","Influential County"),contracts:.15,production:.05,tax:.05,defense:.05},
+  {at:300,n:BI("Vom König geehrt","Honored by the King"),contracts:.20,production:.10,tax:.10,defense:.10},
+  {at:600,n:BI("Legendäres Lehen","Legendary Fief"),contracts:.25,production:.15,tax:.15,defense:.15}
+];
 
 const SeasonDefs = [
   {n:BI("Frühling","Spring"),i:"🌱",m:{wheat:1.2,apple:1.2}},
@@ -632,7 +709,7 @@ const SeasonDefs = [
 
 const UpgradeDefs = {
   tools:{n:BI("Werkzeugmacher","Toolmaker"),i:"🛠️",base:150,max:10,desc:BI("Jede Stufe gibt +1 Ressource pro Kartenklick.","Each level grants +1 resource per map click.")},
-  guild:{n:BI("Zunfthaus","Guild Hall"),i:"🏛️",base:300,max:10,desc:BI("Jede Stufe steigert die gesamte Produktion um 10 %.","Each level increases all production by 10%.")},
+  guild:{n:BI("Zunfthaus","Guild Hall"),i:"🏛️",base:300,max:10,desc:BI("Jede Stufe gibt +10 % Durchsatz. Verarbeiter benötigen entsprechend mehr Rohstoffe; die Rezepte bleiben gleich.","Each level grants +10% throughput. Processors need proportionally more inputs; recipes stay unchanged.")},
   logistics:{n:BI("Fuhrwesen","Logistics"),i:"🛞",base:200,max:10,desc:BI("Jede Stufe schafft 25 zusätzliche Lager- und Nahrungseinheiten.","Each level adds 25 storage and food capacity.")},
   diplomacy:{n:BI("Gesandtschaft","Embassy"),i:"🤝",base:350,max:10,desc:BI("Jede Stufe erhöht Gold aus Aufträgen und Ereignissen um 8 %.","Each level increases gold from contracts and events by 8%.")}
 };
@@ -654,7 +731,8 @@ const Units = {
   archer:   { n:BI("Bogenschütze","Archer"), cost:10, res:"bow", str:5,def:2 },
   pikeman:  { n:BI("Pikenier","Pikeman"), cost:15, res:"spear", str:8,def:3 },
   swordsman:{ n:BI("Schwertkämpfer","Swordsman"), cost:30, res:"sword", arm:"armor",str:15,def:6 },
-  merc:     { n:BI("Söldner","Mercenary"), cost:50,str:10,def:5 }
+  merc:     { n:BI("Söldner","Mercenary"), cost:50,str:10,def:5 },
+  guard:    { n:BI("Burgwache","Castle Guard"), cost:25,res:"spear",arm:"leatherArmor",str:10,def:6 }
 };
 
 const Missions = [
@@ -700,6 +778,7 @@ const Config = {
     apple:{n:BI("Obstgarten","Orchard"),c:"farm",i:"🍎",z:"z-farm",cost:{g:30,w:10},prod:"apple",amt:3,type:"food"},
     hunter:{n:BI("Jäger","Hunter"),c:"farm",i:"🏹",z:"z-forest",cost:{g:20,w:5},prod:"meat",amt:2,type:"food"},
     dairy:{n:BI("Käserei","Dairy"),c:"farm",i:"🧀",z:"z-farm",cost:{g:40,w:20},prod:"cheese",amt:2,type:"food"},
+    cattle:{n:BI("Viehhof","Cattle Farm"),c:"farm",i:"🐄",z:"z-farm",cost:{g:120,w:40},recipe:{input:{},output:{meat:2,hides:1}},desc:BI("Fleisch & Rohhäute aus Viehzucht","Meat & hides from cattle farming")},
     wheat:{n:BI("Weizenfeld","Wheat Field"),c:"farm",i:"🌾",z:"z-farm",cost:{g:40,w:10},prod:"wheat",amt:2,type:"mat"},
     hops:{n:BI("Hopfenfeld","Hop Field"),c:"farm",i:"🌿",z:"z-farm",cost:{g:40,w:10},prod:"hops",amt:2,type:"mat"},
 
@@ -709,18 +788,20 @@ const Config = {
     church:{n:BI("Kirche","Church"),c:"stadt",i:"⛪",z:"z-town",cost:{g:500,s:100},rel:10,desc:BI("Zufriedenheit + Religion","Happiness + religion")},
     outpost:{n:BI("Außenposten","Outpost"),c:"stadt",i:"🧭",z:"z-forest",cost:{g:200,w:60,s:20},gold:2,reqLand:1,desc:BI("+2 Gold/Tick","+2 gold/tick")},
     market:{n:BI("Handelskontor","Trading Post"),c:"stadt",i:"⚖️",z:"z-town",cost:{g:120,w:40},unique:true,desc:BI("Markt, Automatik & Aufträge","Market, automation & contracts")},
+    tannery:{n:BI("Gerberei","Tannery"),c:"werk",i:"🟫",z:"z-town",cost:{g:100,w:40},stage:1,recipe:{input:{hides:1},output:{leather:1}}},
 
     // WAFFEN
     fletch:{n:BI("Bogenmacher","Fletcher"),c:"waffen",i:"🏹",z:"z-town",cost:{g:100,w:50},use:"wood",out:"bow",amt:1},
     pole:{n:BI("Speermacher","Pike Maker"),c:"waffen",i:"🔱",z:"z-town",cost:{g:100,w:50},use:"wood",out:"spear",amt:1},
     smith:{n:BI("Schmied","Blacksmith"),c:"waffen",i:"⚔️",z:"z-town",cost:{g:200,w:100},use:"iron",out:"sword",amt:1},
     armor:{n:BI("Rüstungsschmied","Armorer"),c:"waffen",i:"🛡️",z:"z-town",cost:{g:200,w:100},use:"iron",out:"armor",amt:1},
+    leatherwork:{n:BI("Lederwerkstatt","Leather Workshop"),c:"waffen",i:"🦺",z:"z-town",cost:{g:120,w:50},stage:4,recipe:{input:{leather:1},output:{leatherArmor:1}}},
 
     // NAHRUNG
     gran:{n:BI("Kornspeicher","Granary"),c:"nahrung",i:"🛖",z:"z-town",cost:{w:20},desc:BI("Nahrung +50","Food +50")},
-    mill:{n:BI("Mühle","Mill"),c:"nahrung",i:"⚙️",z:"z-town",cost:{g:100,w:50},proc:"wheat",out:"flour",r:1},
-    bake:{n:BI("Bäckerei","Bakery"),c:"nahrung",i:"🍞",z:"z-town",cost:{g:50,w:20},proc:"flour",out:"bread",r:4,type:"food"},
-    brew:{n:BI("Brauerei","Brewery"),c:"nahrung",i:"🍺",z:"z-town",cost:{g:100,w:20},proc:"hops",out:"beer",r:2,type:"food"}
+    mill:{n:BI("Mühle","Mill"),c:"nahrung",i:"⚙️",z:"z-town",cost:{g:100,w:50},stage:1,recipe:{input:{wheat:2},output:{flour:2}}},
+    bake:{n:BI("Bäckerei","Bakery"),c:"nahrung",i:"🍞",z:"z-town",cost:{g:50,w:20},stage:2,recipe:{input:{flour:1,wood:1},output:{bread:4}},type:"food"},
+    brew:{n:BI("Brauerei","Brewery"),c:"nahrung",i:"🍺",z:"z-town",cost:{g:100,w:20},stage:3,recipe:{input:{wheat:1,hops:1,wood:1},output:{beer:4}}}
   }
 };
 
@@ -773,8 +854,7 @@ function rankForLevel(level = S.lvl||1) {
 function marketPrice(key, buy) {
   const item = MarketGoods[key];
   if (!item) return 0;
-  const pressure = clamp((S.market && S.market.pressure[key])||0,-.35,.65);
-  return Math.max(1,Math.round((buy?item.buy:item.sell)*(1+pressure)));
+  return buy?item.buy:item.sell;
 }
 
 function upgradeCost(key) {
@@ -785,7 +865,7 @@ function upgradeCost(key) {
 
 function migrateState() {
   S.res = S.res || {};
-  ['gold',...Rules.marketTypes].forEach(k=>{ if (typeof S.res[k] !== 'number') S.res[k]=0; });
+  ['gold',...Rules.marketTypes].forEach(k=>{ S.res[k]=Math.max(0,Number.isFinite(S.res[k])?S.res[k]:0); });
   S.units = S.units || {archer:0,pikeman:0,swordsman:0,merc:0};
   for (const k in Units) if (typeof S.units[k] !== 'number') S.units[k]=0;
   S.pop = S.pop || {curr:6,max:5,hap:90};
@@ -803,15 +883,15 @@ function migrateState() {
   S.rates = S.rates || {};
   S.factors = S.factors || {hunger:0,variety:0,tax:0,beer:0,religion:0,overcrowd:0,idle:0,total:0};
   S.renown = Number(S.renown)||0;
-  S.market = S.market || {pressure:{},auto:{},reserve:100};
-  S.market.pressure = S.market.pressure || {};
+  S.market = S.market || {auto:{},reserve:100};
+  delete S.market.pressure;
   S.market.auto = S.market.auto || {};
   S.market.reserve = Math.max(0,Number(S.market.reserve)||0);
   Rules.marketTypes.forEach(k=>{
-    if (typeof S.market.pressure[k] !== 'number') S.market.pressure[k]=0;
     S.market.auto[k] = S.market.auto[k] || {enabled:false,min:10,max:40};
     S.market.auto[k].min = Math.max(0,Number(S.market.auto[k].min)||0);
-    S.market.auto[k].max = Math.max(S.market.auto[k].min+5,Number(S.market.auto[k].max)||40);
+    const max=Number(S.market.auto[k].max);
+    S.market.auto[k].max = Math.max(S.market.auto[k].min,Number.isFinite(max)?max:40);
   });
   S.contracts = S.contracts || {items:[],completed:0,nextId:1};
   S.contracts.items = Array.isArray(S.contracts.items) ? S.contracts.items : [];
@@ -821,9 +901,18 @@ function migrateState() {
   for (const k in UpgradeDefs) S.upgrades[k]=clamp(Number(S.upgrades[k])||0,0,UpgradeDefs[k].max);
   S.clicker = S.clicker || {combo:0,lastClick:0,total:0};
   S.boostUntilDay = Number(S.boostUntilDay)||0;
-  S.meta = S.meta || {savedAt:Date.now(),version:5};
-  S.meta.version = 5;
+  S.meta = S.meta || {savedAt:Date.now(),version:6};
+  S.meta.version = 6;
   S.logs = Array.isArray(S.logs) ? S.logs : [];
+  S.staffing = S.staffing || {targets:{...S.w}};
+  S.staffing.targets = S.staffing.targets || {...S.w};
+  for (const k in Config.b) {
+    S.b[k]=Math.max(0,Math.floor(Number(S.b[k])||0));
+    S.w[k]=clamp(Math.floor(Number(S.w[k])||0),0,S.b[k]);
+    S.staffing.targets[k]=clamp(Math.floor(Number(S.staffing.targets[k])||0),0,S.b[k]);
+  }
+  S.survival = S.survival || {hungerTicks:0};
+  S.economy = S.economy || {lastTick:null};
 }
 
 function createContract() {
@@ -841,43 +930,35 @@ function ensureContracts() {
 }
 
 function applyOfflineProgress(savedAt) {
-  if (!savedAt) return "";
-  const seconds = clamp((Date.now()-savedAt)/1000,0,7200);
-  const ticks = Math.floor(seconds/(Config.tick/1000));
-  if (ticks < 15) return "";
-  const efficiency = .45;
-  const guild = 1+((S.upgrades.guild||0)*.1);
-  const gains = {};
-  for (const key in Config.b) {
-    const b = Config.b[key], workers=S.w[key]||0;
-    if (workers<=0) continue;
-    if (b.gold) gains.gold=(gains.gold||0)+(workers*b.gold*ticks*efficiency);
-    if (b.prod) gains[b.prod]=(gains[b.prod]||0)+(workers*(b.amt||1)*ticks*efficiency*guild*seasonMultiplier(b.prod));
+  if(!Number.isFinite(savedAt)||savedAt<=0) return "";
+  const seconds=clamp((Date.now()-savedAt)/1000,0,7200);
+  const ticks=Math.floor(seconds/(Config.tick/1000));
+  if(ticks<15) return "";
+  const before={...S.res};
+  reconcileWorkforce();
+  // Same recipes, staffing and trading as online. No offline hunger, raids or tax.
+  for(let tick=0;tick<ticks;tick++){
+    rebalanceMarket();
+    produceResources(S,createEconomyReport(),.45);
+    rebalanceMarket();
+    enforceStorageLimits();
   }
-  const caps=calcCaps();
-  let storeUsed=Rules.storeTypes.reduce((n,k)=>n+(S.res[k]||0),0);
-  let foodUsed=Rules.foodTypes.reduce((n,k)=>n+(S.res[k]||0),0);
-  const summary=[];
-  for (const key in gains) {
-    let amount=Math.floor(gains[key]);
-    if (Rules.storeTypes.includes(key)) { amount=Math.max(0,Math.min(amount,Math.floor(caps.store-storeUsed))); storeUsed+=amount; }
-    if (Rules.foodTypes.includes(key)) { amount=Math.max(0,Math.min(amount,Math.floor(caps.food-foodUsed))); foodUsed+=amount; }
-    if (amount>0) { S.res[key]=(S.res[key]||0)+amount; summary.push({key,amount}); }
-  }
-  if (!summary.length) return BI("Während deiner Abwesenheit waren die Lager bereits voll.","Your stores were already full while you were away.");
+  S.economy.lastTick=null;
+  const changes=Object.keys(S.res).map(key=>({key,amount:roundQty(S.res[key]-(before[key]||0))})).filter(x=>Math.abs(x.amount)>EPSILON);
   return dual(lang=>{
-    const items=summary.map(x=>`${x.amount} ${SafeT(x.key,lang)}`).join(', ');
-    return lang==='de'?`Deine Betriebe haben während deiner Abwesenheit mit 45 % Leistung gearbeitet (max. 2 Std.):\n${items}`:`Your businesses worked at 45% efficiency while you were away (max. 2 hours):\n${items}`;
+    const summary=changes.map(x=>(x.amount>0?'+':'')+numberText(x.amount,lang)+' '+SafeT(x.key,lang)).join(', ');
+    const intro=lang==='de'?"Deine Betriebe und Verarbeitungsketten haben mit 45 % Durchsatz gearbeitet (max. 2 Std.). Automatischer Handel war aktiv, soweit eingeschaltet. In dieser Zeit gab es keinen Bevölkerungsverbrauch und keine Überfälle.":"Your businesses and processing chains worked at 45% throughput (max. 2 hours). Automated trading operated where enabled. There was no population consumption or raiding during this time.";
+    return intro+'\n\n'+(summary||(lang==='de'?"Keine Bestandsänderung: Prüfe Besetzung, Rohstoffe und Lagerplatz.":"No inventory change: check staffing, inputs and storage capacity."));
   });
 }
 
-function calcCaps() {
-  const baseStore = (S.b.stock||1)*50;
-  const baseFood  = (S.b.gran||1)*50;
-  const bonusStore = (S.exp.land||0) * Config.expansion.storeBonus;
-  const bonusFood  = (S.exp.land||0) * Config.expansion.foodBonus;
-  const logistics = ((S.upgrades&&S.upgrades.logistics)||0)*25;
-  return { store: baseStore + bonusStore + logistics, food: baseFood + bonusFood + logistics };
+function calcCaps(state=S) {
+  const baseStore = (state.b.stock||1)*50;
+  const baseFood  = (state.b.gran||1)*50;
+  const bonusStore = (state.exp.land||0) * Config.expansion.storeBonus;
+  const bonusFood  = (state.exp.land||0) * Config.expansion.foodBonus;
+  const logistics = ((state.upgrades&&state.upgrades.logistics)||0)*25;
+  return { store: baseStore + bonusStore + logistics, food: baseFood + bonusFood + logistics, drink: baseFood + bonusFood + logistics };
 }
 
 function recalcPopMax() {
@@ -899,18 +980,223 @@ function getDefStr() {
   d += (S.b.tower||0) * (Config.b.tower.def||0);
   // morale helps a bit
   d += Math.floor((S.pop.hap||0)/20);
-  return d;
+  return Math.floor(d*(1+renownStatus().current.defense));
 }
 
-function countWorkers() {
-  let work = 0; for (let k in S.w) work += S.w[k]||0;
-  let sold = 0; for (let k in S.units) sold += S.units[k]||0;
-  let available = S.pop.curr - sold;
+function countWorkers(state=S) {
+  let work = 0; for (let k in state.w) work += state.w[k]||0;
+  let sold = 0; for (let k in state.units) sold += state.units[k]||0;
+  let available = Math.max(0,state.pop.curr - sold);
   let idle = available - work;
   return { work, sold, available, idle };
 }
 
-function isProdBuilding(b){ return !!(b.prod || b.proc || b.use || b.gold); }
+function isProdBuilding(b){ return !!(b.prod || b.recipe || b.proc || b.use || b.gold); }
+
+/* ---------------- DETERMINISTIC ECONOMY ---------------- */
+const EPSILON = 0.000001;
+const roundQty = n => Math.round((Number(n)||0)*1000000)/1000000;
+const sumGoods = (res,keys) => roundQty(keys.reduce((sum,k)=>sum+(res[k]||0),0));
+function addAmount(map,key,amount){ map[key]=roundQty((map[key]||0)+amount); }
+function numberText(value,lang=I18N.lang,max=1){
+  return Number(value||0).toLocaleString(lang==='de'?'de-DE':'en-GB',{maximumFractionDigits:max});
+}
+
+function renownStatus(state=S){
+  const amount=Math.max(0,state.renown||0);
+  let current=RenownTiers[0],next=null;
+  for(const tier of RenownTiers){ if(amount>=tier.at) current=tier; else {next=tier;break;} }
+  const progress=next?clamp((amount-current.at)/(next.at-current.at)*100,0,100):100;
+  return {current,next,progress};
+}
+function contractReward(contract,state=S){
+  return Math.round(contract.rewardGold*(1+(state.upgrades.diplomacy||0)*.08)*(1+renownStatus(state).current.contracts));
+}
+function productionRecipe(b){
+  if(b.recipe) return b.recipe;
+  if(b.prod) return {input:{},output:{[b.prod]:b.amt||1}};
+  if(b.gold) return {input:{},output:{gold:b.gold}};
+  if(b.proc) return {input:{[b.proc]:1},output:{[b.out]:b.r||1}};
+  if(b.use) return {input:{[b.use]:1},output:{[b.out]:b.amt||1}};
+  return null;
+}
+function productionMultiplier(state=S){
+  const boost=(state.boostUntilDay||0)>=(state.day||1)?1.5:1;
+  return (1+(state.upgrades.guild||0)*.1)*boost*(1+renownStatus(state).current.production);
+}
+function goodsText(goods,lang=I18N.lang){
+  const values=Object.entries(goods).filter(([,n])=>Math.abs(n)>EPSILON);
+  return values.length?values.map(([key,n])=>numberText(n,lang)+' '+SafeT(key,lang)).join(' + '):'—';
+}
+function recipeText(building,lang=I18N.lang){
+  const recipe=productionRecipe(building);
+  if(!recipe) return '';
+  const input=Object.keys(recipe.input).length?goodsText(recipe.input,lang)+' → ':'';
+  return input+goodsText(recipe.output,lang);
+}
+function renownBonusText(tier,lang=I18N.lang){
+  return trl('renown_bonuses',lang,{contracts:Math.round(tier.contracts*100),production:Math.round(tier.production*100),tax:Math.round(tier.tax*100),defense:Math.round(tier.defense*100)});
+}
+
+const FoodWorkerPriority=['apple','hunter','dairy','cattle','wood','wheat','mill','bake','hops','brew'];
+const ReleaseWorkerPriority=['outpost','leatherwork','armor','smith','pole','fletch','tannery','iron','quarry','brew','hops','tower','wood','bake','mill','wheat','cattle','dairy','hunter','apple'];
+function reconcileWorkforce(state=S){
+  state.staffing=state.staffing||{targets:{...state.w}};
+  const targets=state.staffing.targets;
+  for(const k in Config.b){
+    targets[k]=clamp(Math.floor(targets[k]||0),0,state.b[k]||0);
+    state.w[k]=clamp(Math.floor(state.w[k]||0),0,Math.min(state.b[k]||0,targets[k]));
+  }
+  let short=Math.max(0,-countWorkers(state).idle);
+  for(const k of [...ReleaseWorkerPriority,...Object.keys(Config.b)]){
+    const take=Math.min(short,state.w[k]||0);
+    if(take>0){state.w[k]-=take;short-=take;}
+    if(short<=0) break;
+  }
+  let free=Math.max(0,countWorkers(state).idle);
+  for(const k of [...FoodWorkerPriority,...Object.keys(Config.b)]){
+    const fill=Math.min(free,Math.max(0,(targets[k]||0)-(state.w[k]||0)));
+    if(fill>0){state.w[k]+=fill;free-=fill;}
+    if(free<=0) break;
+  }
+}
+
+function createEconomyReport(state=S){
+  return {day:state.day,population:state.pop.curr,produced:{},inputs:{},consumed:{},trade:{},lost:{},net:{},buildings:{},actions:[],
+    foodDemand:state.pop.curr,foodEaten:0,foodMissing:0,foodTypes:0,beerDemand:roundQty(state.pop.curr*.2),beerServed:0,taxes:0};
+}
+function storageRoom(key,state=S){
+  const caps=calcCaps(state);
+  if(Rules.storeTypes.includes(key)) return Math.max(0,roundQty(caps.store-sumGoods(state.res,Rules.storeTypes)));
+  if(Rules.foodTypes.includes(key)) return Math.max(0,roundQty(caps.food-sumGoods(state.res,Rules.foodTypes)));
+  if(Rules.drinkTypes.includes(key)) return Math.max(0,roundQty(caps.drink-sumGoods(state.res,Rules.drinkTypes)));
+  return Infinity;
+}
+function executeTrade(key,buy,wanted=5,{state=S,auto=false,report=null}={}){
+  if(!(state.b.market>0)||!MarketGoods[key]||!Number.isFinite(wanted)||wanted<=EPSILON) return null;
+  const unitPrice=marketPrice(key,buy)/5;
+  let quantity=Math.max(0,wanted);
+  if(buy){
+    const spendable=Math.max(0,state.res.gold-(auto?state.market.reserve:0));
+    const affordable=Math.floor((spendable/unitPrice)*1000000)/1000000;
+    quantity=Math.min(quantity,affordable,storageRoom(key,state));
+  }else quantity=Math.min(quantity,state.res[key]||0);
+  quantity=roundQty(quantity);
+  if(quantity<=EPSILON) return null;
+  const gold=roundQty(quantity*unitPrice);
+  const sign=buy?1:-1;
+  state.res[key]=roundQty((state.res[key]||0)+sign*quantity);
+  state.res.gold=roundQty(state.res.gold-sign*gold);
+  const action={key,buy:!!buy,quantity,gold};
+  if(report){addAmount(report.trade,key,sign*quantity);addAmount(report.trade,'gold',-sign*gold);report.actions.push(action);}
+  return action;
+}
+function rebalanceMarket(state=S,report=null){
+  if(!(state.b.market>0)) return [];
+  const actions=[];
+  // All surpluses are sold first, freeing capacity and financing shortages.
+  for(const key of Rules.marketTypes){
+    const rule=state.market.auto[key];
+    if(rule&&rule.enabled&&(state.res[key]||0)>rule.max+EPSILON){
+      const action=executeTrade(key,false,(state.res[key]||0)-rule.max,{state,auto:true,report});
+      if(action) actions.push(action);
+    }
+  }
+  const buyOrder=[...Rules.foodTypes,...Rules.marketTypes.filter(k=>!Rules.foodTypes.includes(k))];
+  for(const key of buyOrder){
+    const rule=state.market.auto[key];
+    if(rule&&rule.enabled&&(state.res[key]||0)<rule.min-EPSILON){
+      const action=executeTrade(key,true,rule.min-(state.res[key]||0),{state,auto:true,report});
+      if(action) actions.push(action);
+    }
+  }
+  return actions;
+}
+
+function produceResources(state=S,report=createEconomyReport(state),scale=1){
+  const keys=Object.keys(Config.b).filter(k=>isProdBuilding(Config.b[k]));
+  const stage=k=>Object.keys(productionRecipe(Config.b[k]).input).length?(Config.b[k].stage||4):0;
+  keys.sort((a,b)=>stage(a)-stage(b));
+  for(const key of keys){
+    const b=Config.b[key],recipe=productionRecipe(b);
+    const workers=state.w[key]||0;
+    const seasonal=b.prod?seasonMultiplier(b.prod,state.day):1;
+    const capacity=roundQty(workers*productionMultiplier(state)*seasonal*scale);
+    let cycles=capacity;
+    const missing=[];
+    for(const [resource,amount] of Object.entries(recipe.input)){
+      if((state.res[resource]||0)+EPSILON<amount*capacity) missing.push(resource);
+      cycles=Math.min(cycles,Math.max(0,state.res[resource]||0)/amount);
+    }
+    cycles=Math.max(0,roundQty(cycles));
+    const row={workers,target:state.staffing.targets[key]||0,capacity,cycles,input:{},output:{},missing,
+      status:!(state.b[key]>0)?'not_built':workers<=0?'no_workers':cycles<=EPSILON?'no_inputs':cycles+EPSILON<capacity?'partial':'running'};
+    if(cycles>EPSILON){
+      for(const [resource,amount] of Object.entries(recipe.input)){
+        const used=Math.min(state.res[resource]||0,roundQty(amount*cycles));
+        state.res[resource]=Math.max(0,roundQty((state.res[resource]||0)-used));
+        row.input[resource]=used;addAmount(report.inputs,resource,used);
+      }
+      for(const [resource,amount] of Object.entries(recipe.output)){
+        const made=roundQty(amount*cycles);
+        state.res[resource]=roundQty((state.res[resource]||0)+made);
+        row.output[resource]=made;addAmount(report.produced,resource,made);
+      }
+    }
+    report.buildings[key]=row;
+  }
+  return report;
+}
+
+function enforceStorageLimits(state=S,report=null){
+  const caps=calcCaps(state),losses={};
+  for(const [types,capacity] of [[Rules.storeTypes,caps.store],[Rules.foodTypes,caps.food],[Rules.drinkTypes,caps.drink]]){
+    let over=Math.max(0,roundQty(sumGoods(state.res,types)-capacity));
+    // O(number of goods), exact fractional removal, never negative inventory.
+    const largest=[...types].sort((a,b)=>(state.res[b]||0)-(state.res[a]||0));
+    for(const key of largest){
+      const take=Math.min(over,Math.max(0,state.res[key]||0));
+      if(take<=EPSILON) continue;
+      state.res[key]=Math.max(0,roundQty(state.res[key]-take));
+      over=Math.max(0,roundQty(over-take));addAmount(losses,key,take);
+      if(report) addAmount(report.lost,key,take);
+    }
+  }
+  return losses;
+}
+
+function simulateEconomy(state=S){
+  const before={...state.res},report=createEconomyReport(state);
+  reconcileWorkforce(state);
+  rebalanceMarket(state,report);
+  produceResources(state,report);
+  const tax=Config.taxes[state.tax||0];
+  report.taxes=roundQty(state.pop.curr*tax.g*(1+renownStatus(state).current.tax));
+  addAmount(state.res,'gold',report.taxes);
+  let needed=report.foodDemand;
+  const foods=[...Rules.foodTypes].sort((a,b)=>(state.res[b]||0)-(state.res[a]||0));
+  for(const key of foods){
+    if(needed<=EPSILON) break;
+    const take=Math.min(needed,Math.max(0,state.res[key]||0));
+    if(take>EPSILON){
+      state.res[key]=Math.max(0,roundQty(state.res[key]-take));
+      needed=Math.max(0,roundQty(needed-take));report.consumed[key]=take;report.foodTypes++;
+    }
+  }
+  report.foodMissing=needed<=EPSILON?0:needed;
+  report.foodEaten=roundQty(report.foodDemand-report.foodMissing);
+  report.beerServed=Math.min(report.beerDemand,Math.max(0,state.res.beer||0));
+  state.res.beer=Math.max(0,roundQty((state.res.beer||0)-report.beerServed));
+  report.consumed.beer=report.beerServed;
+  // New production and consumption are balanced before any overflow can be lost.
+  rebalanceMarket(state,report);
+  enforceStorageLimits(state,report);
+  for(const key of ['gold',...Rules.marketTypes]) report.net[key]=roundQty((state.res[key]||0)-(before[key]||0));
+  report.foodMade=sumGoods(report.produced,Rules.foodTypes);
+  report.foodBalance=roundQty(report.foodMade-report.foodDemand);
+  report.foodStock=sumGoods(state.res,Rules.foodTypes);
+  return report;
+}
 
 function goalForLevel(lvl) {
   // persist-state progression: goals scale; mix of economy + defense
@@ -985,15 +1271,18 @@ const Game = {
     const load = Storage.load();
     if (load) {
       const savedAt = load.meta && load.meta.savedAt;
+      const economyUpgrade=!load.meta||(load.meta.version||0)<6;
       S = load;
       migrateState();
       recalcPopMax();
       if (!S.raid.next) scheduleNextRaid();
       ensureContracts();
       const offline = applyOfflineProgress(savedAt);
+      const upgradeInfo=economyUpgrade?BI("Versorgungsupdate: Bäckereien benötigen jetzt Mehl und Holz; Brauereien benötigen Weizen, Hopfen und Holz. Ruhm gewährt automatisch Vorteile. Alle Rezepte, Engpässe und Arbeiter findest du unter Produktion & Versorgung.","Supply update: bakeries now need flour and wood; breweries need wheat, hops and wood. Renown grants automatic benefits. Find all recipes, bottlenecks and workers under Production & Supply."):null;
+      const welcome=dual(lang=>[loc(offline||BI("Dein Lehen wartet auf dich.","Your fief awaits you."),lang),upgradeInfo?loc(upgradeInfo,lang):''].filter(Boolean).join('\n\n'));
       S.paused = true;
       UI.init();
-      UI.showModal(BI("Willkommen zurück","Welcome back"), offline || BI("Dein Lehen wartet auf dich.","Your fief awaits you."), BI("Weiter","Continue"), ()=>{
+      UI.showModal(BI("Willkommen zurück","Welcome back"), welcome, BI("Weiter","Continue"), ()=>{
         if (S.events.pending) UI.openEvent(S.events.pending);
       });
     } else {
@@ -1023,13 +1312,13 @@ const Game = {
       goal: {},
       tut: { done:false, step:0, skipped:false },
       renown: 0,
-      market: {pressure:{},auto:{},reserve:100},
+      market: {auto:{},reserve:100},
       contracts: {items:[],completed:0,nextId:1},
       events: {nextDay:7,pending:null,seen:0},
       upgrades: {tools:0,guild:0,logistics:0,diplomacy:0},
       clicker: {combo:0,lastClick:0,total:0},
       boostUntilDay: 0,
-      meta: {savedAt:Date.now(),version:5},
+      meta: {savedAt:Date.now(),version:6},
       logs: []
     };
     // init building & worker counts
@@ -1053,6 +1342,7 @@ const Game = {
     if (S.paused) return;
     if (Tutorial.isBlocking('gather', type)) return;
 
+    Game.runAutoMarket();
     const caps = calcCaps();
     let curS = 0; Rules.storeTypes.forEach(k=>curS += (S.res[k]||0));
     let curF = 0; Rules.foodTypes.forEach(k=>curF += (S.res[k]||0));
@@ -1070,6 +1360,7 @@ const Game = {
       S.res.gold=(S.res.gold||0)+5;
       UI.log(BI(`Klickserie ${S.clicker.combo}: +5 Gold`,`Click streak ${S.clicker.combo}: +5 gold`),"prod");
     }
+    Game.runAutoMarket();
     UI.update();
     UI.updateCombo(actual);
     UI.showFloatingText(type, `+${actual}`, "pos");
@@ -1097,6 +1388,7 @@ const Game = {
     if (isProdBuilding(b)) {
       const cw = countWorkers();
       if (cw.idle > 0 && (S.w[key]||0) < S.b[key]) S.w[key] = (S.w[key]||0) + 1;
+      S.staffing.targets[key]=Math.max(S.staffing.targets[key]||0,S.w[key]||0);
     }
 
     recalcPopMax();
@@ -1122,6 +1414,7 @@ const Game = {
     } else {
       if ((S.w[key]||0) > 0) S.w[key] = (S.w[key]||0) - 1;
     }
+    S.staffing.targets[key]=S.w[key]||0;
     UI.update();
     UI.renderBuild();
     Tutorial.onAction('assign', key);
@@ -1138,6 +1431,7 @@ const Game = {
 
     if (key === 'merc') {
       if ((S.b.mercCamp||0) < 1) return UI.showModal(BI("Keine Söldner","No mercenaries"), BI("Baue zuerst ein Söldnerlager.","Build a Mercenary Camp first."), BI("OK","OK"));
+      if(cw.idle<1) return;
       if ((S.res.gold||0) >= u.cost) { S.res.gold -= u.cost; S.units.merc++; UI.log(BI("Söldner angeheuert.","Mercenary hired."), "prod"); }
     } else {
       if ((S.b.barrack||0) < 1) return UI.showModal(BI("Keine Kaserne","No barracks"), BI("Baue zuerst eine Kaserne.","Build barracks first."), BI("OK","OK"));
@@ -1157,64 +1451,53 @@ const Game = {
     Tutorial.onAction('recruit', key);
   },
 
-  trade(k, buy, source='manual') {
-    if (S.paused) return;
-    if ((S.b.market||0)<1 || !MarketGoods[k]) return false;
-    const amount=5;
-    const price=marketPrice(k,!!buy);
-    if (buy) {
-      if ((S.res.gold||0)<price) return false;
-      if (source==='auto' && (S.res.gold-price)<(S.market.reserve||0)) return false;
-      const caps=calcCaps();
-      if (Rules.storeTypes.includes(k)) {
-        const used=Rules.storeTypes.reduce((n,r)=>n+(S.res[r]||0),0);
-        if (caps.store-used<amount) return false;
-      }
-      if (Rules.foodTypes.includes(k)) {
-        const used=Rules.foodTypes.reduce((n,r)=>n+(S.res[r]||0),0);
-        if (caps.food-used<amount) return false;
-      }
-      S.res.gold-=price; S.res[k]=(S.res[k]||0)+amount;
-      S.market.pressure[k]=clamp((S.market.pressure[k]||0)+.045,-.35,.65);
-    } else {
-      if ((S.res[k]||0)<amount) return false;
-      S.res[k]-=amount; S.res.gold+=price;
-      S.market.pressure[k]=clamp((S.market.pressure[k]||0)-.035,-.35,.65);
-    }
-    if (source==='manual') {
-      UI.log(dual(lang=>lang==='de'?`${buy?'Gekauft':'Verkauft'}: 5 ${SafeT(k,lang)} für ${price} Gold`:`${buy?'Bought':'Sold'}: 5 ${SafeT(k,lang)} for ${price} gold`),buy?'prod':'war');
-      UI.update(); UI.renderMarket();
+  trade(k, buy, source='manual',quantity=5) {
+    if (S.paused) return false;
+    const action=executeTrade(k,!!buy,quantity,{auto:source==='auto'});
+    if(!action) return false;
+    if(source==='manual'){
+      UI.log(dual(lang=>lang==='de'?`${buy?'Gekauft':'Verkauft'}: ${numberText(action.quantity,lang)} ${SafeT(k,lang)} für ${numberText(action.gold,lang,2)} Gold`:`${buy?'Bought':'Sold'}: ${numberText(action.quantity,lang)} ${SafeT(k,lang)} for ${numberText(action.gold,lang,2)} gold`),buy?'prod':'war');
+      UI.update();UI.renderMarket();
     }
     return true;
   },
 
   setMarketReserve(value) {
     S.market.reserve=Math.max(0,Math.floor(Number(value)||0));
+    Game.runAutoMarket();
     UI.renderMarket(); UI.update();
   },
 
   setMarketAuto(key,enabled) {
     if (!S.market.auto[key]) return;
     S.market.auto[key].enabled=!!enabled;
+    Game.runAutoMarket();
     UI.update();
   },
 
   setMarketTarget(key,field,value) {
     const rule=S.market.auto[key]; if (!rule) return;
+    if(field!=='min'&&field!=='max') return;
     rule[field]=Math.max(0,Math.floor(Number(value)||0));
-    if (rule.max<rule.min+5) rule.max=rule.min+5;
+    if(field==='min') rule.max=Math.max(rule.max,rule.min);
+    else rule.min=Math.min(rule.min,rule.max);
+    Game.runAutoMarket();
     UI.renderMarket(); UI.update();
   },
 
   runAutoMarket() {
-    if ((S.b.market||0)<1) return;
-    const actions=[];
-    Rules.marketTypes.forEach(k=>{
-      const rule=S.market.auto[k]; if (!rule || !rule.enabled) return;
-      if ((S.res[k]||0)<rule.min && this.trade(k,true,'auto')) actions.push({k,sign:'+'});
-      else if ((S.res[k]||0)>rule.max && this.trade(k,false,'auto')) actions.push({k,sign:'−'});
-    });
-    if (actions.length) UI.log(dual(lang=>`${lang==='de'?'Kontor':'Trading post'}: ${actions.map(a=>`${a.sign}5 ${SafeT(a.k,lang)}`).join(', ')}`),"prod");
+    if(S.paused) return [];
+    const actions=rebalanceMarket();
+    Game.logTradeActions(actions);
+    return actions;
+  },
+
+  logTradeActions(actions){
+    if(!actions.length) return;
+    const net={};
+    actions.forEach(a=>addAmount(net,a.key,(a.buy?1:-1)*a.quantity));
+    const entries=Object.entries(net).filter(([,amount])=>Math.abs(amount)>EPSILON);
+    if(entries.length) UI.log(dual(lang=>`${lang==='de'?'Kontor':'Trading post'}: ${entries.map(([key,amount])=>`${amount>0?'+':''}${numberText(amount,lang)} ${SafeT(key,lang)}`).join(', ')}`),'prod');
   },
 
   fulfillContract(id) {
@@ -1223,7 +1506,7 @@ const Game = {
     const c=S.contracts.items[idx];
     if ((S.res[c.resource]||0)<c.qty) { const missing=c.qty-(S.res[c.resource]||0); UI.log(dual(lang=>lang==='de'?`Für den Auftrag fehlen ${missing} ${SafeT(c.resource,lang)}.`:`The contract is missing ${missing} ${SafeT(c.resource,lang)}.`),"warn"); return; }
     S.res[c.resource]-=c.qty;
-    const reward=Math.round(c.rewardGold*(1+(S.upgrades.diplomacy||0)*.08));
+    const reward=contractReward(c);
     S.res.gold+=reward; S.renown+=c.rewardRenown; S.contracts.completed++;
     S.contracts.items.splice(idx,1); ensureContracts();
     UI.log(BI(`Auftrag erfüllt: +${reward} Gold, +${c.rewardRenown} Ruhm`,`Contract fulfilled: +${reward} gold, +${c.rewardRenown} renown`),"prod");
@@ -1440,230 +1723,98 @@ const Game = {
 
   tick() {
     if (!S || !S.res) return;
-    if (S.paused) { lastTickTime = Date.now(); return; }
-
+    if (S.paused) { lastTickTime=Date.now(); return; }
     const previousSeason=getSeason().idx;
     S.day++;
-    lastTickTime = Date.now();
-    if (getSeason().idx!==previousSeason) { const season=getSeason(); UI.log(dual(lang=>lang==='de'?`${season.i} Der ${loc(season.n,lang)} beginnt. Die Produktion verändert sich.`:`${season.i} ${loc(season.n,lang)} begins. Production changes.`),"prod"); }
-    Rules.marketTypes.forEach(k=>S.market.pressure[k]=(S.market.pressure[k]||0)*.985);
+    lastTickTime=Date.now();
+    if(getSeason().idx!==previousSeason){
+      const season=getSeason();
+      UI.log(dual(lang=>lang==='de'?season.i+" Der "+loc(season.n,lang)+" beginnt. Die Produktion verändert sich.":season.i+" "+loc(season.n,lang)+" begins. Production changes."),"prod");
+    }
     Game.expireContracts();
-
-    // warn about raid
-    if ((S.lvl||1) >= Config.raid.startLevel) {
-      const inDays = (S.raid.next||0) - (S.day||0);
-      if (inDays <= 2 && !S.raid.warned) {
-        S.raid.warned = true;
-        UI.log(BI("Späher melden: Ein Überfall naht!","Scouts report: a raid is coming!"), "raid");
-        UI.showModal(BI("⚠️ Überfall naht","⚠️ Raid incoming"), BI("In 1–2 Tagen greifen Plünderer an.\nTipp: Baue Holzwälle und Türme oder bilde Soldaten aus.","Raiders will attack in 1–2 days.\nTip: Build wooden walls and towers or train soldiers."), BI("Verstanden","Got it"), ()=>{});
+    if((S.lvl||1)>=Config.raid.startLevel){
+      const inDays=(S.raid.next||0)-S.day;
+      if(inDays<=2&&!S.raid.warned){
+        S.raid.warned=true;
+        UI.log(BI("Späher melden: Ein Überfall naht!","Scouts report: a raid is coming!"),"raid");
       }
-      if ((S.day||0) >= (S.raid.next||0)) {
-        UI.showModal(BI("⚔️ Überfall!","⚔️ Raid!"), BI("Plünderer fallen in dein Lehen ein …","Raiders descend on your fief…"), BI("Kämpfen","Fight"), ()=>{ Game.resolveRaid(); UI.update(); });
+      if(S.day>=(S.raid.next||0)){
+        S.paused=true;
+        UI.showModal(BI("⚔️ Überfall!","⚔️ Raid!"),BI("Plünderer fallen in dein Lehen ein …","Raiders descend on your fief…"),BI("Kämpfen","Fight"),()=>{Game.resolveRaid();reconcileWorkforce();UI.update();});
         return;
       }
     }
 
-    const startRes = JSON.parse(JSON.stringify(S.res));
-    Game.runAutoMarket();
     recalcPopMax();
-
-    const dRes = {}; for (let k in S.res) dRes[k]=0;
-
-    // caps
-    const caps = calcCaps();
-    const maxS = caps.store;
-    const maxF = caps.food;
-
-    // 1) Production: Zunft, Jahreszeit und Sonderschicht greifen ineinander.
-    const guildMult=1+(S.upgrades.guild||0)*.1;
-    const boostMult=(S.boostUntilDay||0)>=(S.day||1)?1.5:1;
-    for (let k in Config.b) {
-      const b = Config.b[k];
-      const n = S.w[k]||0;
-      if (n<=0) continue;
-
-      // passive gold producers
-      if (b.gold) {
-        dRes.gold = (dRes.gold||0) + (n * b.gold * guildMult * boostMult);
+    const report=simulateEconomy();
+    S.economy.lastTick=report;
+    S.rates={...report.net};
+    const h={hunger:0,variety:0,tax:0,beer:0,religion:0,overcrowd:0,idle:0,total:0};
+    if(report.foodMissing>EPSILON){
+      S.survival.hungerTicks=(S.survival.hungerTicks||0)+1;
+      h.hunger=-Math.max(2,8*report.foodMissing/Math.max(1,report.foodDemand));
+      UI.log(dual(lang=>lang==='de'?"Nahrungsmangel: "+numberText(report.foodMissing,lang)+" Rationen fehlen.":"Food shortage: "+numberText(report.foodMissing,lang)+" rations missing."),"warn");
+      // A single empty tick is recoverable; only sustained shortages cause deaths.
+      if(S.survival.hungerTicks>=4&&S.survival.hungerTicks%4===0){
+        S.pop.curr=Math.max(0,S.pop.curr-1);
+        Game.unassignWorker();
+        UI.log(BI("Ein Bewohner ist nach anhaltendem Nahrungsmangel verhungert.","A villager starved after a prolonged food shortage."),"death");
       }
-
-      if (b.prod) {
-        dRes[b.prod] = (dRes[b.prod]||0) + (n * (b.amt||1) * guildMult * boostMult * seasonMultiplier(b.prod));
-      }
-      if (b.proc) {
-        const avail = (S.res[b.proc]||0) + (dRes[b.proc]||0);
-        const actual = Math.min(avail, n);
-        if (actual>0) {
-          dRes[b.proc] -= actual;
-          dRes[b.out] = (dRes[b.out]||0) + (actual * (b.r||1) * guildMult * boostMult * seasonMultiplier(b.out));
-        }
-      }
-      if (b.use) {
-        const avail = (S.res[b.use]||0) + (dRes[b.use]||0);
-        const actual = Math.min(avail, n);
-        if (actual>0) {
-          dRes[b.use] -= actual;
-          dRes[b.out] = (dRes[b.out]||0) + (actual * (b.amt||1) * guildMult * boostMult * seasonMultiplier(b.out));
-        }
-      }
+    }else{
+      S.survival.hungerTicks=0;
+      h.hunger=2;
     }
-
-    // 2) Taxes
-    const tx = Config.taxes[S.tax||0];
-    dRes.gold = (dRes.gold||0) + (S.pop.curr * tx.g);
-
-    // 3) Consumption
-    let eat = S.pop.curr;
-    const foods = ['bread','meat','cheese','apple'];
-    let ateTypes = 0;
-    foods.sort((a,b)=>((S.res[b]||0)-(S.res[a]||0)));
-    for (let f of foods) {
-      if (eat<=0) break;
-      const avail = (S.res[f]||0) + (dRes[f]||0);
-      if (avail>0) {
-        const take = Math.min(eat, avail);
-        dRes[f] = (dRes[f]||0) - take;
-        eat -= take;
-        ateTypes++;
-      }
+    h.variety=report.foodTypes>=3?2:report.foodTypes===2?1:0;
+    h.tax=Config.taxes[S.tax||0].h;
+    h.beer=report.beerDemand>0?Math.round(3*report.beerServed/report.beerDemand*10)/10:0;
+    h.religion=(S.b.church||0)*2;
+    if(S.pop.max>0){
+      const fill=S.pop.curr/S.pop.max;
+      if(fill>.95) h.overcrowd=-2;
+      if(fill>1) h.overcrowd=-6;
     }
+    const workers=countWorkers();
+    if(workers.available>0&&workers.idle/workers.available>.45) h.idle=-1;
+    h.total=h.hunger+h.variety+h.tax+h.beer+h.religion+h.overcrowd+h.idle;
+    const delta=clamp(h.total,-6,6);
+    S.pop.hap=clamp(roundQty(S.pop.hap+delta),0,100);
+    S.factors={...h,total:delta};
 
-    // 4) Happiness factors
-    const h = { hunger:0, variety:0, tax:0, beer:0, religion:0, overcrowd:0, idle:0, raid:0, total:0 };
-
-    if (eat>0) {
-      UI.log(BI(`${eat} Bewohner hungern!`,`${eat} villagers are starving!`), 'warn');
-      h.hunger = -8;
-      if (Math.random() < 0.18) {
-        S.pop.curr = Math.max(0, S.pop.curr-1);
-        UI.log(BI("Ein Bewohner ist verhungert.","A villager starved."), "death");
-        Game.unassignWorker(true);
-      }
-    } else h.hunger = +2;
-
-    h.variety = (ateTypes>=3)?+2:(ateTypes===2?+1:0);
-    h.tax = tx.h;
-
-    // beer bonus
-    const availBeer = (S.res.beer||0) + (dRes.beer||0);
-    if (S.pop.curr>0) {
-      if (availBeer >= S.pop.curr) {
-        dRes.beer -= S.pop.curr;
-        h.beer = +3;
-      } else if (availBeer > 0) {
-        const ratio = availBeer / S.pop.curr;
-        dRes.beer -= availBeer;
-        h.beer = (ratio>=0.5) ? +1 : 0;
-      }
+    Game.logTradeActions(report.actions);
+    if(Object.keys(report.lost).length){
+      UI.log(dual(lang=>(lang==='de'?"Lagerüberlauf: ":"Storage overflow: ")+Object.entries(report.lost).map(([key,amount])=>numberText(amount,lang)+" "+SafeT(key,lang)).join(', ')),"warn");
     }
-
-    h.religion = (S.b.church||0) * 2;
-
-    if (S.pop.max>0) {
-      const fill = S.pop.curr / S.pop.max;
-      if (fill > 0.95) h.overcrowd = -2;
-      if (fill > 1.00) h.overcrowd = -6;
-    }
-
-    const cw = countWorkers();
-    if (cw.available>0) {
-      const idleRatio = cw.idle / cw.available;
-      if (idleRatio > 0.45) h.idle = -1;
-    }
-
-    h.total = h.hunger + h.variety + h.tax + h.beer + h.religion + h.overcrowd + h.idle;
-    const delta = clamp(h.total, -6, +6);
-    S.pop.hap = clamp(S.pop.hap + delta, 0, 100);
-    S.factors = { ...h, total: delta };
-
-    // 5) Apply deltas
-    for (let k in dRes) {
-      S.res[k] = (S.res[k]||0) + dRes[k];
-      if (S.res[k] < 0) S.res[k] = 0;
-    }
-
-    // 6) Cap enforcement (soft overflow loss)
-    let curS = 0; Rules.storeTypes.forEach(k=>curS += (S.res[k]||0));
-    let curF = 0; Rules.foodTypes.forEach(k=>curF += (S.res[k]||0));
-
-    if (curS > maxS) {
-      let over = curS - maxS;
-      const types = Rules.storeTypes;
-      while (over>0) {
-        let del = false;
-        for (let t of types) {
-          if ((S.res[t]||0) > 0 && over>0) { S.res[t]--; over--; del=true; }
-        }
-        if(!del) break;
-      }
-      UI.log(BI("Lager voll: Überschüsse verderben.","Storage full: surplus spoils."), "warn");
-    }
-    if (curF > maxF) {
-      let over = curF - maxF;
-      const types = Rules.foodTypes;
-      while (over>0) {
-        let del = false;
-        for (let t of types) {
-          if ((S.res[t]||0) > 0 && over>0) { S.res[t]--; over--; del=true; }
-        }
-        if(!del) break;
-      }
-      UI.log(BI("Nahrungslager voll: Lebensmittel verderben.","Food storage full: food spoils."), "warn");
-    }
-
-    // 7) Population dynamics
-    if (S.pop.curr <= 0) {
-      S.pop.curr = 0; S.paused = true;
-      UI.update();
-      UI.showModal(BI("SPIEL VORBEI","GAME OVER"), BI("Das Dorf ist ausgestorben.","The village has died out."), BI("Neustart","Restart"), ()=>Game.reset());
+    if(S.pop.curr<=0){
+      S.pop.curr=0;S.paused=true;UI.update();
+      UI.showModal(BI("SPIEL VORBEI","GAME OVER"),BI("Das Dorf ist ausgestorben.","The village has died out."),BI("Neustart","Restart"),()=>Game.reset());
       return;
     }
-
-    if (S.pop.hap > 70 && S.pop.curr < S.pop.max && Math.random() > 0.58) {
+    if(S.pop.hap>70&&report.foodMissing<=EPSILON&&S.pop.curr<S.pop.max&&Math.random()>.58){
       S.pop.curr++;
-      UI.log(BI("Neue Bewohner sind eingetroffen.","New villagers have arrived."), "prod");
-    } else if (S.pop.hap < 18 && S.pop.curr > 0 && Math.random() > 0.6) {
+      reconcileWorkforce();
+      UI.log(BI("Neue Bewohner sind eingetroffen. Offene Arbeitsplätze werden wieder besetzt.","New villagers have arrived. Vacant assigned jobs are being filled again."),"prod");
+    }else if(S.pop.hap<18&&S.pop.curr>0&&Math.random()>.6){
       S.pop.curr--;
-      UI.log(BI("Bewohner sind geflohen.","Villagers have fled."), "warn");
-      Game.unassignWorker(true);
+      Game.unassignWorker();
+      UI.log(BI("Bewohner sind geflohen.","Villagers have fled."),"warn");
     }
-
-    // 8) Rates display
-    S.rates = {};
-    for (let k in S.res) {
-      const diff = (S.res[k]||0) - (startRes[k]||0);
-      if (diff !== 0) S.rates[k] = diff;
+    if(checkGoal()){
+      S.paused=true;
+      const old=S.lvl||1,oldRank=rankForLevel(old).current;
+      S.lvl=old+1;S.goal=goalForLevel(S.lvl);
+      const newRank=rankForLevel().current,rankChanged=oldRank.lvl!==newRank.lvl;
+      const body=dual(lang=>lang==='de'?"Du hast Stufe "+S.lvl+" erreicht."+(rankChanged?"\nNeuer Burgrang: "+loc(newRank.n,lang)+"!":"")+"\nNeue Ziele warten.":"You reached level "+S.lvl+"."+(rankChanged?"\nNew castle rank: "+loc(newRank.n,lang)+"!":"")+"\nNew objectives await.");
+      UI.showModal(BI("🏆 Stufenaufstieg!","🏆 Level up!"),body,BI("Weiter","Continue"),()=>{S.paused=false;lastTickTime=Date.now();});
+      UI.log(BI("Stufe "+old+" abgeschlossen → Stufe "+S.lvl,"Level "+old+" complete → Level "+S.lvl),"prod");
     }
-
-    // 9) Goal check + level up
-    if (checkGoal()) {
-      S.paused = true;
-      const old = S.lvl||1;
-      const oldRank=rankForLevel(old).current;
-      S.lvl = old + 1;
-      S.goal = goalForLevel(S.lvl);
-      const newRank=rankForLevel(S.lvl).current;
-      const rankChanged=oldRank.lvl!==newRank.lvl;
-      const levelBody=dual(lang=>lang==='de'?`Du hast Stufe ${S.lvl} erreicht.${rankChanged?`\nNeuer Burgrang: ${loc(newRank.n,lang)}!`:''}\nNeue Ziele warten.`:`You reached level ${S.lvl}.${rankChanged?`\nNew castle rank: ${loc(newRank.n,lang)}!`:''}\nNew objectives await.`);
-      UI.showModal(BI("🏆 Stufenaufstieg!","🏆 Level up!"), levelBody, BI("Weiter","Continue"), ()=>{
-        S.paused = false;
-        lastTickTime = Date.now();
-      });
-      UI.log(BI(`Stufe ${old} abgeschlossen → Stufe ${S.lvl}`,`Level ${old} complete → Level ${S.lvl}`), "prod");
-    }
-
     UI.update();
-    if (!S.paused) Game.checkRandomEvent();
+    if(!S.paused) Game.checkRandomEvent();
     Tutorial.tick();
   },
-
   unassignWorker() {
-    const fireOrder = ['outpost','smith','armor','fletch','pole','iron','quarry','wood','brew','mill','bake','dairy','hunter','apple','wheat','hops'];
-    for (let key of fireOrder) {
-      if ((S.w[key]||0) > 0) { S.w[key]--; return true; }
-    }
-    for (let k in S.w) { if ((S.w[k]||0)>0) { S.w[k]--; return true; } }
-    return false;
+    const before=countWorkers().work;
+    reconcileWorkforce();
+    return countWorkers().work<before;
   }
 };
 
@@ -1828,6 +1979,7 @@ const UI = {
 
   init() {
     I18N.applyStatic();
+    reconcileWorkforce();
     this.renderMap();
     this.renderBuild();
     this.renderLog();
@@ -1872,23 +2024,26 @@ const UI = {
 
   update() {
     // resources & rates
-    ['gold','wood','stone','iron','wheat','flour','hops','bread','meat','apple','cheese','beer','bow','spear','sword','armor'].forEach(k=>{
+    ['gold',...Rules.marketTypes].forEach(k=>{
       const el = document.getElementById('r-'+k);
-      if (el) el.innerText = Math.floor(S.res[k]||0);
+      if (el) el.innerText = numberText(S.res[k]||0);
       const dEl = document.getElementById('d-'+k);
       if (dEl) {
         const r = S.rates[k]||0;
-        dEl.innerText = r>0 ? `+${r}` : (r<0 ? r : "");
+        dEl.innerText = r>EPSILON ? `+${numberText(r)}` : (r<-EPSILON ? numberText(r) : "");
         dEl.className = "rate-ind " + (r>=0 ? "rate-pos":"rate-neg");
       }
     });
 
     const cw = countWorkers();
-    const weps = (S.res.bow||0)+(S.res.spear||0)+(S.res.sword||0)+(S.res.armor||0);
+    const weps = (S.res.bow||0)+(S.res.spear||0)+(S.res.sword||0)+(S.res.armor||0)+(S.res.leatherArmor||0);
     document.getElementById('s-sold').innerText = cw.sold;
-    document.getElementById('s-wep').innerText = weps;
+    document.getElementById('s-wep').innerText = numberText(weps);
     document.getElementById('s-land').innerText = S.exp.land||0;
     document.getElementById('s-renown').innerText = S.renown||0;
+    document.getElementById('renown-info').title=tr('renown_current',{amount:numberText(S.renown),rank:loc(renownStatus().current.n)});
+    const report=S.economy.lastTick;
+    document.getElementById('food-flow').innerText=report?tr('food_flow',{made:numberText(report.foodMade),need:numberText(report.foodDemand)}):tr('production_details');
 
     const season=getSeason();
     document.getElementById('season-icon').innerText=season.i;
@@ -1914,18 +2069,18 @@ const UI = {
     const change = (S.factors && S.factors.total) ? S.factors.total : 0;
     if (trEl) {
       const sym = change>0?'↗':(change<0?'↘':'→');
-      trEl.innerText = `${sym} (${change>0?'+':''}${Math.round(change*10)/10})`;
+      trEl.innerText = `${sym} (${change>0?'+':''}${numberText(change)})`;
       trEl.className = 'trend-val ' + (change>0?'trend-up':(change<0?'trend-down':'trend-neutral'));
     }
 
     // taxes
     const tx = Config.taxes[S.tax||0];
     document.getElementById('tax-name').innerText = loc(tx.n);
-    const taxGold = (S.pop.curr||0) * tx.g;
+    const taxGold = roundQty((S.pop.curr||0) * tx.g * (1+renownStatus().current.tax));
     const taxHap = tx.h;
     const impactEl = document.getElementById('tax-impact');
     if (impactEl) {
-      impactEl.innerHTML = `+${taxGold}💰 / ${taxHap}❤️`;
+      impactEl.innerHTML = `+${numberText(taxGold)}💰 / ${taxHap}❤️`;
       impactEl.style.color = taxHap < 0 ? '#b71c1c' : '#2e7d32';
     }
 
@@ -1955,6 +2110,8 @@ const UI = {
     if (document.getElementById('market-mask').style.display === 'flex') this.renderMarket();
     if (document.getElementById('contract-mask').style.display === 'flex') this.renderContracts();
     if (document.getElementById('upgrade-mask').style.display === 'flex') this.renderUpgrades();
+    if (document.getElementById('production-mask').style.display === 'flex') this.renderProduction();
+    if (document.getElementById('recruit-mask').style.display === 'flex') this.renderRecruit();
 
     Storage.save();
   },
@@ -2012,6 +2169,7 @@ const UI = {
       }
 
       const extra = b.desc ? `<div style="font-size:.62rem;color:#5d4037;opacity:.9;margin-top:2px">${loc(b.desc)}</div>` : "";
+      if(isProdBuilding(b)) el.title=recipeText(b);
 
       el.innerHTML = `
         ${(S.b[k]||0)>0 ? `<div class="b-count">${S.b[k]}</div>`:''}
@@ -2160,10 +2318,62 @@ const UI = {
   },
 
   showFood() {
-    const caps = calcCaps();
-    let curF=0; Rules.foodTypes.forEach(k=>curF+=(S.res[k]||0));
-    const body=dual(lang=>trl('food_capacity',lang,{used:Math.floor(curF),max:caps.food,bonus:Config.expansion.foodBonus}));
-    this.showModal(BI("Kornspeicher","Granary"), body, BI("Schließen","Close"), ()=>{});
+    this.openProduction();
+  },
+
+  renownPanel(){
+    const status=renownStatus();
+    return '<div class="renown-panel"><strong>👑 '+tr('renown_current',{amount:numberText(S.renown),rank:loc(status.current.n)})+'</strong><div>'+renownBonusText(status.current)+'</div><div class="rank-progress"><span style="width:'+status.progress+'%"></span></div><div>'+
+      (status.next?tr('renown_next',{rank:loc(status.next.n),amount:status.next.at}):tr('renown_max'))+'</div><small>'+tr('renown_auto')+'</small></div>';
+  },
+
+  showRenown(){
+    const status=renownStatus();
+    const body=dual(lang=>{
+      const lines=[trl('renown_current',lang,{amount:numberText(S.renown,lang),rank:loc(status.current.n,lang)}),renownBonusText(status.current,lang),'',trl('renown_auto',lang),'',trl('renown_tiers',lang)];
+      RenownTiers.filter(t=>t.at>0).forEach(t=>lines.push((S.renown>=t.at?'✓ ':'○ ')+t.at+' · '+loc(t.n,lang)+'\n'+renownBonusText(t,lang)));
+      return lines.join('\n');
+    });
+    this.showModal(BI('👑 Ruhm & Vorteile','👑 Renown & Benefits'),body,BI('Schließen','Close'),()=>{});
+  },
+
+  openProduction(){document.getElementById('production-mask').style.display='flex';this.renderProduction();},
+  closeProduction(){document.getElementById('production-mask').style.display='none';},
+  renderProduction(){
+    const r=S.economy.lastTick,caps=calcCaps();
+    let html='<p class="muted">'+(r?tr('production_tick',{day:r.day}):tr('production_wait'))+'</p>';
+    if(r){
+      const summary=[['food_produced',r.foodMade],['food_demand',r.foodDemand],['food_missing',r.foodMissing],['food_stored',r.foodStock]];
+      html+='<div class="production-summary">'+summary.map(([label,amount])=>'<div><small>'+tr(label)+'</small><b'+(label==='food_missing'&&amount>0?' style="color:#a62920"':'')+'>'+numberText(amount)+(label==='food_stored'?' / '+caps.food:'')+'</b></div>').join('')+'</div>';
+      html+='<div class="muted">'+tr('food_balance',{value:(r.foodBalance>0?'+':'')+numberText(r.foodBalance)})+'</div>';
+    }
+    html+='<p class="muted">'+tr('food_explain')+'</p><p class="muted">'+tr('material_stock',{used:numberText(sumGoods(S.res,Rules.storeTypes)),cap:caps.store})+' · '+tr('drink_stock',{used:numberText(S.res.beer),cap:caps.drink})+'</p>';
+    const chains=[['bread_chain',['wheat','mill','bake']],['beer_chain',['wheat','hops','brew']],['leather_chain',['cattle','tannery','leatherwork']]];
+    html+='<p class="muted">'+tr('recipe_base')+'</p>';
+    chains.forEach(([title,keys])=>{
+      html+='<div class="chain-card"><b>'+tr(title)+'</b><div class="chain-path">'+keys.map(key=>'<span>'+Config.b[key].i+' '+loc(Config.b[key].n)+': '+recipeText(Config.b[key])+'</span>').join('')+'</div></div>';
+    });
+    html+='<p class="muted">'+tr('beer_explain')+'</p><p class="muted">'+tr('dairy_explain')+'</p>';
+    if(r){
+      html+='<h3>'+tr('resource_ledger')+'</h3><div class="ledger-grid">';
+      const keys=['wood','wheat','flour','bread','hops','beer','apple','meat','cheese','hides','leather','leatherArmor'];
+      keys.forEach(key=>{
+        const flows=[['gross_produced',r.produced[key]||0],['processing_used',-(r.inputs[key]||0)],['people_used',-(r.consumed[key]||0)],['trade_flow',r.trade[key]||0],['overflow_loss',-(r.lost[key]||0)]];
+        html+='<div class="ledger-card"><strong>'+SafeT(key)+'</strong>'+flows.map(([label,value])=>'<div class="ledger-line"><span>'+tr(label)+'</span><span>'+(value>0?'+':'')+numberText(value)+'</span></div>').join('')+'<div class="ledger-line ledger-net"><span>'+tr('stock_change')+'</span><span>'+((r.net[key]||0)>0?'+':'')+numberText(r.net[key]||0)+'</span></div></div>';
+      });
+      html+='</div>';
+    }
+    html+='<h3>'+tr('businesses')+'</h3><p class="muted">'+tr('staffing_help')+'</p>';
+    Object.entries(Config.b).filter(([key,b])=>isProdBuilding(b)&&(S.b[key]||0)>0).forEach(([key,b])=>{
+      const row=r&&r.buildings[key];
+      const staff=tr('staff_count',{actual:S.w[key]||0,built:S.b[key],target:S.staffing.targets[key]||0});
+      html+='<div class="production-row"><div class="production-row-head"><strong>'+b.i+' '+loc(b.n)+'</strong><span class="worker-controls"><button onclick="Game.assign(\''+key+'\',-1)" aria-label="'+loc(b.n)+' −">−</button><span>'+staff+'</span><button onclick="Game.assign(\''+key+'\',1)" aria-label="'+loc(b.n)+' +">+</button></span></div><div>'+recipeText(b)+'</div>';
+      if(row){
+        html+='<div class="production-status '+(row.status==='running'?'':'warn')+'">'+tr(row.status)+(row.missing.length?' · '+tr('missing_inputs',{goods:row.missing.map(k=>SafeT(k)).join(', ')}):'')+'</div><div class="muted">'+tr('output_last',{goods:goodsText(row.output)})+'</div>';
+      }
+      html+='</div>';
+    });
+    document.getElementById('production-body').innerHTML=html;
   },
 
   showRaidInfo() {
@@ -2190,9 +2400,16 @@ const UI = {
     for (let k in Units) {
       const u = Units[k];
       const row = document.createElement('div'); row.className='list-item';
-      const cost = `${u.cost}💰` + (u.res ? ` +1 ${SafeT(u.res)}` : "");
+      const cost = `${u.cost}💰` + (u.res ? ` +1 ${SafeT(u.res)}` : "") + (u.arm ? ` +1 ${SafeT(u.arm)}` : "");
+      const missing=[];
+      if(k==='merc'&&!(S.b.mercCamp>0)) missing.push(tr('need_camp'));
+      if(k!=='merc'&&!(S.b.barrack>0)) missing.push(tr('need_barracks'));
+      if(countWorkers().idle<1) missing.push(tr('need_worker'));
+      if(S.res.gold<u.cost) missing.push(SafeT('gold'));
+      if(u.res&&(S.res[u.res]||0)<1) missing.push(SafeT(u.res));
+      if(u.arm&&(S.res[u.arm]||0)<1) missing.push(SafeT(u.arm));
       row.innerHTML = `<span>${loc(u.n)} (${u.str}⚔️ / ${u.def||0}🛡️)</span>
-        <button class="btn" style="padding:2px 8px" onclick="Game.recruit('${k}')">${tr('train')} (${cost})</button>`;
+        <button class="btn" style="padding:2px 8px" onclick="Game.recruit('${k}')" ${missing.length?'disabled':''} title="${missing.length?tr('recruiting_missing',{items:missing.join(', ')}):''}">${tr('train')} (${cost})</button>`;
       l.appendChild(row);
     }
   },
@@ -2233,18 +2450,33 @@ const UI = {
   closeMarket(){ document.getElementById('market-mask').style.display='none'; },
 
   renderMarket() {
-    const l = document.getElementById('market-list'); l.innerHTML="";
+    const active=document.activeElement;
+    // Do not replace a number field while the player is editing it.
+    if(active&&active.tagName==='INPUT'&&active.type==='number'&&document.getElementById('market-mask').contains(active)){this.refreshMarketStocks();return;}
+    const list=document.getElementById('market-list');list.innerHTML="";
     document.getElementById('market-reserve').value=S.market.reserve||0;
     Rules.marketTypes.forEach(k=>{
-      const row = document.createElement('div'); row.className='market-card';
-      const p=S.market.pressure[k]||0, rule=S.market.auto[k];
-      const trend=p>.015?`▲ ${Math.round(p*100)} %`:p<-.015?`▼ ${Math.abs(Math.round(p*100))} %`:tr('stable');
-      const trendClass=p>.015?'up':p<-.015?'down':'';
-      const buy=marketPrice(k,true), sell=marketPrice(k,false);
-      row.innerHTML = `<div><div class="market-name">${SafeT(k)}</div><div class="market-stock">${tr('stock')}: ${Math.floor(S.res[k]||0)} · ${tr('per_five')}</div><div class="market-trend ${trendClass}">${trend}</div></div>
-        <div class="market-actions"><button onclick="Game.trade('${k}',1)" ${(S.res.gold||0)<buy?'disabled':''}>${tr('buy_for',{price:buy})}</button><button onclick="Game.trade('${k}',0)" ${(S.res[k]||0)<5?'disabled':''}>${tr('sell_for',{price:sell})}</button></div>
-        <div class="auto-rule"><label><input type="checkbox" ${rule.enabled?'checked':''} onchange="Game.setMarketAuto('${k}',this.checked)"> ${tr('automation')}</label><label>${tr('min')} <input type="number" min="0" step="5" value="${rule.min}" onchange="Game.setMarketTarget('${k}','min',this.value)"></label><label>${tr('max')} <input type="number" min="5" step="5" value="${rule.max}" onchange="Game.setMarketTarget('${k}','max',this.value)"></label></div>`;
-      l.appendChild(row);
+      const row=document.createElement('div');row.className='market-card';
+      const rule=S.market.auto[k],buy=marketPrice(k,true),sell=marketPrice(k,false);
+      const blocked=rule.enabled&&(S.res[k]||0)<rule.min-EPSILON;
+      row.innerHTML='<div><div class="market-name">'+SafeT(k)+'</div><div class="market-stock" id="m-stock-'+k+'">'+tr('stock')+': '+numberText(S.res[k])+' · '+tr('per_five')+'</div><div class="market-trend">'+tr('fixed_price')+'</div></div>'+
+        '<div class="market-actions"><button id="m-buy-'+k+'" onclick="Game.trade(\''+k+'\',1)" '+(S.res.gold<buy||storageRoom(k)<EPSILON?'disabled':'')+'>'+tr('buy_for',{price:buy})+'</button><button id="m-sell-'+k+'" onclick="Game.trade(\''+k+'\',0)" '+((S.res[k]||0)<5?'disabled':'')+'>'+tr('sell_for',{price:sell})+'</button></div>'+
+        '<div class="auto-rule"><label><input type="checkbox" '+(rule.enabled?'checked':'')+' onchange="Game.setMarketAuto(\''+k+'\',this.checked)"> '+tr('automation')+'</label>'+
+        '<label title="'+tr('market_min_help')+'">'+tr('min')+' <input type="number" min="0" step="1" value="'+rule.min+'" aria-label="'+SafeT(k)+' '+tr('min')+'" onchange="Game.setMarketTarget(\''+k+'\',\'min\',this.value)"></label>'+
+        '<label title="'+tr('market_max_help')+'">'+tr('max')+' <input type="number" min="0" step="1" value="'+rule.max+'" aria-label="'+SafeT(k)+' '+tr('max')+'" onchange="Game.setMarketTarget(\''+k+'\',\'max\',this.value)"></label></div>'+
+        '<div class="market-limit-note" id="m-limit-'+k+'">'+(blocked?tr('market_blocked'):'')+'</div>';
+      list.appendChild(row);
+    });
+  },
+
+  refreshMarketStocks(){
+    Rules.marketTypes.forEach(k=>{
+      const stock=document.getElementById('m-stock-'+k),buy=document.getElementById('m-buy-'+k),sell=document.getElementById('m-sell-'+k),note=document.getElementById('m-limit-'+k);
+      if(stock) stock.innerText=tr('stock')+': '+numberText(S.res[k])+' · '+tr('per_five');
+      if(buy) buy.disabled=S.res.gold<marketPrice(k,true)||storageRoom(k)<EPSILON;
+      if(sell) sell.disabled=(S.res[k]||0)<5;
+      const rule=S.market.auto[k];
+      if(note) note.innerText=rule.enabled&&(S.res[k]||0)<rule.min-EPSILON?tr('market_blocked'):'';
     });
   },
 
@@ -2256,7 +2488,7 @@ const UI = {
     const l=document.getElementById('contract-list'); l.innerHTML='';
     S.contracts.items.forEach(c=>{
       const have=Math.floor(S.res[c.resource]||0), days=Math.max(0,c.deadline-(S.day||1));
-      const reward=Math.round(c.rewardGold*(1+(S.upgrades.diplomacy||0)*.08));
+      const reward=contractReward(c);
       const card=document.createElement('div'); card.className='contract-card';
       card.innerHTML=`<div class="contract-head"><div class="contract-title">${tr('neighboring_castle',{resource:SafeT(c.resource)})}</div><div class="contract-deadline">${tr(days===1?'day_left':'days_left',{days})}</div></div>
         <div class="contract-body">${tr('delivery')}: ${have}/${c.qty} ${SafeT(c.resource)}</div>
@@ -2270,6 +2502,7 @@ const UI = {
   renderUpgrades() {
     const rank=rankForLevel(), summary=document.getElementById('rank-summary');
     summary.innerHTML=`<div style="margin-top:8px;font-weight:900">${tr('rank_level',{rank:loc(rank.current.n),level:S.lvl})}</div><div class="rank-progress"><span style="width:${rank.progress}%"></span></div><div style="font-size:.75rem;color:#5d5043">${rank.next?tr('next_rank',{rank:loc(rank.next.n),level:rank.next.lvl}):tr('max_rank')}</div>`;
+    summary.innerHTML+=this.renownPanel();
     const l=document.getElementById('upgrade-list'); l.innerHTML='';
     Object.entries(UpgradeDefs).forEach(([key,def])=>{
       const level=S.upgrades[key]||0, maxed=level>=def.max, cost=maxed?0:upgradeCost(key);
