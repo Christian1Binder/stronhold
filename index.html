@@ -269,6 +269,35 @@
     .res-container{min-width:0}
     @media(max-width:600px){.production-summary{grid-template-columns:repeat(2,1fr)}.ledger-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.production-win{padding:12px!important}}
 
+    /* Territory and army dialogs; the existing main/mobile layout is retained. */
+    .world-win{max-width:860px!important;width:94vw;text-align:left!important}
+    /* Blocking encounters must stay above whichever management dialog is open. */
+    #modal-mask{z-index:8000}#event-mask{z-index:8100}
+    .world-win .modal-heading h2{margin:0;font-size:1.2rem}
+    .world-help{font-size:.8rem;line-height:1.55;color:#5d5043}
+    .territory-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}
+    .territory-card{min-width:0;padding:13px;border:1px solid #b9a88e;border-radius:12px;background:#fff8eccc;line-height:1.45;margin-bottom:8px;font-size:.86rem}
+    .territory-card.owned{border-top:3px solid #628155}.territory-card.hostile{border-top:3px solid #a84a35}
+    .territory-card.conquered{border-top:3px solid #c79437}.territory-card.selected{outline:2px solid #b9882b;outline-offset:-2px}
+    .world-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+    .world-card-head h3{font-size:1rem;margin:0}.world-card-head>span{font-size:.7rem;color:#715d44}
+    .plot-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-top:10px}
+    .plot-grid>div{background:#eee5d5;border-radius:7px;padding:7px}.plot-grid small{display:block;font-size:.72rem;color:#6e5a40}.plot-grid b{display:block;margin-top:3px;font-variant-numeric:tabular-nums}
+    .world-notice{background:#fff0c9;border:1px solid #d1b471;border-radius:10px;padding:12px;margin:10px 0;font-size:.84rem;line-height:1.5}
+    .world-notice.danger{background:#ffe6da;border-color:#ac7050}.world-warning{color:#a03220;font-weight:700}
+    .world-actions{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}.world-actions .btn{flex:1}
+    .world-win .btn{min-height:40px;margin-top:7px;white-space:normal}.world-win button:disabled{opacity:.45;cursor:not-allowed}
+    .territory-picker{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:.85rem}.territory-picker select{max-width:100%;min-height:40px;padding:6px;border-radius:8px;background:#fff8eb}
+    .territory-card details{border-top:1px solid #cfbea3;margin-top:12px;padding-top:8px}.territory-card summary,.world-history summary{cursor:pointer;font-weight:700}
+    .building-manage{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:5px}.building-manage .btn{font-size:.7rem;padding:4px 8px;margin:0;flex:0 0 auto}
+    .build-location{min-width:125px;max-width:145px;flex:0 0 125px;align-self:stretch;display:flex;flex-direction:column;justify-content:center;gap:6px;background:#eee3cb;border:1px solid #aa9778;color:#443926;border-radius:9px;padding:7px;font:inherit;font-size:.7rem;cursor:pointer;text-align:left}
+    .build-location span{font-size:.62rem}.build-location small{font-size:.66rem;line-height:1.4}
+    .army-picker{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.army-picker label{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px;background:#fff8eb;border:1px solid #c4b293;border-radius:9px;font-size:.83rem;min-width:0}
+    .army-picker small{display:block;color:#756047;font-size:.72rem}.army-picker input{width:64px;min-width:50px;padding:7px;font-size:1rem;border:1px solid #b9a88e;border-radius:7px;user-select:text}
+    .campaign-launch{background:#643d2c!important;color:#fff!important;width:100%}.world-history{margin:12px 0;font-size:.78rem;line-height:1.55}.world-history p{border-bottom:1px solid #cbb897;padding-bottom:8px}
+    #recruit-list .list-item{gap:9px}#recruit-list .list-item small{font-size:.72rem;line-height:1.4;color:#655540}
+    @media(max-width:600px){.territory-grid{grid-template-columns:1fr}.world-win{width:96vw}.army-picker{grid-template-columns:1fr}.world-win .btn{min-height:44px}.build-location{min-width:112px;flex-basis:112px}.world-card-head{flex-wrap:wrap}}
+
     /* Tutorial overlay */
     #tut-overlay{
       position:fixed;inset:0;display:none;z-index:9000;
@@ -396,14 +425,15 @@
 
 <!-- War modal -->
 <div id="war-mask" class="modal-mask">
-  <div class="modal-win">
-    <h2 style="font-family:'MedievalSharp'; margin:0" data-i18n="campaigns">Feldzüge</h2>
+  <div class="modal-win world-win">
+    <div class="modal-heading"><h2 style="font-family:'MedievalSharp'; margin:0" data-i18n="campaigns">Feldzüge</h2><button class="btn modal-close" onclick="UI.closeWar()" data-i18n-aria="close">×</button></div>
     <div style="margin-bottom:10px; border-bottom:1px solid #999; padding-bottom:5px;">
       <span data-i18n="army">Armee</span>: <span id="army-str" style="font-weight:bold; font-size:1.2rem">0</span> ⚔️
       <span style="margin-left:10px"><span data-i18n="defense">Verteidigung</span>: <span id="def-str" style="font-weight:bold; font-size:1.1rem">0</span> 🛡️</span>
     </div>
+    <div id="war-orders"></div>
     <div id="war-list" class="list-grid" style="grid-template-columns: 1fr;"></div>
-    <button onclick="UI.closeWar()" class="btn" style="width:100%" data-i18n="retreat">Rückzug</button>
+    <button onclick="UI.closeWar()" class="btn" style="width:100%" data-i18n="close">Schließen</button>
   </div>
 </div>
 
@@ -468,11 +498,10 @@
 
 <!-- Expansion modal -->
 <div id="exp-mask" class="modal-mask">
-  <div class="modal-win">
-    <h2 style="font-family:'MedievalSharp'; margin:0" data-i18n="expansion">Expansion</h2>
+  <div class="modal-win world-win">
+    <div class="modal-heading"><h2 style="font-family:'MedievalSharp'; margin:0" data-i18n="expansion">Gebiete</h2><button class="btn modal-close" onclick="UI.closeExp()" data-i18n-aria="close">×</button></div>
     <div id="exp-body" style="text-align:left; margin-top:10px"></div>
     <div style="display:flex; gap:8px; margin-top:12px">
-      <button class="btn" onclick="Game.expand()" style="background:var(--highlight);flex:1" data-i18n="expand_territory">Gebiet erweitern</button>
       <button class="btn" onclick="UI.closeExp()" style="flex:1" data-i18n="close">Schließen</button>
     </div>
   </div>
@@ -775,18 +804,7 @@ const UpgradeDefs = {
   diplomacy:{n:BI("Gesandtschaft","Embassy"),i:"🤝",base:350,max:10,desc:BI("Jede Stufe erhöht Gold aus Aufträgen und Ereignissen um 8 %.","Each level increases gold from contracts and events by 8%.")}
 };
 
-const EventDefs = [
-  {id:"harvest",title:BI("🌾 Reiche Ernte","🌾 Bountiful Harvest"),text:BI("Die Felder tragen mehr als erwartet. Was soll mit dem Überschuss geschehen?","The fields yield more than expected. What should happen to the surplus?"),choices:[
-    {label:BI("Vorräte einlagern","Store the supplies"),hint:BI("+25 Weizen, +10 Äpfel","+25 wheat, +10 apples")},{label:BI("Auf dem Jahrmarkt verkaufen","Sell at the fair"),hint:BI("+80 Gold","+80 gold")}]},
-  {id:"refugees",title:BI("🧳 Flüchtlinge am Tor","🧳 Refugees at the Gate"),text:BI("Zwei Familien bitten um Schutz. Sie bringen Kenntnisse mit, brauchen aber sofort Nahrung.","Two families ask for shelter. They bring useful skills but need food immediately."),choices:[
-    {label:BI("Tore öffnen","Open the gates"),hint:BI("+2 Bevölkerung, −15 Nahrung","+2 population, −15 food")},{label:BI("Abweisen","Turn them away"),hint:BI("−3 Zufriedenheit","−3 happiness")}]},
-  {id:"caravan",title:BI("🐫 Fernhandelskarawane","🐫 Distant Trade Caravan"),text:BI("Eine Karawane bietet seltenes Eisen an und sucht zugleich bewaffneten Geleitschutz.","A caravan offers rare iron and is also seeking an armed escort."),choices:[
-    {label:BI("Eisen kaufen","Buy iron"),hint:BI("−40 Gold, +15 Eisen","−40 gold, +15 iron")},{label:BI("Geleitschutz stellen","Provide an escort"),hint:BI("+2 Ruhm, +35 Gold","+2 renown, +35 gold")}]},
-  {id:"fire",title:BI("🔥 Feuer im Lager","🔥 Warehouse Fire"),text:BI("Ein Funke hat das Holzlager entzündet. Schnelles Handeln kann die Vorräte retten.","A spark has set the timber store ablaze. Quick action may save the supplies."),choices:[
-    {label:BI("Handwerker bezahlen","Pay the craftsmen"),hint:BI("−50 Gold","−50 gold")},{label:BI("Feuer ausbrennen lassen","Let it burn out"),hint:BI("bis zu −35 Holz","up to −35 wood")}]},
-  {id:"levy",title:BI("👑 Forderung der Krone","👑 Royal Levy"),text:BI("Der König verlangt eine Sonderabgabe für seinen Feldzug.","The king demands a special levy for his campaign."),choices:[
-    {label:BI("Abgabe leisten","Pay the levy"),hint:BI("−80 Gold, +3 Ruhm","−80 gold, +3 renown")},{label:BI("Zahlung verweigern","Refuse payment"),hint:BI("−8 Zufriedenheit, −1 Ruhm","−8 happiness, −1 renown")}]}
-];
+
 
 const Units = {
   archer:   { n:BI("Bogenschütze","Archer"), cost:10, res:"bow", str:5,def:2 },
@@ -796,12 +814,7 @@ const Units = {
   guard:    { n:BI("Burgwache","Castle Guard"), cost:25,res:"spear",arm:"leatherArmor",str:10,def:6 }
 };
 
-const Missions = [
-  {n:BI("Banditenlager","Bandit Camp"),str:20,loot:{gold:50,wood:20,bread:15},risk:BI("Niedrig","Low")},
-  {n:BI("Wegelagerer","Highwaymen"),str:50,loot:{gold:120,iron:10,meat:15},risk:BI("Mittel","Medium")},
-  {n:BI("Burg des Raubritters","Robber Baron Keep"),str:150,loot:{gold:350,stone:50,sword:5,armor:2},risk:BI("Hoch","High")},
-  {n:BI("Feindliche Grafschaft","Hostile County"),str:500,loot:{gold:1200,iron:100},risk:BI("Extrem","Extreme")}
-];
+
 
 const Config = {
   tick: 4000,
@@ -925,6 +938,7 @@ function upgradeCost(key) {
 }
 
 function migrateState() {
+  const previousVersion=Number(S.meta&&S.meta.version)||0;
   S.res = S.res || {};
   ['gold',...Rules.marketTypes].forEach(k=>{ S.res[k]=Math.max(0,Number.isFinite(S.res[k])?S.res[k]:0); });
   S.units = S.units || {archer:0,pikeman:0,swordsman:0,merc:0};
@@ -962,8 +976,8 @@ function migrateState() {
   for (const k in UpgradeDefs) S.upgrades[k]=clamp(Number(S.upgrades[k])||0,0,UpgradeDefs[k].max);
   S.clicker = S.clicker || {combo:0,lastClick:0,total:0};
   S.boostUntilDay = Number(S.boostUntilDay)||0;
-  S.meta = S.meta || {savedAt:Date.now(),version:6};
-  S.meta.version = 6;
+    S.meta = S.meta || {savedAt:Date.now(),version:7};
+  S.meta.version = 7;
   S.logs = Array.isArray(S.logs) ? S.logs : [];
   S.staffing = S.staffing || {targets:{...S.w}};
   S.staffing.targets = S.staffing.targets || {...S.w};
@@ -974,6 +988,7 @@ function migrateState() {
   }
   S.survival = S.survival || {hungerTicks:0};
   S.economy = S.economy || {lastTick:null};
+  World.migrate(S,previousVersion);
 }
 
 function createContract() {
@@ -1029,27 +1044,26 @@ function recalcPopMax() {
 }
 
 function getArmyStr() {
-  let s = 0;
-  for (let k in S.units) s += (S.units[k] * (Units[k].str||0));
-  return s;
+  return World.power(World.homeUnits(S),null,false,S);
 }
 function getDefStr() {
   let d = 0;
-  for (let k in S.units) d += (S.units[k] * (Units[k].def||0));
+  d += World.power(World.homeUnits(S),null,true,S);
   // buildings
   d += (S.b.wall_w||0) * (Config.b.wall_w.def||0);
   d += (S.b.tower||0) * (Config.b.tower.def||0);
   // morale helps a bit
   d += Math.floor((S.pop.hap||0)/20);
-  return Math.floor(d*(1+renownStatus().current.defense));
+  return Math.floor(d*(1+renownStatus().current.defense)*World.effect('defense',S));
 }
 
 function countWorkers(state=S) {
   let work = 0; for (let k in state.w) work += state.w[k]||0;
   let sold = 0; for (let k in state.units) sold += state.units[k]||0;
-  let available = Math.max(0,state.pop.curr - sold);
+  const builders=(state.world&&state.world.project&&state.world.project.workers)||0;
+  let available = Math.max(0,state.pop.curr - sold - builders);
   let idle = available - work;
-  return { work, sold, available, idle };
+  return { work, sold, available, idle,builders };
 }
 
 function isProdBuilding(b){ return !!(b.prod || b.recipe || b.proc || b.use || b.gold); }
@@ -1083,7 +1097,7 @@ function productionRecipe(b){
 }
 function productionMultiplier(state=S){
   const boost=(state.boostUntilDay||0)>=(state.day||1)?1.5:1;
-  return (1+(state.upgrades.guild||0)*.1)*boost*(1+renownStatus(state).current.production);
+  return (1+(state.upgrades.guild||0)*.1)*boost*(1+renownStatus(state).current.production)*World.effect('production',state);
 }
 function goodsText(goods,lang=I18N.lang){
   const values=Object.entries(goods).filter(([,n])=>Math.abs(n)>EPSILON);
@@ -1126,8 +1140,9 @@ function reconcileWorkforce(state=S){
 }
 
 function createEconomyReport(state=S){
+  const away=World.unitCount(World.awayUnits(state)),sold=World.unitCount(World.homeUnits(state));
   return {day:state.day,population:state.pop.curr,produced:{},inputs:{},consumed:{},trade:{},lost:{},net:{},buildings:{},actions:[],
-    foodDemand:state.pop.curr,foodEaten:0,foodMissing:0,foodTypes:0,beerDemand:roundQty(state.pop.curr*.2),beerServed:0,taxes:0};
+    foodDemand:roundQty(Math.max(0,state.pop.curr-away)+sold*.25),foodEaten:0,foodMissing:0,foodTypes:0,beerDemand:roundQty(Math.max(0,state.pop.curr-away)*.2),beerServed:0,taxes:0,upkeep:0,away};
 }
 function storageRoom(key,state=S){
   const caps=calcCaps(state);
@@ -1188,13 +1203,18 @@ function produceResources(state=S,report=createEconomyReport(state),scale=1){
     const capacity=roundQty(workers*productionMultiplier(state)*seasonal*scale);
     let cycles=capacity;
     const missing=[];
+    if(key==='quarry'||key==='iron'){
+      const mine=World.miningLimit(key,workers,productionMultiplier(state)*seasonal*scale,state);
+      cycles=Math.min(cycles,mine/(b.amt||1));
+      if(cycles+EPSILON<capacity) missing.push(b.prod);
+    }
     for(const [resource,amount] of Object.entries(recipe.input)){
       if((state.res[resource]||0)+EPSILON<amount*capacity) missing.push(resource);
       cycles=Math.min(cycles,Math.max(0,state.res[resource]||0)/amount);
     }
     cycles=Math.max(0,roundQty(cycles));
     const row={workers,target:state.staffing.targets[key]||0,capacity,cycles,input:{},output:{},missing,
-      status:!(state.b[key]>0)?'not_built':workers<=0?'no_workers':cycles<=EPSILON?'no_inputs':cycles+EPSILON<capacity?'partial':'running'};
+      status:!(state.b[key]>0)?'not_built':workers<=0?'no_workers':cycles<=EPSILON?(['quarry','iron'].includes(key)?'deposit_empty':'no_inputs'):cycles+EPSILON<capacity?'partial':'running'};
     if(cycles>EPSILON){
       for(const [resource,amount] of Object.entries(recipe.input)){
         const used=Math.min(state.res[resource]||0,roundQty(amount*cycles));
@@ -1203,6 +1223,7 @@ function produceResources(state=S,report=createEconomyReport(state),scale=1){
       }
       for(const [resource,amount] of Object.entries(recipe.output)){
         const made=roundQty(amount*cycles);
+        if(key==='quarry'||key==='iron') World.drainMine(key,made,state,productionMultiplier(state)*seasonal*scale);
         state.res[resource]=roundQty((state.res[resource]||0)+made);
         row.output[resource]=made;addAmount(report.produced,resource,made);
       }
@@ -1235,8 +1256,11 @@ function simulateEconomy(state=S){
   rebalanceMarket(state,report);
   produceResources(state,report);
   const tax=Config.taxes[state.tax||0];
-  report.taxes=roundQty(state.pop.curr*tax.g*(1+renownStatus(state).current.tax));
+  report.taxes=roundQty(Math.max(0,state.pop.curr-World.unitCount(state.units))*tax.g*(1+renownStatus(state).current.tax));
   addAmount(state.res,'gold',report.taxes);
+  report.upkeep=Math.min(state.res.gold,roundQty(World.unitCount(state.units)*.15));
+  report.unpaidUpkeep=roundQty(World.unitCount(state.units)*.15-report.upkeep);
+  if(report.upkeep>0){addAmount(state.res,'gold',-report.upkeep);addAmount(report.inputs,'gold',report.upkeep);}
   let needed=report.foodDemand;
   const foods=[...Rules.foodTypes].sort((a,b)=>(state.res[b]||0)-(state.res[a]||0));
   for(const key of foods){
@@ -1316,18 +1340,7 @@ function checkGoal() {
   return ok;
 }
 
-function nextRaidInterval() {
-  const lvl = S.lvl||1;
-  const dec = Math.floor(lvl/15);
-  const raw = Config.raid.baseInterval - dec;
-  return clamp(raw, Config.raid.minInterval, 99);
-}
-function scheduleNextRaid() {
-  const interval = nextRaidInterval();
-  const jitter = Math.floor(Math.random()*3);
-  S.raid.next = (S.day||1) + interval + jitter;
-  S.raid.warned = false;
-}
+function scheduleNextRaid() { World.syncThreat(S); }
 
 /* ---------------- GAME ---------------- */
 const Game = {
@@ -1335,19 +1348,21 @@ const Game = {
     const load = Storage.load();
     if (load) {
       const savedAt = load.meta && load.meta.savedAt;
-      const economyUpgrade=!load.meta||(load.meta.version||0)<6;
+      const economyUpgrade=!load.meta||(load.meta.version||0)<7;
+      if(economyUpgrade){try{const key=Storage.key+'_before_world_v7';if(!localStorage.getItem(key))localStorage.setItem(key,JSON.stringify(load));}catch(e){}}
       S = load;
       migrateState();
       recalcPopMax();
       if (!S.raid.next) scheduleNextRaid();
       ensureContracts();
       const offline = applyOfflineProgress(savedAt);
-      const upgradeInfo=economyUpgrade?BI("Versorgungsupdate: Bäckereien benötigen jetzt Mehl und Holz; Brauereien benötigen Weizen, Hopfen und Holz. Ruhm gewährt automatisch Vorteile. Alle Rezepte, Engpässe und Arbeiter findest du unter Produktion & Versorgung.","Supply update: bakeries now need flour and wood; breweries need wheat, hops and wood. Renown grants automatic benefits. Find all recipes, bottlenecks and workers under Production & Supply."):null;
+      const upgradeInfo=economyUpgrade?BI("Gebietsupdate: Alle vorhandenen Gebäude und Fortschritte bleiben erhalten. Neue Gebäude benötigen passende Bauplätze. Unter 🧭 findest du Gebiete und Bodenschätze, unter ⚔️ deine Nachbarn und Feldzüge. Entsandte Truppen fehlen bei der Verteidigung. Bisherige Pikeniere heißen jetzt Speerträger; neue Pikeniere benötigen Pike und Lederrüstung. Die ersten 16 Spieltage nach der Umstellung sind vor Angriffen geschützt.","Territory update: Existing buildings and progress are preserved. New buildings need suitable plots. Find territories and deposits under 🧭 and neighbours and campaigns under ⚔️. Deployed troops cannot defend your castle. Existing pikemen are now called Spearmen; new Pikemen need a pike and leather armor. The first 16 game days after migration are protected from attacks."):null;
       const welcome=dual(lang=>[loc(offline||BI("Dein Lehen wartet auf dich.","Your fief awaits you."),lang),upgradeInfo?loc(upgradeInfo,lang):''].filter(Boolean).join('\n\n'));
       S.paused = true;
       UI.init();
       UI.showModal(BI("Willkommen zurück","Welcome back"), welcome, BI("Weiter","Continue"), ()=>{
-        if (S.events.pending) UI.openEvent(S.events.pending);
+        if(S.world.raidPending) World.showRaid();
+        else if (S.events.pending) UI.openEvent(S.events.pending);
       });
     } else {
       this.newGame();
@@ -1382,7 +1397,7 @@ const Game = {
       upgrades: {tools:0,guild:0,logistics:0,diplomacy:0},
       clicker: {combo:0,lastClick:0,total:0},
       boostUntilDay: 0,
-      meta: {savedAt:Date.now(),version:6},
+      meta: {savedAt:Date.now(),version:7},
       logs: []
     };
     // init building & worker counts
@@ -1417,10 +1432,11 @@ const Game = {
     const gain=1+(S.upgrades.tools||0)+Math.floor(S.clicker.combo/5);
     const room = (type==='apple') ? caps.food-curF : caps.store-curS;
     if (room <= 0) { UI.showFloatingText(type, loc(BI("Lager voll!","Storage full!")), "neg"); return; }
-    const actual=Math.max(0,Math.min(gain,Math.floor(room)));
+    const actual=World.gather(type,Math.max(0,Math.min(gain,Math.floor(room))),S);
+    if(actual<=0){UI.showFloatingText(type,loc(BI('⌛ Nächster Tag / Betrieb nötig','⌛ Next day / staffed business needed')),'neg');return;}
 
     S.res[type] = (S.res[type]||0) + actual;
-    if (S.clicker.combo%10===0) {
+    if (S.clicker.combo%10===0 && World.clickReward(S)) {
       S.res.gold=(S.res.gold||0)+5;
       UI.log(BI(`Klickserie ${S.clicker.combo}: +5 Gold`,`Click streak ${S.clicker.combo}: +5 gold`),"prod");
     }
@@ -1442,11 +1458,15 @@ const Game = {
     if (b.unique && (S.b[key]||0)>0) { UI.showModal(BI("Bereits errichtet","Already built"), dual(lang=>lang==='de'?`${loc(b.n,lang)} kann nur einmal gebaut werden.`:`Only one ${loc(b.n,lang)} can be built.`), BI("OK","OK")); return; }
     if (b.reqLand && (S.exp.land||0) < b.reqLand) { UI.showModal(BI("Gesperrt","Locked"), BI(`Du benötigst mindestens Landstufe ${b.reqLand}.`,`You need at least land expansion tier ${b.reqLand}.`), BI("OK","OK")); return; }
 
-    const g = b.cost.g||0, w = b.cost.w||0, s = b.cost.s||0;
-    if ((S.res.gold||0) < g || (S.res.wood||0) < w || (S.res.stone||0) < s) return;
+    const region=World.buildTarget(key,S);
+    if(!region){UI.showModal(BI('Kein passender Bauplatz','No suitable plot'),World.buildBlockReason(key,S),BI('OK','OK'));return;}
+    const g = b.cost.g||0, w = b.cost.w||0, s = b.cost.s||0, iron=b.cost.i||0;
+    if ((S.res.gold||0) < g || (S.res.wood||0) < w || (S.res.stone||0) < s || (S.res.iron||0)<iron) return;
 
     S.res.gold -= g; S.res.wood -= w; S.res.stone -= s;
+    S.res.iron-=iron;
     S.b[key] = (S.b[key]||0) + 1;
+    region.buildings[key]=(region.buildings[key]||0)+1;
 
     // auto worker assign
     if (isProdBuilding(b)) {
@@ -1606,41 +1626,8 @@ const Game = {
     UI.log(BI(`Sonderschicht bis Tag ${S.boostUntilDay}: +50 % Produktion.`,`Extra shift until day ${S.boostUntilDay}: +50% production.`),"prod"); UI.update();
   },
 
-  checkRandomEvent() {
-    if (S.events.pending || (S.day||1)<(S.events.nextDay||7)) return false;
-    const def=EventDefs[Math.floor(Math.random()*EventDefs.length)];
-    S.events.pending={id:def.id}; S.paused=true; UI.openEvent(S.events.pending); return true;
-  },
-
-  chooseEvent(id,choice) {
-    if (!S.events.pending || S.events.pending.id!==id) return;
-    const diplomacy=1+(S.upgrades.diplomacy||0)*.08;
-    if (id==='harvest') {
-      if (choice===0) { S.res.wheat+=25; S.res.apple+=10; }
-      else S.res.gold+=Math.round(80*diplomacy);
-    } else if (id==='refugees') {
-      if (choice===0) {
-        const food=['bread','apple','meat','cheese']; let need=15;
-        food.forEach(k=>{const take=Math.min(need,S.res[k]||0);S.res[k]-=take;need-=take;});
-        S.pop.curr=Math.min(S.pop.max,S.pop.curr+2); if (need>0) S.pop.hap=clamp(S.pop.hap-need/2,0,100);
-      } else S.pop.hap=clamp(S.pop.hap-3,0,100);
-    } else if (id==='caravan') {
-      if (choice===0) { const paid=Math.min(40,S.res.gold||0); S.res.gold-=paid; S.res.iron+=Math.floor(15*(paid/40)); }
-      else { S.renown+=2; S.res.gold+=Math.round(35*diplomacy); }
-    } else if (id==='fire') {
-      if (choice===0 && S.res.gold>=50) S.res.gold-=50;
-      else S.res.wood=Math.max(0,S.res.wood-35);
-    } else if (id==='levy') {
-      if (choice===0 && S.res.gold>=80) { S.res.gold-=80; S.renown+=3; }
-      else { S.pop.hap=clamp(S.pop.hap-8,0,100); S.renown=Math.max(0,S.renown-1); }
-    }
-    const def=EventDefs.find(e=>e.id===id);
-    UI.log(dual(lang=>`${lang==='de'?'Entscheidung':'Decision'}: ${loc(def.choices[choice].label,lang)}`),choice===0?'prod':'war');
-    S.events.pending=null; S.events.seen=(S.events.seen||0)+1;
-    S.events.nextDay=(S.day||1)+6+Math.floor(Math.random()*5);
-    document.getElementById('event-mask').style.display='none';
-    S.paused=false; lastTickTime=Date.now(); UI.update();
-  },
+  checkRandomEvent() { return EventEngine.check(S); },
+  chooseEvent(id,choice) { return EventEngine.choose(id,choice,S); },
 
   tax(d) {
     const n = clamp((S.tax||0) + d, 0, Config.maxTax);
@@ -1648,34 +1635,7 @@ const Game = {
     UI.update();
   },
 
-  expand() {
-    if (S.paused) return;
-    const cost = this.expandCost();
-    if ((S.res.gold||0) < cost.gold || (S.res.wood||0) < cost.wood || (S.res.stone||0) < cost.stone) {
-      UI.showModal(BI("Zu teuer","Too expensive"), BI("Du hast nicht genug Ressourcen für die Erweiterung.","You do not have enough resources to expand."), BI("OK","OK"));
-      return;
-    }
-    S.res.gold -= cost.gold;
-    S.res.wood -= cost.wood;
-    S.res.stone -= cost.stone;
-    S.exp.land = (S.exp.land||0) + 1;
-    recalcPopMax();
-    UI.log(BI(`Gebiet erweitert! (Landstufe ${S.exp.land})`,`Territory expanded! (Land tier ${S.exp.land})`), "prod");
-    UI.update();
-    UI.renderBuild();
-    UI.renderMap(); // shows icons in zones
-    UI.openExp(); // refresh modal view
-    Tutorial.onAction('expand', 'land');
-  },
-
-  expandCost() {
-    const L = S.exp.land||0;
-    return {
-      gold: Config.expansion.baseCost.gold + L*Config.expansion.stepCost.gold,
-      wood: Config.expansion.baseCost.wood + L*Config.expansion.stepCost.wood,
-      stone: Config.expansion.baseCost.stone + L*Config.expansion.stepCost.stone
-    };
-  },
+  expand() { UI.openExp(); },
 
   townAction() {
     // reserved: open build category 'stadt' quickly
@@ -1710,80 +1670,8 @@ const Game = {
     });
   },
 
-  launchWar(idx) {
-    if (S.paused) return;
-    const m = Missions[idx];
-    const str = getArmyStr();
-    const rng = (Math.random()*0.4)+0.8;
-    const enemy = m.str * rng;
-    const win = str >= enemy;
-
-    const lossRate = win ? 0.10 : 0.28;
-    const lost = [];
-    for (let k in S.units) {
-      const c = S.units[k]||0;
-      if (c>0) {
-        const kill = Math.ceil(c * lossRate * Math.random());
-        if (kill>0) { S.units[k]-=kill; lost.push({k,kill}); }
-      }
-    }
-
-    if (win) {
-      const lootTxt = [];
-      for (let k in m.loot) { S.res[k]=(S.res[k]||0)+m.loot[k]; lootTxt.push({k,amount:m.loot[k]}); }
-      UI.log(dual(lang=>`${lang==='de'?'Sieg gegen':'Victory over'} ${loc(m.n,lang)}! ${lang==='de'?'Beute':'Loot'}: ${lootTxt.map(x=>`${x.amount} ${SafeT(x.k,lang)}`).join(', ')}`), 'war');
-      S.pop.hap = clamp((S.pop.hap||0)+2, 0, 100);
-    } else {
-      UI.log(dual(lang=>`${lang==='de'?'Niederlage gegen':'Defeat against'} ${loc(m.n,lang)}.`), 'warn');
-      S.pop.hap = clamp((S.pop.hap||0)-4, 0, 100);
-    }
-    if (lost.length) UI.log(dual(lang=>`${lang==='de'?'Verluste':'Losses'}: ${lost.map(x=>`${x.kill} ${loc(Units[x.k].n,lang)}`).join(', ')}`), 'death');
-    UI.update();
-    UI.closeWar();
-  },
-
-  resolveRaid() {
-    // raids only after startLevel
-    if ((S.lvl||1) < Config.raid.startLevel) return;
-
-    const def = getDefStr();
-    const lvl = S.lvl||1;
-
-    const atkBase = 15 + lvl*3;
-    const atk = Math.floor(atkBase * ((Math.random()*0.35)+0.85));
-
-    const win = def >= atk;
-
-    if (win) {
-      const reward = Math.floor(30 + lvl*4);
-      S.res.gold = (S.res.gold||0) + reward;
-      S.pop.hap = clamp((S.pop.hap||0)+3, 0, 100);
-      UI.log(BI(`Überfall abgewehrt! (+${reward} Gold)`,`Raid repelled! (+${reward} gold)`), 'raid');
-    } else {
-      // steal resources
-      const stealPct = clamp(0.10 + lvl/200, 0.10, 0.35);
-      const stealList = ['gold','wood','stone','bread','meat','apple','beer','iron'];
-      const stolen = [];
-      stealList.forEach(k=>{
-        const have = S.res[k]||0;
-        if (have>0) {
-          const amt = Math.max(0, Math.floor(have*stealPct*Math.random()));
-          if (amt>0) { S.res[k]-=amt; stolen.push({k,amt}); }
-        }
-      });
-      // pop loss
-      const popLoss = clamp(Math.floor(1 + Math.random()*2 + lvl/40), 1, 4);
-      S.pop.curr = Math.max(0, (S.pop.curr||0) - popLoss);
-      // happiness hit
-      S.pop.hap = clamp((S.pop.hap||0) - (6 + Math.floor(lvl/15)), 0, 100);
-
-      UI.log(dual(lang=>`${lang==='de'?'Überfall! Verluste':'Raid! Losses'}: ${stolen.length?stolen.map(x=>`${x.amt} ${SafeT(x.k,lang)}`).join(', '):(lang==='de'?'Ressourcen':'resources')}; ${popLoss} ${lang==='de'?'Bevölkerung verloren':'population lost'}.`), 'warn');
-      UI.log(BI("Deine Bewohner sind verängstigt. Baue Wälle und Türme oder bilde Soldaten aus!","Your villagers are terrified. Build walls and towers or train soldiers!"), "raid");
-    }
-
-    S.raid.warned = false;
-    scheduleNextRaid();
-  },
+  launchWar(id) { return World.launch(id||World.selectedEnemy,World.warDraft||{}); },
+  resolveRaid() { return World.resolveRaid(S); },
 
   tick() {
     if (!S || !S.res) return;
@@ -1796,18 +1684,8 @@ const Game = {
       UI.log(dual(lang=>lang==='de'?season.i+" Der "+loc(season.n,lang)+" beginnt. Die Produktion verändert sich.":season.i+" "+loc(season.n,lang)+" begins. Production changes."),"prod");
     }
     Game.expireContracts();
-    if((S.lvl||1)>=Config.raid.startLevel){
-      const inDays=(S.raid.next||0)-S.day;
-      if(inDays<=2&&!S.raid.warned){
-        S.raid.warned=true;
-        UI.log(BI("Späher melden: Ein Überfall naht!","Scouts report: a raid is coming!"),"raid");
-      }
-      if(S.day>=(S.raid.next||0)){
-        S.paused=true;
-        UI.showModal(BI("⚔️ Überfall!","⚔️ Raid!"),BI("Plünderer fallen in dein Lehen ein …","Raiders descend on your fief…"),BI("Kämpfen","Fight"),()=>{Game.resolveRaid();reconcileWorkforce();UI.update();});
-        return;
-      }
-    }
+    World.advance(S);
+    if(World.checkRaid(S)) return;
 
     recalcPopMax();
     const report=simulateEconomy();
@@ -1820,9 +1698,8 @@ const Game = {
       UI.log(dual(lang=>lang==='de'?"Nahrungsmangel: "+numberText(report.foodMissing,lang)+" Rationen fehlen.":"Food shortage: "+numberText(report.foodMissing,lang)+" rations missing."),"warn");
       // A single empty tick is recoverable; only sustained shortages cause deaths.
       if(S.survival.hungerTicks>=4&&S.survival.hungerTicks%4===0){
-        S.pop.curr=Math.max(0,S.pop.curr-1);
-        Game.unassignWorker();
-        UI.log(BI("Ein Bewohner ist nach anhaltendem Nahrungsmangel verhungert.","A villager starved after a prolonged food shortage."),"death");
+        const lost=World.starve();
+        if(lost) UI.log(lost==='soldier'?BI("Ein Soldat in der Heimat ist nach anhaltendem Nahrungsmangel verhungert.","A soldier at home starved after a prolonged food shortage."):BI("Ein Bewohner ist nach anhaltendem Nahrungsmangel verhungert.","A villager starved after a prolonged food shortage."),"death");
       }
     }else{
       S.survival.hungerTicks=0;
@@ -1839,7 +1716,8 @@ const Game = {
     }
     const workers=countWorkers();
     if(workers.available>0&&workers.idle/workers.available>.45) h.idle=-1;
-    h.total=h.hunger+h.variety+h.tax+h.beer+h.religion+h.overcrowd+h.idle;
+    h.events=World.mood(S);
+    h.total=h.hunger+h.variety+h.tax+h.beer+h.religion+h.overcrowd+h.idle+h.events;
     const delta=clamp(h.total,-6,6);
     S.pop.hap=clamp(roundQty(S.pop.hap+delta),0,100);
     S.factors={...h,total:delta};
@@ -1857,7 +1735,7 @@ const Game = {
       S.pop.curr++;
       reconcileWorkforce();
       UI.log(BI("Neue Bewohner sind eingetroffen. Offene Arbeitsplätze werden wieder besetzt.","New villagers have arrived. Vacant assigned jobs are being filled again."),"prod");
-    }else if(S.pop.hap<18&&S.pop.curr>0&&Math.random()>.6){
+    }else if(S.pop.hap<18&&S.pop.curr>World.unitCount(S.units)+(S.world.project?.workers||0)&&Math.random()>.6){
       S.pop.curr--;
       Game.unassignWorker();
       UI.log(BI("Bewohner sind geflohen.","Villagers have fled."),"warn");
@@ -1946,7 +1824,7 @@ const Tutorial = {
       },
       {
         title: BI("Wichtig für das weitere Spiel","Midgame essentials"),
-        text: BI("Ab Stufe 6 beginnen <b>Überfälle</b>. Baue <b>Holzwälle und Türme</b> (🛡️) oder bilde Soldaten aus.\nBereit? Los geht’s!","<b>Raids</b> begin at level 6. Build <b>Wooden Walls and Towers</b> (🛡️) or train soldiers.\nReady? Let's go!"),
+        text: BI("Ab Stufe 6 greifen <b>benachbarte Burgherren</b> an. Baue Befestigungen und bilde Soldaten aus. Unter 🧭 erkundest du Bauplätze und endliche Vorkommen. Unter ⚔️ stellst du eine Feldarmee zusammen – diese fehlt während des Marschs zu Hause.","From level 6, <b>neighbouring lords</b> attack. Build fortifications and train soldiers. Under 🧭, scout building plots and finite deposits. Under ⚔️, assemble a field army – it cannot defend your home while deployed."),
         allow: ["#tut-next"],
         highlight: "#raid-pill",
         done: ()=>false,
@@ -2100,7 +1978,7 @@ const UI = {
     });
 
     const cw = countWorkers();
-    const weps = (S.res.bow||0)+(S.res.spear||0)+(S.res.sword||0)+(S.res.armor||0)+(S.res.leatherArmor||0);
+    const weps = (S.res.bow||0)+(S.res.spear||0)+(S.res.sword||0)+(S.res.armor||0)+(S.res.leatherArmor||0)+(S.res.crossbow||0)+(S.res.pike||0);
     document.getElementById('s-sold').innerText = cw.sold;
     document.getElementById('s-wep').innerText = numberText(weps);
     document.getElementById('s-land').innerText = S.exp.land||0;
@@ -2140,7 +2018,7 @@ const UI = {
     // taxes
     const tx = Config.taxes[S.tax||0];
     document.getElementById('tax-name').innerText = loc(tx.n);
-    const taxGold = roundQty((S.pop.curr||0) * tx.g * (1+renownStatus().current.tax));
+    const taxGold = roundQty(Math.max(0,(S.pop.curr||0)-World.unitCount(S.units)) * tx.g * (1+renownStatus().current.tax));
     const taxHap = tx.h;
     const impactEl = document.getElementById('tax-impact');
     if (impactEl) {
@@ -2176,7 +2054,7 @@ const UI = {
     if (document.getElementById('upgrade-mask').style.display === 'flex') this.renderUpgrades();
     if (document.getElementById('production-mask').style.display === 'flex') this.renderProduction();
     if (document.getElementById('recruit-mask').style.display === 'flex') this.renderRecruit();
-
+    World.refreshUI();
     Storage.save();
   },
 
@@ -2186,7 +2064,7 @@ const UI = {
       const b = Config.b[key];
       if(!b) return;
 
-      const can = (!b.unique || !(S.b[key]||0)) && (S.res.gold||0) >= (b.cost.g||0) && (S.res.wood||0) >= (b.cost.w||0) && (S.res.stone||0) >= (b.cost.s||0) && (!b.reqLand || (S.exp.land||0)>=b.reqLand);
+      const can = !!World.buildTarget(key,S) && (!b.unique || !(S.b[key]||0)) && (S.res.gold||0) >= (b.cost.g||0) && (S.res.wood||0) >= (b.cost.w||0) && (S.res.stone||0) >= (b.cost.s||0) && (S.res.iron||0)>=(b.cost.i||0) && (!b.reqLand || (S.exp.land||0)>=b.reqLand);
       if (can) card.classList.add('can-build'); else card.classList.remove('can-build');
 
       const txt=[];
@@ -2194,6 +2072,8 @@ const UI = {
       if (b.cost.g) txt.push(`<span class="${(S.res.gold||0)<b.cost.g?'missing-res':''}">${b.cost.g}💰</span>`);
       if (b.cost.w) txt.push(`<span class="${(S.res.wood||0)<b.cost.w?'missing-res':''}">${b.cost.w}🌲</span>`);
       if (b.cost.s) txt.push(`<span class="${(S.res.stone||0)<b.cost.s?'missing-res':''}">${b.cost.s}🧱</span>`);
+      if (b.cost.i) txt.push(`<span class="${(S.res.iron||0)<b.cost.i?'missing-res':''}">${b.cost.i}⛓️</span>`);
+      if(!World.buildTarget(key,S)) txt.push('<span class="missing-res">'+loc(BI('📍 voll','📍 full'))+'</span>');
       const cd = card.querySelector('.cost-disp');
       if (cd) cd.innerHTML = txt.join(' ');
     });
@@ -2210,6 +2090,7 @@ const UI = {
 
   renderBuild() {
     const d = document.getElementById('build-list'); d.innerHTML="";
+    World.renderBuildLocation(d);
     for (let k in Config.b) {
       const b = Config.b[k];
       if (b.c !== this.cat) continue;
@@ -2362,7 +2243,7 @@ const UI = {
     const f = S.factors || {};
     const rows = [
       ["hunger_supply", f.hunger], ["diversity", f.variety], ["taxes", f.tax], ["beer", f.beer],
-      ["religion", f.religion], ["overcrowding", f.overcrowd], ["idleness", f.idle],
+      ["religion", f.religion], ["overcrowding", f.overcrowd], ["idleness", f.idle], ["events", f.events||0],
     ];
     const body=dual(lang=>{
       let text='\n';
@@ -2412,7 +2293,7 @@ const UI = {
       html+='<div class="muted">'+tr('food_balance',{value:(r.foodBalance>0?'+':'')+numberText(r.foodBalance)})+'</div>';
     }
     html+='<p class="muted">'+tr('food_explain')+'</p><p class="muted">'+tr('material_stock',{used:numberText(sumGoods(S.res,Rules.storeTypes)),cap:caps.store})+' · '+tr('drink_stock',{used:numberText(S.res.beer),cap:caps.drink})+'</p>';
-    const chains=[['bread_chain',['wheat','mill','bake']],['beer_chain',['wheat','hops','brew']],['leather_chain',['cattle','tannery','leatherwork']]];
+    const chains=[['bread_chain',['wheat','mill','bake']],['beer_chain',['wheat','hops','brew']],['leather_chain',['cattle','tannery','leatherwork']],['weapon_chain',['crosswork','pikesmith']]];
     html+='<p class="muted">'+tr('recipe_base')+'</p>';
     chains.forEach(([title,keys])=>{
       html+='<div class="chain-card"><b>'+tr(title)+'</b><div class="chain-path">'+keys.map(key=>'<span>'+Config.b[key].i+' '+loc(Config.b[key].n)+': '+recipeText(Config.b[key])+'</span>').join('')+'</div></div>';
@@ -2420,9 +2301,10 @@ const UI = {
     html+='<p class="muted">'+tr('beer_explain')+'</p><p class="muted">'+tr('dairy_explain')+'</p>';
     if(r){
       html+='<h3>'+tr('resource_ledger')+'</h3><div class="ledger-grid">';
-      const keys=['wood','wheat','flour','bread','hops','beer','apple','meat','cheese','hides','leather','leatherArmor'];
+      const keys=['gold','wood','stone','iron','wheat','flour','bread','hops','beer','apple','meat','cheese','hides','leather','leatherArmor','crossbow','pike'];
       keys.forEach(key=>{
-        const flows=[['gross_produced',r.produced[key]||0],['processing_used',-(r.inputs[key]||0)],['people_used',-(r.consumed[key]||0)],['trade_flow',r.trade[key]||0],['overflow_loss',-(r.lost[key]||0)]];
+        const flows=[['gross_produced',r.produced[key]||0],[key==='gold'?'upkeep':'processing_used',-(r.inputs[key]||0)],['people_used',-(r.consumed[key]||0)],['trade_flow',r.trade[key]||0],['overflow_loss',-(r.lost[key]||0)]];
+        if(key==='gold')flows.splice(1,0,['taxes',r.taxes||0]);
         html+='<div class="ledger-card"><strong>'+SafeT(key)+'</strong>'+flows.map(([label,value])=>'<div class="ledger-line"><span>'+tr(label)+'</span><span>'+(value>0?'+':'')+numberText(value)+'</span></div>').join('')+'<div class="ledger-line ledger-net"><span>'+tr('stock_change')+'</span><span>'+((r.net[key]||0)>0?'+':'')+numberText(r.net[key]||0)+'</span></div></div>';
       });
       html+='</div>';
@@ -2437,22 +2319,10 @@ const UI = {
       }
       html+='</div>';
     });
-    document.getElementById('production-body').innerHTML=html;
+    document.getElementById('production-body').innerHTML=html+World.productionHTML();
   },
 
-  showRaidInfo() {
-    if ((S.lvl||1) < Config.raid.startLevel) {
-      this.showModal(BI("Überfälle","Raids"), BI("Überfälle beginnen ab Stufe 6.\nBereite dich mit Wällen, Türmen (🛡️) und Soldaten vor.","Raids begin at level 6.\nPrepare with walls, towers (🛡️), and soldiers."), BI("OK","OK"), ()=>{});
-      return;
-    }
-    const inDays = (S.raid.next||0) - (S.day||0);
-    const displayDays=Math.max(0,inDays);
-    const body=BI(
-      `Nächster Überfall in ${displayDays} ${displayDays===1?'Tag':'Tagen'}\nVerteidigung: ${getDefStr()} 🛡️\nTipp: Wälle, Türme und Soldaten erhöhen deine Chance.`,
-      `Next raid in ${displayDays} ${displayDays===1?'day':'days'}\nDefense: ${getDefStr()} 🛡️\nTip: Walls, towers, and soldiers increase your chance.`
-    );
-    this.showModal(BI("Überfälle","Raids"), body, BI("OK","OK"), ()=>{});
-  },
+  showRaidInfo() { World.raidInfo(); },
 
   openRecruit() {
     document.getElementById('recruit-mask').style.display='flex';
@@ -2472,7 +2342,7 @@ const UI = {
       if(S.res.gold<u.cost) missing.push(SafeT('gold'));
       if(u.res&&(S.res[u.res]||0)<1) missing.push(SafeT(u.res));
       if(u.arm&&(S.res[u.arm]||0)<1) missing.push(SafeT(u.arm));
-      row.innerHTML = `<span>${loc(u.n)} (${u.str}⚔️ / ${u.def||0}🛡️)</span>
+      row.innerHTML = `<span>${loc(u.n)} (${u.str}⚔️ / ${u.def||0}🛡️)<small style="display:block">${loc(u.desc||'')} · ${tr('home')}: ${World.homeUnits()[k]||0} · ${tr('away')}: ${World.awayUnits()[k]||0}</small></span>
         <button class="btn" style="padding:2px 8px" onclick="Game.recruit('${k}')" ${missing.length?'disabled':''} title="${missing.length?tr('recruiting_missing',{items:missing.join(', ')}):''}">${tr('train')} (${cost})</button>`;
       l.appendChild(row);
     }
@@ -2484,25 +2354,7 @@ const UI = {
     this.renderWar();
     Tutorial.onAction('ui','war');
   },
-  renderWar() {
-    const l = document.getElementById('war-list'); l.innerHTML="";
-    document.getElementById('army-str').innerText = getArmyStr();
-    document.getElementById('def-str').innerText = getDefStr();
-    Missions.forEach((m, idx)=>{
-      const row = document.createElement('div'); row.className='war-card';
-      const lootTxt=[]; for(let k in m.loot) lootTxt.push(`${m.loot[k]} ${SafeT(k)}`);
-      row.innerHTML = `
-        <div>
-          <div style="font-weight:bold">${loc(m.n)}</div>
-          <div style="font-size:0.8rem; color:#555">${tr('loot')}: ${lootTxt.join(', ')}</div>
-        </div>
-        <div style="text-align:right">
-          <div style="font-weight:bold; color:#b71c1c">${tr('danger')}: ${loc(m.risk)}</div>
-          <button class="btn" style="margin-top:5px; background:var(--danger); color:#fff" onclick="Game.launchWar(${idx})">${tr('attack')} (${m.str}⚔️)</button>
-        </div>`;
-      l.appendChild(row);
-    });
-  },
+  renderWar() { World.renderWar(); },
   closeWar(){ document.getElementById('war-mask').style.display='none'; },
 
   openMarket() {
@@ -2576,45 +2428,8 @@ const UI = {
     });
   },
 
-  openEvent(pending) {
-    const def=EventDefs.find(e=>e.id===pending.id); if (!def) { S.events.pending=null; S.paused=false; return; }
-    S.paused=true;
-    document.getElementById('event-title').innerText=loc(def.title);
-    document.getElementById('event-text').innerText=loc(def.text);
-    const l=document.getElementById('event-choices'); l.innerHTML='';
-    def.choices.forEach((choice,idx)=>{
-      const needsGold=(def.id==='caravan'&&idx===0)?40:(def.id==='fire'&&idx===0)?50:(def.id==='levy'&&idx===0)?80:0;
-      const b=document.createElement('button'); b.className='btn';
-      b.disabled=needsGold>0&&(S.res.gold||0)<needsGold;
-      b.innerHTML=`${loc(choice.label)}<small>${loc(choice.hint)}${b.disabled?` · ${tr('not_enough_gold')}`:''}</small>`;
-      b.onclick=()=>Game.chooseEvent(def.id,idx); l.appendChild(b);
-    });
-    document.getElementById('event-mask').style.display='flex';
-    Storage.save();
-  },
-
-  openExp() {
-    document.getElementById('exp-mask').style.display='flex';
-    const cost = Game.expandCost();
-    const caps = calcCaps();
-    const html = `
-      <div style="background:rgba(255,255,255,.5); padding:10px; border-radius:10px; border:1px solid #999">
-        <div style="font-weight:900; font-size:1.05rem">${tr('land_tier')}: 🧭 ${S.exp.land||0}</div>
-        <div style="margin-top:8px; font-size:.95rem; line-height:1.25">
-          <b>${tr('bonuses')}:</b><br>
-          • ${tr('storage')} +${Config.expansion.storeBonus} (${tr('current')}: ${caps.store})<br>
-          • ${tr('food')} +${Config.expansion.foodBonus} (${tr('current')}: ${caps.food})<br>
-          • ${tr('housing')} +${Config.expansion.popBonus} (${tr('population')}: ${S.pop.max})<br>
-          <br>
-          <b>${tr('next_expansion_cost')}:</b><br>
-          • ${cost.gold}💰  • ${cost.wood}🌲  • ${cost.stone}🧱
-        </div>
-        <div style="margin-top:10px; font-size:.85rem; color:#5d4037">
-          ${tr('expansion_tip')}
-        </div>
-      </div>`;
-    document.getElementById('exp-body').innerHTML = html;
-  },
+  openEvent(pending) { EventEngine.render(pending); },
+  openExp() { document.getElementById('exp-mask').style.display='flex'; World.renderTerritories(); },
   closeExp(){ document.getElementById('exp-mask').style.display='none'; },
 
   openTown() {
@@ -2721,8 +2536,10 @@ const _showHappy = UI.showHappy.bind(UI);
 UI.showHappy = function(){ _showHappy(); Tutorial.onAction('ui','happy'); };
 
 /* Start game */
-Game.init();
 </script>
+<script src="world.js?v=7"></script>
+<script src="events.js?v=7"></script>
+<script>Game.init();</script>
 
 </body>
 </html>
