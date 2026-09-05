@@ -2,7 +2,57 @@
 
 Deutsch/English browser economy and castle clicker, published at https://christian1binder.github.io/stronhold/.
 
-The application uses three plain JavaScript/HTML files, with no build step or additional runtime dependencies: `index.html` contains the existing economy and interface, `world.js` adds territories and armies, and `events.js` contains the event catalog. Both scripts must load before `Game.init()`. Publish the three files together.
+The application has no build step or additional runtime dependencies. Publish `index.html`, `world.js`, `kingdom.js`, `events.js` and `kingdom.css` together. Script order is base game → world → kingdom → events → `Game.init()`. The version query on local assets prevents mixing old cached rules with the new release.
+
+## Major Update · 2026-09-05 · v8
+
+### Gebiete und Übersicht
+
+- Das Stammland bietet jetzt **36 Siedlungsplätze, 10 Waldplätze, 16 fruchtbare Plätze, 4 Steinbruchplätze und 3 Minenplätze**. Davon belegen die drei Startgebäude drei Siedlungsplätze. Holzfäller und Jäger nutzen eigene Waldplätze. Bestehende Lehen erhalten einmalig zusätzliche Reserven; erschöpfte Vorkommen werden beim Laden nicht aufgefüllt.
+- Über der Karte lässt sich das angezeigte Baugebiet wechseln. Die vier Kartenflächen und die Baukarten zeigen freie Plätze direkt an. Die Gebäudeanzeige zählt pro Typ im gewählten Gebiet; Baukarten zeigen lokale und gesamte Gebäudezahl. Produktion und Arbeiterverwaltung gelten weiterhin für das ganze Lehen. Bei erschöpften Vorkommen meldet die Kartenanzeige keine nutzbaren Minenplätze.
+- Nach jeweils zwei weiteren erschlossenen Gebieten erscheinen drei neue Nachbargebiete. Die bisherige zusätzliche Burgstufensperre entfällt. Es gibt keine letzte Grenze: Ein neutrales Gebiet je Abschnitt sichert einen friedlichen Einstieg, weiterer Fortschritt erfordert Eroberungen.
+- Namen entstehen aus 16 Ortsanfängen, 12 Endungen, 24 Vornamen, sieben geschlechtsgerechten Titelstufen und späteren Beinamen. Titel und Gegnerstärke berücksichtigen Burgstufe und Grenzfortschritt. Nummerierte Ortsvarianten verhindern Duplikate nach Ausschöpfen der Namenskombinationen. Namen, Stärke und Kampfwürfe bleiben gespeichert. Gebiets- und Gegnerlisten haben Seiten und getrennte Ansichten für Besitz und Grenze.
+- Unter 🛡️ und ⚔️ zeigt eine Truppentabelle jede Gattung mit Gesamtbestand, verfügbaren und entsandten Einheiten. Baumeister im Gerätebau werden zusätzlich ausgewiesen. Sold und Heimatverteidigung stehen unmittelbar daneben.
+
+### Originalketten und eigene Spielbalance
+
+Recherchierte Grundlage: [Firefly: Stronghold HD Manual](https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/40950/manuals/Stronghold%20HD%20Manual%20-%20English.pdf), Abschnitte 4.2–4.4, 6.1–6.3, 9.1–9.6 und die Warenflussdiagramme 10.2–10.3.
+
+| Kette nach dem Handbuch | Umsetzung |
+| --- | --- |
+| Weizen → Mühle → Mehl → Bäckerei → Brot | Bäckereien verbrauchen kein Holz. |
+| Hopfen → Brauerei → Bier → Wirtshaus | Ausschank braucht einen Wirt; kein Weizen oder Holz beim Brauen. |
+| Milchviehhof → Kühe/Käse; Gerberei → Lederrüstung | Drei Kühe ermöglichen Käse; eine verarbeitete Kuh liefert drei Lederrüstungen. |
+| Holz → Bogen / Armbrust / Speer / Pike | Je Waffe 2 / 3 / 1 / 2 Holz. |
+| Eisen → Schwert / Streitkolben / Metallrüstung | Je Gegenstand 1 Eisen. |
+
+Pikeniere benötigen nun Metallrüstung, Armbrust- und Streitkolbenkämpfer Lederrüstung. Spezialisierte Werkstattvarianten stellen die Produkte der ursprünglichen Handwerksberufe dar. Streitkolben und passende Sturmtruppen ergänzen das Sortiment.
+
+**An den Klicker angepasste Werte:** Ein Spieltag dauert vier Sekunden. Ein Müller verarbeitet zwei Weizen pro Tag; eine Mühle bietet drei Arbeitsplätze und versorgt bei Vollbesetzung sechs Bäckereien. Eine Bäckerei liefert vier Brot pro Mehl; eine Brauerei vier Bier pro Hopfen. Ein Wirtshaus versorgt 30 Bewohner mit je 0,2 Bier täglich. Die Nachzucht dauert vier Arbeitstage je Kuh. Eine Gerberei benötigt drei Arbeitstage je Kuh; Materialmangel erlaubt höchstens einen gespeicherten Arbeitszyklus. Durchsatzboni beeinflussen Arbeitszeit und Verbrauch gemeinsam. Diese Mengen und Zeiten sind Spielbalancewerte unserer Simulation. Transportwege und einzelne Laufanimationen bleiben abstrahiert.
+
+### Baumeister und Belagerung
+
+Die Baumeistergilde kostet 300 Gold, 100 Holz und 50 Stein; sie ermöglicht die Ausbildung für 30 Gold je freiem Bewohner. Geräte benötigen verfügbare Baumeister, Ressourcen und mehrere Spieltage. Ein laufender Gerätebau bindet seine Mannschaft. Diese Personen können währenddessen keinen Feldzug bemannen; die Gilde lässt sich erst danach abreißen.
+
+| Gerät | Besatzung laut Handbuch | Bauzeit hier | Materialkosten hier | Steinmunition je Feldzug |
+| --- | ---: | ---: | --- | ---: |
+| Tragbarer Schild | 1 | 2 Tage | 40 Gold, 15 Holz | 0 |
+| Katapult | 2 | 3 Tage | 150 Gold, 60 Holz | 10 |
+| Tribok | 3 | 5 Tage | 300 Gold, 100 Holz | 20 |
+| Rammbock | 4 | 4 Tage | 200 Gold, 80 Holz | 0 |
+| Belagerungsturm | 4 | 5 Tage | 250 Gold, 100 Holz | 0 |
+
+Die Feldzugsauswahl ergänzt die benötigte Mannschaft automatisch. Proviant umfasst auch diese Personen; Munition wird einmal beim Aufbruch bezahlt. Belagerungswirkung ergänzt die Truppenstärke um höchstens 60 % der gegnerischen Stärke. Schilde und Türme können Verluste um bis zu 25 % senken; jeder Angriff verursacht weiterhin mindestens einen Verlust. Geräte erleiden ebenfalls Verluste und müssen ohne ausreichende überlebende Besatzung zurückgelassen werden. Erhaltene Geräte sind bis zur Rückkehr gebunden. Belagerungen und der Transport von Gerätebausätzen verwenden unser bestehendes abstraktes Feldzugsmodell.
+
+### Spielstände und Veröffentlichung
+
+Vor dem Update wird der gespeicherte Originalzustand einmal unter `burgherr_v4_cg_before_major_v8` gesichert, soweit Browserspeicher verfügbar ist. Der aktive Speicherschlüssel und die Sprachwahl bleiben bestehen. Bestehende Viehhöfe werden samt Besetzung zu Milchviehhöfen; Lederwerkstätten zu Gerbereien. Vorhandene Rohhäute und Leder bleiben verwendbar und werden zuerst verarbeitet. Alte Handelsbestände bleiben kompatibel. Neue Ereignisangebote verwenden die aktuellen Waren.
+
+Vorhandene Milchviehhöfe starten mit ihrer Herde; neu gebaute Höfe ziehen sie erst auf. Bestehende Brauereien erhalten einmalig ein Wirtshaus mit gewünschter Besetzung; verfügbare Bewohner bestimmen, ob es sofort arbeitet. Alte Truppen bleiben erhalten, laufende Feldzüge behalten ihre Werte. Die Übernahme gewährt 16 Spieltage Angriffsschutz. Offline laufen Wirtschaft und Nachzucht mit dem bisherigen reduzierten Durchsatz weiter; Gerätebau, Feldzüge und Ereignisse warten auf aktive Spieltage.
+
+Repository-Backup: `backup-2026-09-05-vor-major-v8` bei Commit `08c79ee9a00383c2b5b7b29620b119e972137e90`. Veröffentlichung erfolgt weiter über die bestehende GitHub-Pages-Adresse.
+
+Die folgenden Abschnitte dokumentieren frühere Versionen; für die aktuelle Mechanik gelten die v8-Regeln oben.
 
 ## Territory and campaign update · 2026-09-02 · v7
 
@@ -36,7 +86,7 @@ Backup before publication: branch `backup-2026-09-02-vor-gebietsupdate`, commit 
 
 ## Saves and language
 
-The existing `burgherr_v4_cg` local-storage key is retained. Version 7 migrates buildings, workers, resources, units, trade settings, upgrades, legacy land and renown in place. Before migration, the original saved JSON is copied once to `burgherr_v4_cg_before_world_v7` when browser storage permits. Reloading v7 does not reassign buildings, replenish deposits, repeat spear conversion or reroll a battle. New resources start at zero; old negative inventory artifacts are clamped to zero. Language remains in `stronhold_language`. No save reset is required.
+The existing `burgherr_v4_cg` local-storage key and `stronhold_language` preference are retained. v8 migration is described above; v6→v7 spear conversion still runs only for saves older than v7. No save reset is required.
 
 ## Tests
 
@@ -46,4 +96,4 @@ Run with Node.js:
 node --test tests/economy.test.cjs
 ```
 
-The tests load the actual inline and local external scripts in document order into an isolated VM. They cover trading, capacity, complete resource accounting, food recovery, staffing, recipes, migration, plot allocation, depleted mines, recruitment, deployment, irreversible battle settlement, home defense, offline peace, every event choice, German/English rendering and inline handler syntax. A seeded 1,000-day scenario combines production, trade, recruitment, adaptive defense, expeditions, scouting, settlement, events and population changes. UI render tests use a lightweight DOM double; they are not a real-browser layout check.
+The tests load the actual inline and local external scripts in document order into an isolated VM. Coverage includes trading, resource accounting, food recovery, recipes, multi-worker mills, cow breeding and slaughter, inn coverage, save conversion, territory switching, over 100 frontier generations, name persistence, finite deposits, troop and engineer recruitment, crew reservation, siege construction, ammunition, campaign forecasts, casualties, returns, offline peace, event choices, both languages and generated handler syntax. A seeded 1,000-day scenario combines economy, trade, recruitment, adaptive defense, campaigns, settlement, events and population changes. UI render tests use a lightweight DOM double; they are not a real-browser layout check.

@@ -36,7 +36,7 @@ function loadGame(overrides = {}) {
     setInterval(){},setTimeout(){return 1;},clearTimeout(){},requestAnimationFrame(){},location:{reload(){}}
   };
   vm.createContext(sandbox);
-  vm.runInContext(script+'\nglobalThis.testApi={Game,UI,Storage,Tutorial,I18N,T,BI,loc,SafeT,Rules,Config,Units,MarketGoods,RenownTiers,EPSILON,World,WorldEvents,EventEngine,numberText,productionRecipe,migrateState,simulateEconomy,produceResources,createEconomyReport,executeTrade,rebalanceMarket,enforceStorageLimits,reconcileWorkforce,countWorkers,calcCaps,marketPrice,renownStatus,productionMultiplier,contractReward,applyOfflineProgress,getDefStr,recalcPopMax,set(v){S=v;migrateState();return S;},state(){return S;}};',sandbox);
+  vm.runInContext(script+'\nglobalThis.testApi={Game,UI,Storage,Tutorial,I18N,T,BI,loc,SafeT,Rules,Config,Units,MarketGoods,RenownTiers,EPSILON,World,Kingdom,Siege,WorldEvents,EventEngine,numberText,productionRecipe,migrateState,simulateEconomy,produceResources,createEconomyReport,executeTrade,rebalanceMarket,enforceStorageLimits,reconcileWorkforce,countWorkers,calcCaps,marketPrice,renownStatus,productionMultiplier,contractReward,applyOfflineProgress,getDefStr,recalcPopMax,set(v){S=v;migrateState();return S;},state(){return S;}};',sandbox);
   const api=sandbox.testApi;
   const base={day:1,lvl:1,paused:false,res:{gold:1000},pop:{curr:20,max:105,hap:60},b:{stock:20,gran:20,market:1,hovel:20},w:{},units:{},tax:0,
     goal:{gold:1e12},tut:{done:true,skipped:true},events:{pending:null,nextDay:999999},raid:{next:999999,warned:false}};
@@ -50,6 +50,144 @@ function loadGame(overrides = {}) {
   return {api,state,nodes,storage,messages,sandbox,updateUI};
 }
 const near=(actual,expected)=>assert.ok(Math.abs(actual-expected)<.0001,actual+' != '+expected);
+
+test('the main weapons counter includes newly introduced maces',()=>{
+  const {nodes,updateUI}=loadGame({res:{mace:7,bow:3}});updateUI();assert.equal(nodes.get('s-wep').innerText,'10');
+});
+
+test('v8 territory switching changes map counts and actual construction destination',()=>{
+  const {api,state,nodes}=loadGame({res:{gold:10000,wood:1000},b:{apple:2}}),W=api.World,K=api.Kingdom;
+  const home=W.region('home'),other=state.world.regions[1];other.status='owned';other.scouted=true;
+  W.setRegion('home');near(K.visibleCount('apple'),2);const homeFree=K.free('fertile');
+  W.setRegion(other.id);near(K.visibleCount('apple'),0);assert.ok(nodes.get('plots-farm').innerText.includes(String(other.slots.fertile)));
+  api.Game.build('apple');near(other.buildings.apple,1);near(home.buildings.apple,2);near(K.visibleCount('apple'),1);near(K.free('fertile'),other.slots.fertile-1);
+  W.setRegion('home');near(K.free('fertile'),homeFree);near(K.visibleCount('apple'),2);
+  W.setRegion('auto');near(K.visibleCount('apple'),3);near(K.free('fertile'),homeFree+other.slots.fertile-1);
+});
+test('v8 migration expands the old homeland once without replenishing deposits or losing buildings',()=>{
+  const {api,state}=loadGame({meta:{version:7},b:{dairy:2,cattle:3,tannery:2,leatherwork:1,brew:1},w:{dairy:2,cattle:2,tannery:1,leatherwork:1,brew:1},units:{pikeman:2},res:{hides:4,leather:6}});
+  near(state.b.dairy,5);near(state.b.tannery,3);near(state.w.dairy,4);near(state.w.tannery,2);near(state.b.cattle,0);near(state.b.leatherwork,0);
+  near(state.units.pikeman,2);near(state.b.inn,1);near(state.res.hides,4);near(state.res.leather,6);
+  const home=api.World.region('home');home.deposits.iron=7;state.husbandry.herds[0].cows=1;
+  const before=JSON.stringify({b:state.b,w:state.w,world:state.world,herds:state.husbandry});api.migrateState();
+  assert.equal(JSON.stringify({b:state.b,w:state.w,world:state.world,herds:state.husbandry}),before);near(home.deposits.iron,7);
+});
+test('new dairy herds grow over work time and restarting tanning cannot create free leather',()=>{
+  const {api,state}=loadGame({meta:{version:8},b:{dairy:1,tannery:1},w:{dairy:1,tannery:1}});
+  near(api.Kingdom.cows(),0);
+  for(let n=0;n<11;n++){const r=api.produceResources();near(r.produced.cheese||0,0);near(state.res.leatherArmor,0);}
+  api.produceResources();near(state.res.leatherArmor,3);near(api.Kingdom.cows(),2);
+  state.w.dairy=0;state.staffing.targets.dairy=0;
+  for(let n=0;n<20;n++)api.produceResources();near(state.res.leatherArmor,3);assert.ok(state.husbandry.tanning<=1);
+  const saved=JSON.parse(JSON.stringify(state));api.set(saved);api.produceResources();near(api.state().res.leatherArmor,3);
+});
+test('legacy leather and hides are consumed with full resource accounting before live cows',()=>{
+  const {api,state}=loadGame({meta:{version:7},b:{dairy:1,tannery:1},w:{dairy:1,tannery:1},res:{leather:1,hides:1}});
+  let r=api.produceResources();near(r.inputs.leather,1);near(r.produced.leatherArmor,1);near(api.Kingdom.cows(),3);
+  for(let n=0;n<3;n++)r=api.produceResources();near(r.inputs.hides,1);near(state.res.leatherArmor,4);near(api.Kingdom.cows(),3);
+});
+test('a fully staffed mill supports multiple bakeries and staffing survives reload',()=>{
+  const {api,state}=loadGame({meta:{version:8},b:{mill:1,bake:6},w:{mill:3,bake:6},res:{wheat:6}});
+  const r=api.produceResources();near(r.produced.flour,6);near(r.produced.bread,24);near(state.res.wheat,0);near(state.res.flour,0);
+  api.migrateState();near(state.w.mill,3);near(state.staffing.targets.mill,3);
+  state.pop.curr=7;api.reconcileWorkforce();assert.ok(api.countWorkers().idle>=0);state.pop.curr=20;api.reconcileWorkforce();near(state.w.mill,3);
+});
+test('ale stays in storage without an inn and service is limited by staffed inns',()=>{
+  const {api,state}=loadGame({meta:{version:8},pop:{curr:70},b:{inn:2},w:{inn:0},res:{beer:100,bread:400}});
+  let r=api.simulateEconomy();near(r.beerServed,0);near(state.res.beer,100);
+  state.w.inn=1;state.staffing.targets.inn=1;r=api.simulateEconomy();near(r.beerServed,6);near(r.beerDemand,14);
+  state.w.inn=2;state.staffing.targets.inn=2;r=api.simulateEconomy();near(r.beerServed,12);near(state.res.beer,82);
+});
+test('all wood and iron weapon recipes match the researched material requirements',()=>{
+  const {api,state}=loadGame({meta:{version:8},b:{fletch:1,crosswork:1,pole:1,pikesmith:1,smith:1,macesmith:1,armor:1},w:{fletch:1,crosswork:1,pole:1,pikesmith:1,smith:1,macesmith:1,armor:1},res:{wood:8,iron:3}});
+  const r=api.produceResources();near(r.inputs.wood,8);near(r.inputs.iron,3);
+  for(const k of ['bow','crossbow','spear','pike','sword','mace','armor'])near(state.res[k],1);
+});
+test('new borders continue past one hundred frontiers at the same castle level with stable unique names',()=>{
+  const {api,state}=loadGame({meta:{version:8},lvl:1}),W=api.World;
+  for(let n=0;n<120;n++){
+    const band=state.world.nextBand-1;
+    for(const r of state.world.regions.filter(r=>r.band===band).slice(0,2)){r.status='owned';if(r.enemy)r.enemy.defeated=true;}
+    W.ensureFrontier();
+  }
+  near(state.world.nextBand,121);near(state.world.regions.length,364);near(state.lvl,1);
+  const names=state.world.regions.map(r=>r.name.de);assert.equal(new Set(names).size,names.length);
+  assert.ok(state.world.regions.at(-1).enemy.level>400);
+  const namesAndStrength=()=>state.world.regions.map(r=>({id:r.id,name:r.name,lord:r.enemy?.name,strength:r.enemy?.strength,level:r.enemy?.level}));
+  const snapshot=JSON.stringify(namesAndStrength());
+  api.migrateState();assert.equal(JSON.stringify(namesAndStrength()),snapshot);
+});
+test('frontier and troop pagination remain bounded while showing different pages',()=>{
+  const {api,state,nodes}=loadGame({meta:{version:8}}),W=api.World;
+  for(let n=0;n<8;n++){const band=state.world.nextBand-1;for(const r of state.world.regions.filter(r=>r.band===band).slice(0,2)){r.status='owned';if(r.enemy)r.enemy.defeated=true;}W.ensureFrontier();}
+  W.setTerritoryView('owned');const first=nodes.get('exp-body').innerHTML;assert.ok((first.match(/<article/g)||[]).length<=9);
+  W.changeTerritoryPage(1);assert.notEqual(nodes.get('exp-body').innerHTML,first);
+  W.renderWar();const enemies=nodes.get('war-list').innerHTML;assert.ok((enemies.match(/<article/g)||[]).length<=8);W.changeWarPage(1);assert.notEqual(nodes.get('war-list').innerHTML,enemies);
+});
+test('engineers need their guild, money and an idle resident but no barracks',()=>{
+  const {api,state}=loadGame({meta:{version:8}});api.Game.recruit('engineer');near(state.units.engineer,0);
+  state.b.engineerGuild=1;const idle=api.countWorkers().idle,gold=state.res.gold;api.Game.recruit('engineer');near(state.units.engineer,1);near(state.res.gold,gold-30);near(api.countWorkers().idle,idle-1);
+  state.res.gold=0;api.Game.recruit('engineer');near(state.units.engineer,1);
+});
+test('siege construction reserves crew, charges once and finishes once across save migration',()=>{
+  const {api,state}=loadGame({meta:{version:8},b:{engineerGuild:1},units:{engineer:4},res:{gold:1000,wood:500}}),G=api.Siege;
+  assert.equal(G.build('catapult'),true);near(api.World.homeUnits().engineer,2);near(api.countWorkers().sold,4);near(state.res.gold,850);near(state.res.wood,440);
+  assert.equal(G.build('shield'),false);near(state.res.gold,850);assert.equal(api.World.removeBuilding('home','engineerGuild'),false);
+  api.migrateState();near(G.busy(),2);const finish=state.siege.project.finishDay;state.day=finish-1;G.advance();near(state.siege.units.catapult,0);
+  state.day=finish;G.advance();near(state.siege.units.catapult,1);near(api.World.homeUnits().engineer,4);G.advance();near(state.siege.units.catapult,1);
+});
+test('insufficient crew, resources and pause all block siege construction without payment',()=>{
+  const {api,state}=loadGame({meta:{version:8},b:{engineerGuild:1},units:{engineer:1},res:{gold:1000,wood:500}}),G=api.Siege;
+  assert.equal(G.build('catapult'),false);near(state.res.gold,1000);state.res.wood=0;assert.equal(G.build('shield'),false);
+  state.res.wood=500;state.paused=true;assert.equal(G.build('shield'),false);near(state.res.gold,1000);assert.equal(G.build('unknown'),false);
+});
+test('offline progress does not complete siege equipment or release its reserved crew',()=>{
+  const {api,state}=loadGame({meta:{version:8},b:{engineerGuild:1},units:{engineer:2},res:{wood:1000}});api.Siege.build('catapult');
+  const project=JSON.stringify(state.siege.project),day=state.day;api.applyOfflineProgress(Date.now()-1800000);near(state.day,day);assert.equal(JSON.stringify(state.siege.project),project);near(state.siege.units.catapult,0);near(api.Siege.busy(),2);
+});
+test('siege drafts automatically include crew and ammunition and keep home defense honest',()=>{
+  const {api,state}=loadGame({meta:{version:8},units:{spearman:10,engineer:6},res:{bread:1000,stone:100}}),W=api.World;
+  const r=state.world.regions[2];r.scouted=true;state.siege.units.catapult=2;
+  const base=W.preview(r.id,{spearman:6}),p=W.preview(r.id,{spearman:6},state,{catapult:1});
+  assert.ok(p.ok);near(p.siege.crew,2);near(p.count,8);assert.ok(p.food>base.food);assert.ok(p.attack>base.attack);near(p.homeCount,8);
+  assert.equal(W.launch(r.id,{spearman:6},state,{catapult:1}),true);near(state.res.stone,90);near(state.world.mission.units.engineer,2);near(W.homeUnits().engineer,4);near(api.Siege.available('catapult'),1);
+  const food=state.res.bread;assert.equal(W.launch(r.id,{spearman:1},state,{catapult:1}),false);near(state.res.stone,90);near(state.res.bread,food);
+});
+test('invalid siege quantities, missing ammunition and builder double-booking are rejected atomically',()=>{
+  const {api,state}=loadGame({meta:{version:8},b:{engineerGuild:1},units:{spearman:10,engineer:2},res:{wood:500,bread:1000,stone:100}}),W=api.World;
+  const r=state.world.regions[2];r.scouted=true;state.siege.units.catapult=1;
+  for(const equipment of [{catapult:2},{catapult:-1},{catapult:.5},{catapult:Infinity},{fake:1}])assert.equal(W.launch(r.id,{spearman:5},state,equipment),false);
+  near(state.res.stone,100);near(state.res.bread,1000);
+  api.Siege.build('catapult');assert.equal(W.preview(r.id,{spearman:5},state,{catapult:1}).ok,false);
+  state.siege.project=null;state.res.stone=0;assert.equal(W.launch(r.id,{spearman:5},state,{catapult:1}),false);near(state.res.bread,1000);
+});
+test('engineers do not count as melee protection and equipment cannot attack without soldiers',()=>{
+  const {api,state}=loadGame({meta:{version:8},units:{engineer:8},res:{bread:1000,stone:100}}),W=api.World,r=state.world.regions[2];r.scouted=true;state.siege.units.catapult=2;
+  near(W.power({archer:8,engineer:8}),W.power({archer:8}));assert.equal(W.preview(r.id,{},state,{catapult:2}).ok,false);assert.equal(W.preview(r.id,{engineer:8}).ok,false);
+});
+test('winning siege forecasts bound actual losses and returning machines cannot duplicate',()=>{
+  const {api,state}=loadGame({meta:{version:8},pop:{curr:80},units:{spearman:40,engineer:8},res:{bread:10000,stone:100}}),W=api.World,r=state.world.regions[2];r.scouted=true;r.enemy.strength=60;
+  state.siege.units.catapult=2;state.siege.units.shield=2;const equipment={catapult:2,shield:2},p=W.preview(r.id,{spearman:30},state,equipment);
+  assert.equal(W.launch(r.id,{spearman:30},state,equipment),true);state.day=state.world.mission.battleDay;W.battle();
+  const m=state.world.mission,loss=Object.values(m.result.losses).reduce((a,b)=>a+b,0);assert.ok(m.result.win);assert.ok(loss>=p.losses.min&&loss<=p.losses.max);
+  assert.ok(api.Siege.crew(m.siege)<=(m.units.engineer||0));const stocks=JSON.stringify(state.siege.units),total=JSON.stringify(state.units);
+  api.migrateState();W.battle();assert.equal(JSON.stringify(state.siege.units),stocks);assert.equal(JSON.stringify(state.units),total);
+  state.day=m.returnDay;W.returnArmy();assert.equal(state.world.mission,null);near(api.Siege.available('catapult'),state.siege.units.catapult);W.returnArmy();assert.equal(JSON.stringify(state.siege.units),stocks);
+});
+test('lost siege battles destroy equipment and never retain machines without surviving crew',()=>{
+  const {api,state}=loadGame({meta:{version:8},units:{spearman:1,engineer:4},res:{bread:1000,stone:100}}),W=api.World,r=state.world.regions[2];r.scouted=true;r.enemy.strength=10000;
+  state.siege.units.catapult=2;assert.equal(W.launch(r.id,{spearman:1},state,{catapult:2}),true);state.day=state.world.mission.battleDay;W.battle();
+  const m=state.world.mission;assert.equal(m.result.win,false);assert.ok(state.siege.units.catapult<2);assert.ok(api.Siege.crew(m.siege)<=(m.units.engineer||0));
+  near(state.siege.units.catapult,m.siege.catapult);assert.ok(state.units.engineer>=0);
+});
+test('construction crew still eats, pays upkeep and is distinguished in the bilingual roster',()=>{
+  const {api,state,nodes}=loadGame({meta:{version:8},pop:{curr:20},b:{engineerGuild:1},units:{engineer:4},res:{wood:500,bread:1000}});api.Siege.build('catapult');
+  const r=api.simulateEconomy();near(r.foodDemand,21);near(r.upkeep,.6);
+  for(const lang of ['de','en']){api.I18N.lang=lang;api.UI.renderRecruit();api.World.renderWar();
+    for(const id of ['recruit-roster','war-roster','siege-workshop']){const h=nodes.get(id).innerHTML;assert.ok(!/undefined|NaN|\[object Object\]/.test(h));assert.ok(h.includes(lang==='de'?'Baumeister':'Engineer'));}
+    assert.ok(nodes.get('recruit-roster').innerHTML.includes(lang==='de'?'Im Bau gebunden':'Building equipment'));
+  }
+});
 
 test('automatic trade reaches arbitrary targets in one pass, without five-unit rounding',()=>{
   const {api,state}=loadGame({res:{wood:100,stone:0}});
@@ -117,30 +255,36 @@ test('one short food tick does not kill a villager',()=>{
 });
 test('throughput bonuses consume proportionally more inputs, without free material amplification',()=>{
   const {api,state}=loadGame({renown:300,upgrades:{guild:5},boostUntilDay:10,b:{mill:2,bake:2},w:{mill:2,bake:2},res:{wheat:100,wood:100}});
-  const r=api.produceResources();near(r.produced.flour,r.inputs.wheat);near(r.produced.bread,r.inputs.flour*4);near(r.inputs.flour,r.inputs.wood);
+  const r=api.produceResources();near(r.produced.flour,r.inputs.wheat);near(r.produced.bread,r.inputs.flour*4);near(r.inputs.wood||0,0);near(state.res.wood,100);
 });
 test('limited inputs throttle production without negative stocks',()=>{
   const {api,state}=loadGame({b:{bake:10},w:{bake:10},res:{flour:.25,wood:10}});
-  const r=api.produceResources();near(r.produced.bread,1);near(state.res.flour,0);near(state.res.wood,9.75);assert.equal(r.buildings.bake.status,'partial');
+  const r=api.produceResources();near(r.produced.bread,1);near(state.res.flour,0);near(state.res.wood,10);assert.equal(r.buildings.bake.status,'partial');
 });
-test('bread has processing priority over beer when fuel is scarce',()=>{
+test('bread and ale use independent inputs without an artificial fuel dependency',()=>{
   const {api,state}=loadGame({b:{bake:1,brew:1},w:{bake:1,brew:1},res:{flour:1,wood:1,wheat:1,hops:1}});
-  const r=api.produceResources();near(r.produced.bread,4);near(r.produced.beer||0,0);near(state.res.hops,1);
+  const r=api.produceResources();near(r.produced.bread,4);near(r.produced.beer,4);near(state.res.hops,0);near(state.res.wood,1);near(state.res.wheat,1);
 });
-test('brewing requires grain, hops and fuel; hops alone do not make beer',()=>{
-  const {api}=loadGame({b:{brew:1},w:{brew:1},res:{hops:20}});const r=api.produceResources();near(r.produced.beer||0,0);assert.equal(r.buildings.brew.status,'no_inputs');
+test('brewing turns hops into ale without grain or wood',()=>{
+  const {api}=loadGame({b:{brew:1},w:{brew:1},res:{hops:20}});const r=api.produceResources();near(r.produced.beer,4);assert.equal(r.buildings.brew.status,'running');
 });
 test('beer demand is 0.2 per resident, separate from food and its capacity',()=>{
-  const {api,state}=loadGame({pop:{curr:20},res:{beer:50,bread:20},b:{gran:1}});
+  const {api,state}=loadGame({pop:{curr:20},res:{beer:50,bread:20},b:{gran:1,inn:1},w:{inn:1}});
   const r=api.simulateEconomy();near(r.beerServed,4);near(state.res.beer,46);near(r.foodMissing,0);assert.ok(!api.Rules.foodTypes.includes('beer'));
 });
 test('beer never substitutes for edible food',()=>{
   const {api}=loadGame({pop:{curr:10},res:{beer:50}});near(api.simulateEconomy().foodMissing,10);
 });
-test('cattle, tanning and leather armor form a working chain',()=>{
-  const {api,state}=loadGame({b:{cattle:1,tannery:1,leatherwork:1},w:{cattle:1,tannery:1,leatherwork:1}});
-  const r=api.produceResources();near(r.produced.hides,1);near(r.produced.leather,1);near(state.res.leatherArmor,1);near(state.res.hides,0);near(state.res.leather,0);near(state.res.meat,2);
+test('tanning consumes a real dairy cow and temporarily interrupts cheese production',()=>{
+  const {api,state}=loadGame({meta:{version:7},b:{dairy:1,tannery:1},w:{dairy:1,tannery:1}});
+  near(api.Kingdom.cows(),3);near(api.produceResources().produced.cheese,2);
+  api.produceResources();const leather=api.produceResources();near(leather.produced.leatherArmor,3);near(leather.inputs.cow,1);near(api.Kingdom.cows(),2);
+  const empty=api.produceResources();near(empty.produced.cheese||0,0);assert.equal(empty.buildings.dairy.status,'raising_cows');
+  state.w.tannery=0;state.staffing.targets.tannery=0;
+  for(let n=0;n<4;n++)api.produceResources();
+  near(api.Kingdom.cows(),3);near(api.produceResources().produced.cheese,2);
 });
+
 test('castle guards consume a spear and leather armor when recruited',()=>{
   const {api,state}=loadGame({b:{barrack:1},res:{spear:1,leatherArmor:1}});
   api.Game.recruit('guard');near(state.units.guard,1);near(state.res.spear,0);near(state.res.leatherArmor,0);
@@ -151,7 +295,7 @@ test('300 existing renown immediately grants the documented bonuses',()=>{
 });
 test('migration preserves progress and fixes legacy negative quantities',()=>{
   const {api,state}=loadGame({lvl:20,renown:300,res:{gold:1234,wood:-.8},b:{dairy:3},w:{dairy:2},units:{archer:2}});
-  near(state.lvl,20);near(state.renown,300);near(state.res.gold,1234);near(state.b.dairy,3);near(state.w.dairy,2);near(state.units.archer,2);near(state.res.wood,0);near(state.res.leather,0);near(state.meta.version,7);
+  near(state.lvl,20);near(state.renown,300);near(state.res.gold,1234);near(state.b.dairy,3);near(state.w.dairy,2);near(state.units.archer,2);near(state.res.wood,0);near(state.res.leather,0);near(state.meta.version,8);
   api.migrateState();near(state.res.gold,1234);near(state.staffing.targets.dairy,2);
 });
 test('every resource has German and English names and every static translation key exists',()=>{
@@ -210,14 +354,14 @@ test('market rendering preserves the focused number field while refreshing its s
   sandbox.document.activeElement={tagName:'INPUT',type:'number'};nodes.get('market-mask').contains=()=>true;
   api.UI.renderMarket();assert.equal(nodes.get('market-list').children[0],firstCard);
 });
-test('leather recipes use singular hide names in both languages',()=>{
+test('production explains the direct cow-to-armor chain in both languages',()=>{
   const {api,nodes}=loadGame();
-  api.I18N.lang='de';api.UI.renderProduction();assert.ok(nodes.get('production-body').innerHTML.includes('1 Rohhaut → 1 Leder'));
-  api.I18N.lang='en';api.UI.renderProduction();assert.ok(nodes.get('production-body').innerHTML.includes('1 Hide → 1 Leather'));
+  api.I18N.lang='de';api.UI.renderProduction();assert.ok(nodes.get('production-body').innerHTML.includes('1 Kuh → 3 Lederrüstung'));
+  api.I18N.lang='en';api.UI.renderProduction();assert.ok(nodes.get('production-body').innerHTML.includes('1 Cow → 3 Leather suits'));
 });
 test('new-game startup initializes all new systems without resetting language',()=>{
   const {api,storage,updateUI}=loadGame();api.I18N.set('en');api.Game.newGame();updateUI();
-  near(api.state().meta.version,7);near(api.state().res.leather,0);near(api.state().units.guard,0);assert.equal(storage.get('stronhold_language'),'en');
+  near(api.state().meta.version,8);near(api.state().res.leather,0);near(api.state().units.guard,0);assert.equal(storage.get('stronhold_language'),'en');
 });
 test('randomized fractional inventories remain finite and correctly accounted for',()=>{
   let seed=4711;const random=()=>((seed=(seed*1664525+1013904223)>>>0)/4294967296);
@@ -257,27 +401,27 @@ test('real load path creates an original local backup once, and retains language
   const {api,storage,state}=loadGame({meta:{version:6},units:{pikeman:3}});
   const old=snapshot(state);delete old.world;old.meta.version=6;old.units.pikeman=3;old.units.spearman=0;
   storage.set(api.Storage.key,JSON.stringify(old));storage.set('stronhold_language','en');api.I18N.lang='en';
-  api.Game.init();const backup=storage.get(api.Storage.key+'_before_world_v7');assert.ok(backup);near(JSON.parse(backup).units.pikeman,3);near(api.state().units.spearman,3);
-  api.Game.init();assert.equal(storage.get(api.Storage.key+'_before_world_v7'),backup);assert.equal(api.I18N.lang,'en');
+  api.Game.init();const backup=storage.get(api.Storage.key+'_before_major_v8');assert.ok(backup);near(JSON.parse(backup).units.pikeman,3);near(api.state().units.spearman,3);
+  api.Game.init();assert.equal(storage.get(api.Storage.key+'_before_major_v8'),backup);assert.equal(api.I18N.lang,'en');
 });
 test('new games have finite, distinct base plot budgets and map each building',()=>{
   const {api}=loadGame();api.Game.newGame();const home=api.World.region('home');
-  assert.deepEqual(snapshot(home.slots),{settlement:16,fertile:6,stone:2,iron:1});
+  assert.deepEqual(snapshot(home.slots),{settlement:36,forest:10,fertile:16,stone:4,iron:3});
   for(const key in api.Config.b)assert.ok(api.World.plotKinds.includes(api.World.plotKind(key)),key);
-  assert.equal(api.World.plotKind('cattle'),'fertile');assert.equal(api.World.plotKind('hunter'),'settlement');assert.equal(api.World.plotKind('quarry'),'stone');
-  assert.equal(api.World.available(home,'settlement'),13);
+  assert.equal(api.World.plotKind('cattle'),'fertile');assert.equal(api.World.plotKind('hunter'),'forest');assert.equal(api.World.plotKind('quarry'),'stone');
+  assert.equal(api.World.available(home,'settlement'),33);
 });
 test('a full fertile region blocks construction without charging money or materials',()=>{
   const {api,state}=loadGame({res:{gold:10000,wood:1000}});const home=api.World.region('home');home.slots.fertile=0;
   const before=snapshot(state.res);api.Game.build('apple');assert.deepEqual(snapshot(state.res),before);near(state.b.apple,0);
 });
-test('new construction occupies exactly one regional slot and consumes iron costs',()=>{
+test('new construction occupies exactly one regional slot and charges the workshop resources',()=>{
   const {api,state}=loadGame({res:{gold:10000,wood:500,iron:100}});const home=api.World.region('home');home.slots.settlement+=3;
   const free=api.World.available(home,'settlement');api.Game.build('crosswork');
-  near(state.b.crosswork,1);near(home.buildings.crosswork,1);near(api.World.available(home,'settlement'),free-1);near(state.res.iron,80);
+  near(state.b.crosswork,1);near(home.buildings.crosswork,1);near(api.World.available(home,'settlement'),free-1);near(state.res.iron,100);near(state.res.gold,9900);near(state.res.wood,450);
 });
 test('building selection never uses hostile land and auto-selection finds owned space',()=>{
-  const {api,state}=loadGame();const W=api.World,home=W.region('home'),r=state.world.regions[1];home.slots.fertile=0;
+  const {api,state}=loadGame();const W=api.World,home=W.region('home'),r=state.world.regions[1];home.slots.fertile=0;W.setRegion('auto');
   assert.equal(W.buildTarget('apple'),null);W.setRegion(r.id);assert.equal(state.world.selectedRegion,'auto');
   r.status='owned';assert.equal(W.buildTarget('apple').id,r.id);W.setRegion('home');assert.equal(W.buildTarget('apple'),null);
 });
@@ -332,18 +476,18 @@ test('an enemy territory cannot be settled or secured before conquest',()=>{
   const {api,state}=loadGame({res:{gold:10000,wood:1000,stone:1000,bread:1000}});const W=api.World,r=state.world.regions[2];r.scouted=true;
   assert.equal(W.startProject('settle',r.id),false);assert.equal(W.startProject('secure',r.id),false);assert.equal(state.world.project,null);
 });
-test('frontiers require both developed land and castle level; existing enemy strengths stay fixed',()=>{
+test('frontiers require developed land and set enemy strength once at discovery',()=>{
   const {api,state}=loadGame();const W=api.World,old=state.world.regions[2].enemy.strength;state.lvl=50;W.ensureFrontier();near(state.world.regions.length,4);
   state.world.regions[1].status='owned';state.world.regions[2].status='owned';state.world.regions[2].enemy.defeated=true;W.ensureFrontier();near(state.world.regions.length,7);near(state.world.regions[2].enemy.strength,old);
   const newer=state.world.regions[5].enemy;near(newer.level,50);assert.ok(newer.strength>old);
 });
-test('crossbows and pikes follow explicit wood-and-iron recipes',()=>{
+test('crossbows and pikes use the original wood requirements without iron',()=>{
   const {api,state}=loadGame({b:{crosswork:1,pikesmith:1},w:{crosswork:1,pikesmith:1},res:{wood:10,iron:4}});const r=api.produceResources();
-  near(r.produced.crossbow,1);near(r.produced.pike,1);near(r.inputs.wood,4);near(r.inputs.iron,2);near(state.res.wood,6);near(state.res.iron,2);
+  near(r.produced.crossbow,1);near(r.produced.pike,1);near(r.inputs.wood,5);near(r.inputs.iron||0,0);near(state.res.wood,5);near(state.res.iron,4);
 });
-test('new pikemen and crossbowmen each require their weapon and leather armor',()=>{
-  const {api,state}=loadGame({meta:{version:7},b:{barrack:1},res:{pike:1,crossbow:1,leatherArmor:1}});
-  api.Game.recruit('pikeman');near(state.units.pikeman,1);near(state.res.pike,0);near(state.res.leatherArmor,0);
+test('pikemen require metal armor while crossbowmen require leather armor',()=>{
+  const {api,state}=loadGame({meta:{version:7},b:{barrack:1},res:{pike:1,crossbow:1,armor:1,leatherArmor:0}});
+  api.Game.recruit('pikeman');near(state.units.pikeman,1);near(state.res.pike,0);near(state.res.armor,0);near(state.res.leatherArmor,0);
   api.Game.recruit('crossbowman');near(state.units.crossbowman,0);state.res.leatherArmor=1;api.Game.recruit('crossbowman');near(state.units.crossbowman,1);near(state.res.crossbow,0);near(state.res.leatherArmor,0);
 });
 test('unit counters matter and unsupported ranged troops lose effectiveness',()=>{

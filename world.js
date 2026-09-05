@@ -53,16 +53,16 @@ ReleaseWorkerPriority.unshift('crosswork','pikesmith');
 UpgradeDefs.tools.desc=BI('Jede Stufe gibt +1 Ressource pro Kartenklick und erhöht das tägliche Klickbudget. Bauplätze und Vorkommen bleiben begrenzt.','Each level grants +1 resource per map click and raises the daily click budget. Plots and deposits remain limited.');
 
 const World = {
-  plotKinds:['settlement','fertile','stone','iron'],
+  plotKinds:['settlement','forest','fertile','stone','iron'],
   int(value){return Number.isFinite(Number(value))?Math.max(0,Math.floor(Number(value))):0;},
   unitCount(units){return Object.keys(Units).reduce((n,k)=>n+this.int(units&&units[k]),0);},
   awayUnits(state=S){return state.world?.mission?.units||{};},
-  homeUnits(state=S){return Object.fromEntries(Object.keys(Units).map(k=>[k,Math.max(0,this.int(state.units[k])-this.int(this.awayUnits(state)[k]))]));},
+  homeUnits(state=S){return Object.fromEntries(Object.keys(Units).map(k=>[k,Math.max(0,this.int(state.units[k])-this.int(this.awayUnits(state)[k])-(k==='engineer'?Siege.busy(state):0))]));},
   owned(state=S){return state.world.regions.filter(r=>r.status==='owned');},
   region(id,state=S){return state.world.regions.find(r=>r.id===id);},
   enemies(state=S){return state.world.regions.filter(r=>r.enemy&&!r.enemy.defeated);},
   random(state=S){state.world.rng=(Math.imul(state.world.rng,1664525)+1013904223)>>>0;return state.world.rng/4294967296;},
-  plotKind(key){return key==='quarry'?'stone':key==='iron'?'iron':Config.b[key]?.z==='z-farm'?'fertile':'settlement';},
+  plotKind(key){return key==='quarry'?'stone':key==='iron'?'iron':Config.b[key]?.z==='z-farm'?'fertile':Config.b[key]?.z==='z-forest'?'forest':'settlement';},
   plotName(kind){return tr(kind==='stone'?'stone_plots':kind==='iron'?'iron_plots':kind);},
   used(region,kind){return Object.entries(region.buildings||{}).reduce((n,[k,v])=>n+(Config.b[k]&&this.plotKind(k)===kind?this.int(v):0),0);},
   available(region,kind){return Math.max(0,region.slots[kind]-this.used(region,kind));},
@@ -72,7 +72,7 @@ const World = {
     if(previousVersion<7){state.units.spearman+=state.units.pikeman;state.units.pikeman=0;}
     if(!state.world||!Array.isArray(state.world.regions)||!state.world.regions.length){
       const legacy=previousVersion<7,land=this.int(state.exp.land);
-      const home={id:'home',name:BI('Stammland','Homeland'),status:'owned',scouted:true,buildings:{...state.b},slots:{settlement:16+land*6,fertile:6+land*3,stone:2+land,iron:1+Math.floor(land/2)},deposits:{stone:2000,iron:1000}};
+      const home={id:'home',name:BI('Stammland','Homeland'),status:'owned',scouted:true,buildings:{...state.b},slots:{settlement:36+land*6,forest:10,fertile:16+land*3,stone:4+land,iron:3+Math.floor(land/2)},deposits:{stone:4000,iron:2000}};
       for(const kind of this.plotKinds)home.slots[kind]=Math.max(home.slots[kind],this.used(home,kind)+(legacy?2:0));
       if(legacy){home.deposits.stone=Math.max(2000,(state.b.quarry||0)*800);home.deposits.iron=Math.max(1000,(state.b.iron||0)*600);}
       state.world={version:1,legacyLand:land,regions:[home],nextBand:0,selectedRegion:'auto',project:null,mission:null,raidPending:null,
@@ -104,24 +104,24 @@ const World = {
 
   ensureFrontier(state=S){
     const w=state.world,band=w.nextBand,developed=this.owned(state).length-1;
-    if((state.lvl||1)<1+band*5||developed<band*2)return;
-    const level=Math.max(1+band*5,state.lvl||1),scale=1+band*.4;
+    if(developed<band*2)return;
+    const level=Math.max(1+band*4,state.lvl||1),scale=1+band*.4,extra=Math.floor(Math.sqrt(band));
     const profiles=[
-      {name:BI('Grüntal','Green Valley'),slots:{settlement:6,fertile:8,stone:1,iron:0},deposits:{stone:600,iron:0}},
-      {name:BI('Falkenfels','Falcon Crag'),slots:{settlement:7,fertile:3,stone:3,iron:1},deposits:{stone:3500,iron:500}},
-      {name:BI('Eisenmark','Iron March'),slots:{settlement:7,fertile:2,stone:1,iron:3},deposits:{stone:800,iron:2400}}
+      {slots:{settlement:12,forest:8,fertile:10,stone:1,iron:0},deposits:{stone:600,iron:0}},
+      {slots:{settlement:14,forest:6,fertile:6,stone:4,iron:2},deposits:{stone:3500,iron:800}},
+      {slots:{settlement:14,forest:5,fertile:5,stone:2,iron:4},deposits:{stone:1000,iron:2800}}
     ];
     profiles.forEach((p,i)=>{
-      const id='region-'+band+'-'+i;
-      const r={id,band,name:dual(lang=>loc(p.name,lang)+' '+(band+1)),status:i===0?'neutral':'hostile',scouted:false,slots:{...p.slots},deposits:{stone:Math.round(p.deposits.stone*scale),iron:Math.round(p.deposits.iron*scale)},buildings:{},distance:2+Math.min(3,band)};
-      if(i){const names=i===1?BI('Haus Falkenfels','House Falcon Crag'):BI('Fürstin der Eisenmark','Lady of the Iron March');
-        r.enemy={id:'enemy-'+band+'-'+i,name:dual(lang=>loc(names,lang)+' '+(band+1)),level,strength:Math.round((22+level*8)*(i===2?1.3:1)),raidStrength:Math.round((13+level*3)*(i===2?1.2:1)),tactic:['swarm','armored','cavalry','ranged'][(band+i)%4],defeated:false,nextRaid:(state.day||1)+16+i*7,truceUntil:0,warned:false};}
+      const id='region-'+band+'-'+i,names=Kingdom.names(band,i,state);
+      const r={id,band,name:names.place,status:i===0?'neutral':'hostile',scouted:false,slots:Object.fromEntries(Object.entries(p.slots).map(([k,n])=>[k,n+(n?extra:0)])),deposits:{stone:Math.round(p.deposits.stone*scale),iron:Math.round(p.deposits.iron*scale)},buildings:{},distance:2+Math.min(3,Math.floor(band/3))};
+      if(i){
+        r.enemy={id:'enemy-'+band+'-'+i,name:names.lord,level,strength:Math.round((22+level*8)*(i===2?1.3:1)),raidStrength:Math.round((13+level*3)*(i===2?1.2:1)),tactic:['swarm','armored','cavalry','ranged'][(band+i)%4],defeated:false,nextRaid:(state.day||1)+16+i*7,truceUntil:0,warned:false};}
       w.regions.push(r);
     });
     w.nextBand++;
   },
   buildTarget(key,state=S){
-    if(!Config.b[key])return null;
+    if(!Config.b[key]||Config.b[key].legacy)return null;
     const kind=this.plotKind(key),selected=state.world.selectedRegion;
     return this.owned(state).find(r=>(selected==='auto'||r.id===selected)&&this.available(r,kind)>0&&(!['stone','iron'].includes(kind)||r.deposits[kind]>EPSILON))||null;
   },
@@ -130,7 +130,7 @@ const World = {
     const pool=this.owned(state).filter(r=>selected==='auto'||selected===r.id);
     return I18N.strings[['stone','iron'].includes(kind)&&pool.every(r=>r.deposits[kind]<=EPSILON)?'no_deposit':'no_space'];
   },
-  setRegion(id){if(id!=='auto'&&!this.owned().some(r=>r.id===id))return;S.world.selectedRegion=id;UI.renderBuild();UI.update();},
+  setRegion(id){if(id!=='auto'&&!this.owned().some(r=>r.id===id))return;S.world.selectedRegion=id;UI.renderMap();UI.renderBuild();UI.update();},
   miningPlan(key,workers,multiplier,state=S){
     const resource=key==='quarry'?'stone':'iron',plan=[];
     let remaining=Math.max(0,workers);
@@ -215,13 +215,14 @@ const World = {
   },
   canDemolish(id,key,state=S){
     const r=this.region(id,state);if(!r||r.status!=='owned'||!(r.buildings[key]>0)||!Config.b[key])return false;
-    if(key==='market'||(['stock','gran'].includes(key)&&state.b[key]<=1)||(key==='outpost'&&r.requiredOutpost&&r.buildings[key]<=1))return false;
+    if(key==='market'||(key==='engineerGuild'&&state.siege?.project)||(['stock','gran'].includes(key)&&state.b[key]<=1)||(key==='outpost'&&r.requiredOutpost&&r.buildings[key]<=1))return false;
     return true;
   },
   removeBuilding(id,key,state=S){
     if(state.paused||!this.canDemolish(id,key,state))return false;
     const r=this.region(id,state);r.buildings[key]--;state.b[key]--;
-    state.staffing.targets[key]=Math.min(state.staffing.targets[key]||0,state.b[key]);
+    state.staffing.targets[key]=Math.min(state.staffing.targets[key]||0,Kingdom.staffCapacity(key,state));
+    if(key==='dairy')Kingdom.syncHerds(state);
     const costs=Config.b[key].cost,keys={g:'gold',w:'wood',s:'stone',i:'iron'};
     for(const k in costs)if(keys[k])addAmount(state.res,keys[k],costs[k]*.5);
     reconcileWorkforce(state);if(state===S)recalcPopMax();rebalanceMarket(state);enforceStorageLimits(state);
@@ -236,7 +237,7 @@ const World = {
   executeDemolish(){const d=this.demolition;this.demolition=null;if(d)this.removeBuilding(d.id,d.key);this.renderTerritories();},
 
   power(units,enemy=null,defend=false,state=S){
-    const ranged=(units.archer||0)+(units.crossbowman||0),melee=this.unitCount(units)-ranged;
+    const ranged=(units.archer||0)+(units.crossbowman||0),melee=this.unitCount(units)-ranged-(units.engineer||0);
     return Math.floor(Object.entries(Units).reduce((sum,[k,u])=>{
       let factor=1;
       if(enemy){if(k==='crossbowman'&&enemy.tactic==='armored')factor=1.55;
@@ -257,32 +258,35 @@ const World = {
     return {units,valid};
   },
   lossRate(attack,defense,win){return win?clamp(.08+.22*defense/Math.max(1,attack),.08,.4):clamp(.35+.25*defense/Math.max(1,attack),.35,.85);},
-  preview(id,draft,state=S){
-    const r=this.region(id,state),enemy=r?.enemy,{units,valid}=this.draftUnits(draft,state),count=this.unitCount(units);
-    const errors=[];
+  preview(id,draft,state=S,equipment={}){
+    const siege=Siege.prepare(draft,equipment,state);
+    const r=this.region(id,state),enemy=r?.enemy,{units,valid}=this.draftUnits(siege.units,state),count=this.unitCount(units);
+    const errors=[...siege.errors];
     if(!valid)errors.push(I18N.strings.invalid_army);
-    if(!count)errors.push(I18N.strings.no_army);
+    if(count-(units.engineer||0)<1)errors.push(I18N.strings.no_army);
     if(!enemy||enemy.defeated||r.status!=='hostile')errors.push(I18N.strings.no_enemy);
     if(r&&!r.scouted)errors.push(I18N.strings.scout_first);
     if(state.world.mission)errors.push(I18N.strings.one_army);
     const distance=r?.distance||2,days=distance*2+1,food=Math.ceil(count*days*1.25);
     if(!this.canPay({food},state))errors.push(BI(`Es fehlen ${numberText(food-sumGoods(state.res,Rules.foodTypes),'de')} Rationen für den Marsch.`,`The march needs ${numberText(food-sumGoods(state.res,Rules.foodTypes),'en')} more rations.`));
-    const attack=this.power(units,enemy,false,state),strength=enemy?.strength||1;
+    const strength=enemy?.strength||1,siegeBonus=Math.floor(Math.min(strength*.6,siege.potential));
+    const attack=this.power(units,enemy,false,state)+siegeBonus;
     const chance=clamp((attack/strength-.9)/.2,0,1);
-    const lower=chance>0?this.lossRate(attack,strength*.9,true):this.lossRate(attack,strength*.9,false);
-    const upper=chance<1?this.lossRate(attack,strength*1.1,false):this.lossRate(attack,strength*1.1,true);
+    const lower=(chance>0?this.lossRate(attack,strength*.9,true):this.lossRate(attack,strength*.9,false))*(1-siege.protection);
+    const upper=(chance<1?this.lossRate(attack,strength*1.1,false):this.lossRate(attack,strength*1.1,true))*(1-siege.protection);
     const losses={min:count?Math.min(count,Math.max(1,Math.ceil(count*lower))):0,max:count?Math.min(count,Math.max(1,Math.ceil(count*upper))):0};
     const home=this.homeUnits(state);for(const k in units)home[k]-=units[k];
     const threat=this.upcomingRaid(state);
-    return {ok:!errors.length,known:!!r?.scouted,errors,units,count,food,days,distance,attack,chance,losses,homeDefense:this.defense(threat?.enemy||null,home,state),threat,
+    return {ok:!errors.length,known:!!r?.scouted,errors,units,count,food,days,distance,attack,chance,losses,siege,siegeBonus,homeDefense:this.defense(threat?.enemy||null,home,state),threat,
       homeCount:this.unitCount(home),enemy:strength,battleDay:state.day+distance,returnDay:state.day+days};
   },
-  launch(id,draft,state=S){
+  launch(id,draft,state=S,equipment={}){
     if(state.paused)return false;
-    const p=this.preview(id,draft,state);if(!p.ok)return this.fail(p.errors[0]);
-    const r=this.region(id,state);this.pay({food:p.food},state);
+    const p=this.preview(id,draft,state,equipment);if(!p.ok)return this.fail(p.errors[0]);
+    const r=this.region(id,state);this.pay({food:p.food,stone:p.siege.ammo},state);
     state.world.mission={regionId:id,units:{...p.units},phase:'outbound',startDay:state.day,battleDay:p.battleDay,returnDay:p.returnDay,
-      attack:p.attack,enemyStrength:r.enemy.strength,roll:this.random(state),provisions:p.food};
+      attack:p.attack,enemyStrength:r.enemy.strength,roll:this.random(state),provisions:p.food,siege:{...p.siege.machines},siegeProtection:p.siege.protection,ammunition:p.siege.ammo};
+    Siege.draft={};
     this.warDraft={};this.record(dual(lang=>`${trl('field_army',lang)}: ${p.count} · ${loc(r.enemy.name,lang)} · ${lang==='de'?'Rückkehr':'return'} ${trl('day',lang)} ${p.returnDay}.`),'war',state);
     UI.update();return true;
   },
@@ -308,8 +312,9 @@ const World = {
     const r=this.region(m.regionId,state),enemy=r?.enemy;
     if(!enemy){m.phase='return';return;}
     const defense=m.enemyStrength*(.9+.2*m.roll),win=m.attack>=defense;
-    const count=this.unitCount(m.units),number=Math.min(count,Math.max(1,Math.ceil(count*this.lossRate(m.attack,defense,win))));
+    const count=this.unitCount(m.units),number=Math.min(count,Math.max(1,Math.ceil(count*this.lossRate(m.attack,defense,win)*(1-(m.siegeProtection||0)))));
     const losses=this.casualties(m.units,number,state);m.phase='return';m.result={win,losses,day:state.day};
+    Siege.afterBattle(m,win,state);
     if(win){enemy.defeated=true;enemy.nextRaid=null;r.status='conquered';m.result.gold=Math.round(45+enemy.level*8);m.result.renown=5+Math.floor(enemy.level/3);state.renown+=m.result.renown;state.res.gold+=m.result.gold;state.pop.hap=clamp(state.pop.hap+2,0,100);}
     else {enemy.strength=Math.max(1,Math.round(enemy.strength-Math.min(enemy.strength*.12,m.attack*.08)));state.pop.hap=clamp(state.pop.hap-3,0,100);}
     this.record(dual(lang=>`${win?(lang==='de'?'Sieg':'Victory'):(lang==='de'?'Niederlage':'Defeat')}: ${loc(enemy.name,lang)}. ${lang==='de'?'Verluste':'Losses'}: ${number}. ${win?`${m.result.gold} ${SafeT('gold',lang)} · ${m.result.renown} 👑. `:''}${win?(lang==='de'?'Gebiet erobert; Außenposten zur Nutzung erforderlich.':'Territory conquered; establish an outpost to use it.'):(lang==='de'?'Überlebende kehren zurück.':'Survivors are returning.')}`),win?'war':'death',state);
@@ -329,7 +334,7 @@ const World = {
   advance(state=S){
     if(!state.world.raidsStarted&&(state.lvl||1)>=Config.raid.startLevel){state.world.raidsStarted=true;for(const r of this.enemies(state))r.enemy.nextRaid=Math.max(r.enemy.nextRaid||0,state.day+12);}
     state.world.effects=state.world.effects.filter(e=>e.expiresAt>state.day);
-    this.finishProject(state);this.battle(state);this.returnArmy(state);this.ensureFrontier(state);this.syncThreat(state);
+    Siege.advance(state);this.finishProject(state);this.battle(state);this.returnArmy(state);this.ensureFrontier(state);this.syncThreat(state);
   },
   checkRaid(state=S){
     if(state.world.raidPending){this.showRaid();return true;}
@@ -372,20 +377,27 @@ const World = {
   refreshBuildLocation(card=document.getElementById('build-location')){
     if(!card)return;const selected=S.world.selectedRegion,regions=this.owned().filter(r=>selected==='auto'||r.id===selected);
     const free=kind=>regions.reduce((n,r)=>n+this.available(r,kind),0);
-    card.innerHTML='<b>🧭 '+loc(BI('Baugebiet','Build territory'))+'</b><span>'+(selected==='auto'?loc(BI('Automatische Auswahl','Automatic selection')):loc(regions[0]?.name))+'</span><small>🏠 '+free('settlement')+' · 🌾 '+free('fertile')+'<br>🧱 '+free('stone')+' · ⛓️ '+free('iron')+'</small>';
+    card.innerHTML='<b>🧭 '+loc(BI('Baugebiet','Build territory'))+'</b><span>'+(selected==='auto'?tr('all_territories'):loc(regions[0]?.name))+'</span><small>🏠 '+free('settlement')+' · 🌾 '+free('fertile')+' · 🌲 '+free('forest')+'<br>🧱 '+free('stone')+' · ⛓️ '+free('iron')+'</small>';
     card.title=tr('plot_help');
   },
+  changeTerritoryPage(dir){this.territoryPage=Math.max(0,(this.territoryPage||0)+dir);this.renderTerritories();},
+  setTerritoryView(view){this.territoryView=view;this.territoryPage=0;this.renderTerritories();},
+  changeWarPage(dir){this.warPage=Math.max(0,(this.warPage||0)+dir);this.renderWar();},
   renderTerritories(){
     const body=document.getElementById('exp-body');if(!body)return;
     const w=S.world,p=w.project;
     let html='<p class="world-help">'+tr('plot_help')+'</p><label class="territory-picker">'+loc(BI('Bauen in','Build in'))+' <select aria-label="'+loc(BI('Baugebiet','Build territory'))+'" onchange="World.setRegion(this.value)"><option value="auto" '+(w.selectedRegion==='auto'?'selected':'')+'>'+loc(BI('Automatisch: erster freier Platz','Automatic: first suitable free plot'))+'</option>'+this.owned().map(r=>'<option value="'+r.id+'" '+(w.selectedRegion===r.id?'selected':'')+'>'+loc(r.name)+'</option>').join('')+'</select></label>';
     if(p)html+='<div class="world-notice">⌛ '+tr(p.kind)+' · '+loc(this.region(p.regionId).name)+' · '+p.workers+' '+tr('reserved_workers')+' · '+loc(BI('fertig an Tag','complete on day'))+' '+p.finishDay+' ('+Math.max(0,p.finishDay-S.day)+')</div>';
     if(this.demolition){const d=this.demolition;html+='<div class="world-notice danger">'+loc(Config.b[d.key].n)+' · '+loc(BI('50 % Baukosten zurück, Platz frei. Ggf. sinken Wohnraum und Lagerkapazität. Überfüllte Vorräte können verloren gehen.','50% construction cost refunded; plot freed. Housing or storage may decrease. Overflowing supplies may be lost.'))+'<div class="world-actions"><button class="btn" onclick="World.executeDemolish()">'+tr('confirm_demolish')+'</button><button class="btn" onclick="World.cancelDemolish()">'+tr('cancel')+'</button></div></div>';}
+    const view=this.territoryView||'frontier',pool=w.regions.filter(r=>view==='owned'?r.status==='owned':r.status!=='owned');
+    const pages=Math.max(1,Math.ceil(pool.length/9));this.territoryPage=Math.min(this.territoryPage||0,pages-1);
+    html+='<div class="world-actions"><button class="btn" onclick="World.setTerritoryView(\'owned\')">'+loc(BI('Eigene Gebiete','Owned territories'))+' ('+this.owned().length+')</button><button class="btn" onclick="World.setTerritoryView(\'frontier\')">'+loc(BI('Grenze & Eroberungen','Frontier & conquests'))+' ('+w.regions.filter(r=>r.status!=='owned').length+')</button></div>';
+    html+='<div class="world-pagination"><button class="btn" onclick="World.changeTerritoryPage(-1)" '+(!this.territoryPage?'disabled':'')+'>‹</button><span>'+loc(BI('Seite','Page'))+' '+(this.territoryPage+1)+' / '+pages+'</span><button class="btn" onclick="World.changeTerritoryPage(1)" '+(this.territoryPage>=pages-1?'disabled':'')+'>›</button></div>';
     html+='<div class="territory-grid">';
-    for(const r of w.regions){
+    for(const r of pool.slice(this.territoryPage*9,this.territoryPage*9+9)){
       html+='<article class="territory-card '+r.status+'"><div class="world-card-head"><h3>📍 '+loc(r.name)+'</h3><span>'+tr(r.status)+'</span></div>';
       if(r.scouted){
-        html+='<div class="plot-grid">'+this.plotKinds.map(k=>'<div><small>'+this.plotName(k)+'</small><b>'+this.used(r,k)+' / '+r.slots[k]+'</b></div>').join('')+'</div>';
+        html+='<div class="plot-grid">'+this.plotKinds.map(k=>'<div><small>'+this.plotName(k)+'</small><b>'+this.available(r,k)+' / '+r.slots[k]+' '+loc(BI('frei','free'))+'</b></div>').join('')+'</div>';
         html+='<p class="world-help">'+loc(BI('Verbleibende Vorkommen','Remaining deposits'))+': 🧱 '+numberText(r.deposits.stone)+' · ⛓️ '+numberText(r.deposits.iron)+'</p>';
         if(r.enemy&&!r.enemy.defeated)html+='<p>'+loc(r.enemy.name)+' · '+tr('level')+' '+r.enemy.level+' · '+r.enemy.strength+' 🛡️ · '+tr(r.enemy.tactic)+'</p>';
       }else html+='<p class="world-help">'+tr('unknown')+' · '+loc(BI('Erkunde Bauplätze, Rohstoffe und Besatzung.','Scout plots, deposits and the garrison.'))+'</p>';
@@ -393,6 +405,7 @@ const World = {
       if(kind){const spec=this.projectSpec(kind,r);html+='<div class="world-help">'+this.costText(spec.cost)+' · '+spec.workers+' '+tr('reserved_workers')+' · '+spec.duration+' '+loc(BI('Spieltage','game days'))+'</div><button class="btn" onclick="World.startProject(\''+kind+'\',\''+r.id+'\')" '+(this.canStartProject(kind,r.id)?'':'disabled')+'>'+tr(kind)+'</button>';}
       if(r.status==='hostile'&&r.scouted)html+='<button class="btn" onclick="World.selectEnemy(\''+r.id+'\');UI.closeExp();UI.openWar()">⚔️ '+tr('campaigns')+'</button>';
       if(r.status==='owned'){
+        html+='<button class="btn" onclick="World.setRegion(\''+r.id+'\');UI.closeExp()">📍 '+loc(BI('Gebiet anzeigen & hier bauen','View territory & build here'))+'</button>';
         html+='<details><summary>'+loc(BI('Gebäude & Abriss','Buildings & demolition'))+'</summary><p class="world-help">'+tr('protected_building')+'</p>';
         for(const [key,n] of Object.entries(r.buildings)){if(!n||!Config.b[key])continue;html+='<div class="building-manage"><span>'+Config.b[key].i+' '+loc(Config.b[key].n)+' ×'+n+'</span><button class="btn" '+(this.canDemolish(r.id,key)?'':'disabled')+' onclick="World.confirmDemolish(\''+r.id+'\',\''+key+'\')">'+tr('demolish')+'</button></div>';}
         html+='</details>';
@@ -408,22 +421,27 @@ const World = {
     const active=document.activeElement;if(active&&active.tagName==='INPUT'&&document.getElementById('war-mask').contains(active)){this.renderWarPreview();return;}
     document.getElementById('army-str').innerText=getArmyStr();document.getElementById('def-str').innerText=getDefStr();
     const enemies=this.enemies();
+    document.getElementById('war-roster').innerHTML=Kingdom.armyHTML();
     if(!enemies.some(r=>r.id===this.selectedEnemy))this.selectedEnemy=enemies.find(r=>r.scouted)?.id||enemies[0]?.id||null;
     const m=S.world.mission;
     if(m){const r=this.region(m.regionId);orders.innerHTML='<div class="world-notice"><b>⚔️ '+tr('field_army')+' · '+loc(r?.enemy?.name)+'</b><p>'+this.unitCount(m.units)+' '+tr('soldier')+' · '+loc(m.phase==='outbound'?BI('Hinmarsch','Outbound'):BI('Rückmarsch','Returning'))+'</p><p>'+loc(BI('Schlacht an Tag','Battle on day'))+' '+m.battleDay+' · '+loc(BI('Rückkehr an Tag','Return on day'))+' '+m.returnDay+'</p><small>'+tr('army_warning')+'</small></div>';}
     else{
       const home=this.homeUnits();this.warDraft=this.warDraft||{};
-      orders.innerHTML='<p class="world-help">'+tr('army_warning')+'</p><div class="army-picker">'+Object.entries(Units).map(([k,u])=>'<label><span>'+loc(u.n)+'<small>'+tr('home')+': '+home[k]+'</small></span><input type="number" min="0" max="'+home[k]+'" step="1" inputmode="numeric" aria-label="'+loc(u.n)+'" value="'+this.int(this.warDraft[k])+'" oninput="World.setDraft(\''+k+'\',this.value)" onchange="World.setDraft(\''+k+'\',this.value)"></label>').join('')+'</div><div id="war-preview" aria-live="polite"></div>';
+      orders.innerHTML='<p class="world-help">'+tr('army_warning')+'</p><div class="army-picker">'+Object.entries(Units).filter(([k])=>k!=='engineer').map(([k,u])=>'<label><span>'+loc(u.n)+'<small>'+tr('home')+': '+home[k]+'</small></span><input type="number" min="0" max="'+home[k]+'" step="1" inputmode="numeric" aria-label="'+loc(u.n)+'" value="'+this.int(this.warDraft[k])+'" oninput="World.setDraft(\''+k+'\',this.value)" onchange="World.setDraft(\''+k+'\',this.value)"></label>').join('')+'</div>'+Siege.pickerHTML()+'<div id="war-preview" aria-live="polite"></div>';
     }
-    list.innerHTML=enemies.map(r=>'<article class="territory-card '+(r.id===this.selectedEnemy?'selected':'')+'"><div class="world-card-head"><h3>'+loc(r.enemy.name)+'</h3><span>'+tr('level')+' '+r.enemy.level+'</span></div><p>'+loc(r.name)+' · '+tr(r.enemy.tactic)+'</p><p>'+(r.scouted?r.enemy.strength+' 🛡️ · '+loc(BI('Angriffsstärke','Attack strength'))+': '+r.enemy.raidStrength:'❓ '+tr('scout_first'))+'</p><p class="world-help">'+(S.lvl<Config.raid.startLevel?loc(BI('Angriffe ab Burgstufe 6','Attacks from castle level 6')):'⚔️ '+tr('day')+' '+Math.max(r.enemy.nextRaid||0,r.enemy.truceUntil||0,S.world.protectedUntil||0))+' · 🎁 '+Math.round(45+r.enemy.level*8)+' '+SafeT('gold')+' · '+(5+Math.floor(r.enemy.level/3))+' 👑</p><div class="world-actions">'+(r.scouted?'<button class="btn" onclick="World.selectEnemy(\''+r.id+'\')">'+(r.id===this.selectedEnemy?'✓ ':'')+tr('troop_choice')+'</button>':'<button class="btn" onclick="UI.closeWar();UI.openExp()">🧭 '+tr('scout')+'</button>')+'</div></article>').join('')||'<div class="world-notice">🕊️ '+tr('no_enemy')+'</div>';
+    if(m&&Siege.count(m.siege))orders.innerHTML+='<p class="world-notice">🏗️ '+Object.entries(m.siege).filter(([,n])=>n>0).map(([k,n])=>n+' '+loc(Siege.defs[k].n)).join(' · ')+'</p>';
+    const pages=Math.max(1,Math.ceil(enemies.length/8));this.warPage=Math.min(this.warPage||0,pages-1);
+    list.innerHTML=enemies.slice(this.warPage*8,this.warPage*8+8).map(r=>'<article class="territory-card '+(r.id===this.selectedEnemy?'selected':'')+'"><div class="world-card-head"><h3>'+loc(r.enemy.name)+'</h3><span>'+tr('level')+' '+r.enemy.level+'</span></div><p>'+loc(r.name)+' · '+tr(r.enemy.tactic)+'</p><p>'+(r.scouted?r.enemy.strength+' 🛡️ · '+loc(BI('Angriffsstärke','Attack strength'))+': '+r.enemy.raidStrength:'❓ '+tr('scout_first'))+'</p><p class="world-help">'+(S.lvl<Config.raid.startLevel?loc(BI('Angriffe ab Burgstufe 6','Attacks from castle level 6')):'⚔️ '+tr('day')+' '+Math.max(r.enemy.nextRaid||0,r.enemy.truceUntil||0,S.world.protectedUntil||0))+' · 🎁 '+Math.round(45+r.enemy.level*8)+' '+SafeT('gold')+' · '+(5+Math.floor(r.enemy.level/3))+' 👑</p><div class="world-actions">'+(r.scouted?'<button class="btn" onclick="World.selectEnemy(\''+r.id+'\')">'+(r.id===this.selectedEnemy?'✓ ':'')+tr('troop_choice')+'</button>':'<button class="btn" onclick="UI.closeWar();UI.openExp()">🧭 '+tr('scout')+'</button>')+'</div></article>').join('')||'<div class="world-notice">🕊️ '+tr('no_enemy')+'</div>';
+    list.innerHTML+='<div class="world-pagination"><button class="btn" onclick="World.changeWarPage(-1)" '+(!this.warPage?'disabled':'')+'>‹</button><span>'+loc(BI('Seite','Page'))+' '+(this.warPage+1)+' / '+pages+'</span><button class="btn" onclick="World.changeWarPage(1)" '+(this.warPage>=pages-1?'disabled':'')+'>›</button></div>';
     list.innerHTML+='<p class="world-help">'+tr('troops_help')+'</p><p class="world-help">'+tr('war_timing')+'</p>'+this.historyHTML();
     this.renderWarPreview();
   },
   renderWarPreview(){
     const node=document.getElementById('war-preview');if(!node||S.world.mission)return;
-    const p=this.preview(this.selectedEnemy,this.warDraft||{}),r=this.region(this.selectedEnemy);
+    const p=this.preview(this.selectedEnemy,this.warDraft||{},S,Siege.draft),r=this.region(this.selectedEnemy);
     const warn=p.threat&&p.threat.day<=p.returnDay;
-    node.innerHTML='<div class="world-notice"><b>'+loc(r?.enemy?.name||BI('Kein Ziel','No target'))+'</b><p>'+p.count+' 💂 · '+p.attack+' ⚔️</p><div class="plot-grid"><div><small>'+loc(BI('Siegchance','Victory chance'))+'</small><b>'+(p.known?Math.round(p.chance*100)+' %':'?')+'</b></div><div><small>'+loc(BI('Erwartete Verluste','Expected losses'))+'</small><b>'+(p.known?p.losses.min+'–'+p.losses.max:'?')+'</b></div><div><small>'+loc(BI('Marschproviant','March provisions'))+'</small><b>'+p.food+'</b></div><div><small>'+tr('garrison')+'</small><b>'+p.homeDefense+' 🛡️</b></div></div><p>'+loc(BI('Rückkehr an Tag','Return on day'))+' '+p.returnDay+' · '+p.homeCount+' '+tr('soldier')+' '+tr('home')+'</p>'+(warn?'<p class="world-warning">⚠️ '+loc(p.threat.enemy.name)+' · '+loc(BI('Angriff vor Rückkehr','Attack before return'))+' · '+tr('day')+' '+p.threat.day+' · '+p.threat.enemy.raidStrength+' ⚔️</p>':'')+p.errors.map(e=>'<p class="world-help">'+loc(e)+'</p>').join('')+'<button class="btn campaign-launch" '+(p.ok&&!S.paused?'':'disabled')+' onclick="World.launch(World.selectedEnemy,World.warDraft)">'+tr('send_army')+'</button></div>';
+    node.innerHTML='<div class="world-notice"><b>'+loc(r?.enemy?.name||BI('Kein Ziel','No target'))+'</b><p>'+p.count+' 💂 · '+p.attack+' ⚔️</p><div class="plot-grid"><div><small>'+loc(BI('Siegchance','Victory chance'))+'</small><b>'+(p.known?Math.round(p.chance*100)+' %':'?')+'</b></div><div><small>'+loc(BI('Erwartete Verluste','Expected losses'))+'</small><b>'+(p.known?p.losses.min+'–'+p.losses.max:'?')+'</b></div><div><small>'+loc(BI('Marschproviant','March provisions'))+'</small><b>'+p.food+'</b></div><div><small>'+tr('garrison')+'</small><b>'+p.homeDefense+' 🛡️</b></div></div><p>'+loc(BI('Rückkehr an Tag','Return on day'))+' '+p.returnDay+' · '+p.homeCount+' '+tr('soldier')+' '+tr('home')+'</p>'+(warn?'<p class="world-warning">⚠️ '+loc(p.threat.enemy.name)+' · '+loc(BI('Angriff vor Rückkehr','Attack before return'))+' · '+tr('day')+' '+p.threat.day+' · '+p.threat.enemy.raidStrength+' ⚔️</p>':'')+p.errors.map(e=>'<p class="world-help">'+loc(e)+'</p>').join('')+'<button class="btn campaign-launch" '+(p.ok&&!S.paused?'':'disabled')+' onclick="World.launch(World.selectedEnemy,World.warDraft,S,Siege.draft)">'+tr('send_army')+'</button></div>';
+    if(p.siege.crew||p.siege.ammo)node.innerHTML+='<p class="world-notice">🏗️ '+Siege.count(p.siege.machines)+' '+tr('siege')+' · '+p.siege.crew+' '+tr('engineers')+' · '+p.siege.ammo+' 🧱 · '+tr('siege_bonus')+': +'+p.siegeBonus+' ⚔️<br>'+loc(BI('Belagerung ergänzt höchstens 60 % der gegnerischen Stärke. Schilde senken Verluste um bis zu 25 %; mindestens ein Verlust bleibt.','Siege adds at most 60% of enemy strength. Shields reduce casualties by up to 25%; at least one loss remains.'))+'</p>';
   },
   historyHTML(){return S.world.history.length?'<details class="world-history"><summary>'+tr('history')+'</summary>'+S.world.history.map(h=>'<p>'+tr('day')+' '+h.day+': '+loc(h.message)+'</p>').join('')+'</details>':'';},
   productionHTML(){
@@ -437,12 +455,12 @@ const World = {
   },
   refreshUI(){
     if(!S.world)return;
-    this.refreshBuildLocation();
+    this.refreshBuildLocation();Kingdom.refreshMap();
     const threat=this.upcomingRaid(),pill=document.getElementById('raid-pill'),days=threat?Math.max(0,threat.day-S.day):null;
     document.getElementById('raid-in').innerText=days===null?'—':days;
     document.getElementById('raid-unit').innerText=days===null?tr('peace'):tr(days===1?'day_singular':'days');
     pill.title=threat?loc(threat.enemy.name)+' · '+threat.enemy.raidStrength+' ⚔️':tr('peace');pill.classList.toggle('raid-warn',days!==null&&days<=5);
-    document.getElementById('s-sold').title=tr('home')+': '+this.unitCount(this.homeUnits())+' · '+tr('away')+': '+this.unitCount(this.awayUnits());
+    document.getElementById('s-sold').title=tr('ready')+': '+this.unitCount(this.homeUnits())+' · '+tr('away')+': '+this.unitCount(this.awayUnits())+' · '+tr('busy')+': '+Siege.busy();
     if(document.getElementById('war-mask').style.display==='flex')this.renderWar();
     // Preserve expanded building management and selection controls while reading/editing.
     if(document.getElementById('exp-mask').style.display==='flex'&&!this.demolition){

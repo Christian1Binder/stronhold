@@ -400,6 +400,7 @@
       }
     }
   </style>
+<link rel="stylesheet" href="kingdom.css?v=8">
 </head>
 <body>
 
@@ -431,6 +432,7 @@
       <span data-i18n="army">Armee</span>: <span id="army-str" style="font-weight:bold; font-size:1.2rem">0</span> ⚔️
       <span style="margin-left:10px"><span data-i18n="defense">Verteidigung</span>: <span id="def-str" style="font-weight:bold; font-size:1.1rem">0</span> 🛡️</span>
     </div>
+    <div id="war-roster"></div>
     <div id="war-orders"></div>
     <div id="war-list" class="list-grid" style="grid-template-columns: 1fr;"></div>
     <button onclick="UI.closeWar()" class="btn" style="width:100%" data-i18n="close">Schließen</button>
@@ -439,9 +441,11 @@
 
 <!-- Recruit modal -->
 <div id="recruit-mask" class="modal-mask">
-  <div class="modal-win">
-    <h2 style="font-family:'MedievalSharp'; margin:0" data-i18n="barracks">Kaserne</h2>
+  <div class="modal-win world-win">
+    <div class="modal-heading"><h2 style="font-family:'MedievalSharp'; margin:0" data-i18n="army_overview">Truppenbestand</h2><button class="btn modal-close" onclick="UI.closeRecruit()" data-i18n-aria="close">×</button></div>
+    <div id="recruit-roster"></div>
     <div id="recruit-list" class="list-grid"></div>
+    <div id="siege-workshop"></div>
     <button onclick="UI.closeRecruit()" class="btn" style="width:100%" data-i18n="close">Schließen</button>
   </div>
 </div>
@@ -568,17 +572,22 @@
 
 <main>
   <div id="map-area">
+    <nav id="territory-nav" aria-label="Baugebiete" data-i18n-aria="expansion"></nav>
     <div id="combo-pill" class="combo-pill">Kombo x1 · +1</div>
     <div class="zone tut-allow" id="z-forest" onclick="Game.clickGather('wood', event)">
+      <div class="zone-plots" id="plots-forest"></div><div class="zone-icons"></div>
       <div class="zone-hint">🌲</div><div class="zone-label" data-i18n="forest">Wald</div>
     </div>
     <div class="zone tut-allow" id="z-mountain" onclick="Game.clickGather('stone', event)">
+      <div class="zone-plots" id="plots-mountain"></div><div class="zone-icons"></div>
       <div class="zone-hint">⛰️</div><div class="zone-label" data-i18n="mountains">Berge</div>
     </div>
     <div class="zone tut-allow" id="z-town" onclick="UI.openTown()">
+      <div class="zone-plots" id="plots-town"></div><div class="zone-icons"></div>
       <div class="zone-hint">🏰</div><div class="zone-label" data-i18n="town">Stadt</div>
     </div>
     <div class="zone tut-allow" id="z-farm" onclick="Game.clickGather('apple', event)">
+      <div class="zone-plots" id="plots-farm"></div><div class="zone-icons"></div>
       <div class="zone-hint">🍎</div><div class="zone-label" data-i18n="lands">Ländereien</div>
     </div>
   </div>
@@ -976,24 +985,25 @@ function migrateState() {
   for (const k in UpgradeDefs) S.upgrades[k]=clamp(Number(S.upgrades[k])||0,0,UpgradeDefs[k].max);
   S.clicker = S.clicker || {combo:0,lastClick:0,total:0};
   S.boostUntilDay = Number(S.boostUntilDay)||0;
-    S.meta = S.meta || {savedAt:Date.now(),version:7};
-  S.meta.version = 7;
+  S.meta = S.meta || {savedAt:Date.now(),version:8};
+  S.meta.version = 8;
   S.logs = Array.isArray(S.logs) ? S.logs : [];
   S.staffing = S.staffing || {targets:{...S.w}};
   S.staffing.targets = S.staffing.targets || {...S.w};
   for (const k in Config.b) {
     S.b[k]=Math.max(0,Math.floor(Number(S.b[k])||0));
-    S.w[k]=clamp(Math.floor(Number(S.w[k])||0),0,S.b[k]);
-    S.staffing.targets[k]=clamp(Math.floor(Number(S.staffing.targets[k])||0),0,S.b[k]);
+    S.w[k]=clamp(Math.floor(Number(S.w[k])||0),0,Kingdom.staffCapacity(k));
+    S.staffing.targets[k]=clamp(Math.floor(Number(S.staffing.targets[k])||0),0,Kingdom.staffCapacity(k));
   }
   S.survival = S.survival || {hungerTicks:0};
   S.economy = S.economy || {lastTick:null};
   World.migrate(S,previousVersion);
+  Kingdom.migrate(S,previousVersion);
 }
 
 function createContract() {
   const level = S.lvl||1;
-  const pool = level < 4 ? ['wood','stone','wheat','apple','bread'] : Rules.marketTypes;
+  const pool = level < 4 ? ['wood','stone','wheat','apple','bread'] : Rules.marketTypes.filter(k=>k!=='hides'&&k!=='leather');
   const resource = pool[Math.floor(Math.random()*pool.length)];
   const lots = clamp(2+Math.floor(level/4)+Math.floor(Math.random()*3),2,12);
   const qty = lots*5;
@@ -1066,7 +1076,7 @@ function countWorkers(state=S) {
   return { work, sold, available, idle,builders };
 }
 
-function isProdBuilding(b){ return !!(b.prod || b.recipe || b.proc || b.use || b.gold); }
+function isProdBuilding(b){ return !b.legacy && !!(b.prod || b.recipe || b.proc || b.use || b.gold || b.service); }
 
 /* ---------------- DETERMINISTIC ECONOMY ---------------- */
 const EPSILON = 0.000001;
@@ -1102,11 +1112,12 @@ function productionMultiplier(state=S){
 function goodsText(goods,lang=I18N.lang){
   const values=Object.entries(goods).filter(([,n])=>Math.abs(n)>EPSILON);
   return values.length?values.map(([key,n])=>{
-    const name=Math.abs(n)===1&&key==='hides'?loc(BI('Rohhaut','Hide'),lang):Math.abs(n)===1&&key==='apple'?loc(BI('Apfel','Apple'),lang):SafeT(key,lang);
+    const name=key==='leatherArmor'&&Math.abs(n)!==1?loc(BI('Lederrüstungen','Leather suits'),lang):key==='cow'&&Math.abs(n)!==1?loc(BI('Kühe','Cows'),lang):Math.abs(n)===1&&key==='hides'?loc(BI('Rohhaut','Hide'),lang):Math.abs(n)===1&&key==='apple'?loc(BI('Apfel','Apple'),lang):SafeT(key,lang);
     return numberText(n,lang)+' '+name;
   }).join(' + '):'—';
 }
 function recipeText(building,lang=I18N.lang){
+  if(building.service)return lang==='de'?'Bier → Ausschank für 30 Bewohner':'Ale → service for 30 residents';
   const recipe=productionRecipe(building);
   if(!recipe) return '';
   const input=Object.keys(recipe.input).length?goodsText(recipe.input,lang)+' → ':'';
@@ -1122,8 +1133,8 @@ function reconcileWorkforce(state=S){
   state.staffing=state.staffing||{targets:{...state.w}};
   const targets=state.staffing.targets;
   for(const k in Config.b){
-    targets[k]=clamp(Math.floor(targets[k]||0),0,state.b[k]||0);
-    state.w[k]=clamp(Math.floor(state.w[k]||0),0,Math.min(state.b[k]||0,targets[k]));
+    targets[k]=clamp(Math.floor(targets[k]||0),0,Kingdom.staffCapacity(k,state));
+    state.w[k]=clamp(Math.floor(state.w[k]||0),0,Math.min(Kingdom.staffCapacity(k,state),targets[k]));
   }
   let short=Math.max(0,-countWorkers(state).idle);
   for(const k of [...ReleaseWorkerPriority,...Object.keys(Config.b)]){
@@ -1140,7 +1151,7 @@ function reconcileWorkforce(state=S){
 }
 
 function createEconomyReport(state=S){
-  const away=World.unitCount(World.awayUnits(state)),sold=World.unitCount(World.homeUnits(state));
+  const away=World.unitCount(World.awayUnits(state)),sold=World.unitCount(state.units)-away;
   return {day:state.day,population:state.pop.curr,produced:{},inputs:{},consumed:{},trade:{},lost:{},net:{},buildings:{},actions:[],
     foodDemand:roundQty(Math.max(0,state.pop.curr-away)+sold*.25),foodEaten:0,foodMissing:0,foodTypes:0,beerDemand:roundQty(Math.max(0,state.pop.curr-away)*.2),beerServed:0,taxes:0,upkeep:0,away};
 }
@@ -1193,10 +1204,11 @@ function rebalanceMarket(state=S,report=null){
 }
 
 function produceResources(state=S,report=createEconomyReport(state),scale=1){
-  const keys=Object.keys(Config.b).filter(k=>isProdBuilding(Config.b[k]));
+  const keys=Object.keys(Config.b).filter(k=>isProdBuilding(Config.b[k])&&!Config.b[k].service);
   const stage=k=>Object.keys(productionRecipe(Config.b[k]).input).length?(Config.b[k].stage||4):0;
   keys.sort((a,b)=>stage(a)-stage(b));
   for(const key of keys){
+    if(Kingdom.specialProduction(key,state,report,scale))continue;
     const b=Config.b[key],recipe=productionRecipe(b);
     const workers=state.w[key]||0;
     const seasonal=b.prod?seasonMultiplier(b.prod,state.day):1;
@@ -1273,9 +1285,11 @@ function simulateEconomy(state=S){
   }
   report.foodMissing=needed<=EPSILON?0:needed;
   report.foodEaten=roundQty(report.foodDemand-report.foodMissing);
-  report.beerServed=Math.min(report.beerDemand,Math.max(0,state.res.beer||0));
+  report.beerCapacity=roundQty((state.w.inn||0)*30*.2);
+  report.beerServed=Math.min(report.beerDemand,report.beerCapacity,Math.max(0,state.res.beer||0));
   state.res.beer=Math.max(0,roundQty((state.res.beer||0)-report.beerServed));
   report.consumed.beer=report.beerServed;
+  report.buildings.inn={workers:state.w.inn||0,target:state.staffing.targets.inn||0,capacity:report.beerCapacity,cycles:report.beerServed,input:{beer:report.beerServed},output:{},missing:report.beerServed<Math.min(report.beerDemand,report.beerCapacity)?['beer']:[],status:!state.b.inn?'not_built':!state.w.inn?'no_workers':report.beerServed<=EPSILON&&report.beerDemand>0?'no_inputs':'running'};
   // New production and consumption are balanced before any overflow can be lost.
   rebalanceMarket(state,report);
   enforceStorageLimits(state,report);
@@ -1348,15 +1362,15 @@ const Game = {
     const load = Storage.load();
     if (load) {
       const savedAt = load.meta && load.meta.savedAt;
-      const economyUpgrade=!load.meta||(load.meta.version||0)<7;
-      if(economyUpgrade){try{const key=Storage.key+'_before_world_v7';if(!localStorage.getItem(key))localStorage.setItem(key,JSON.stringify(load));}catch(e){}}
+      const economyUpgrade=!load.meta||(load.meta.version||0)<8;
+      if(economyUpgrade){try{const key=Storage.key+'_before_major_v8';if(!localStorage.getItem(key))localStorage.setItem(key,JSON.stringify(load));}catch(e){}}
       S = load;
       migrateState();
       recalcPopMax();
       if (!S.raid.next) scheduleNextRaid();
       ensureContracts();
       const offline = applyOfflineProgress(savedAt);
-      const upgradeInfo=economyUpgrade?BI("Gebietsupdate: Alle vorhandenen Gebäude und Fortschritte bleiben erhalten. Neue Gebäude benötigen passende Bauplätze. Unter 🧭 findest du Gebiete und Bodenschätze, unter ⚔️ deine Nachbarn und Feldzüge. Entsandte Truppen fehlen bei der Verteidigung. Bisherige Pikeniere heißen jetzt Speerträger; neue Pikeniere benötigen Pike und Lederrüstung. Die ersten 16 Spieltage nach der Umstellung sind vor Angriffen geschützt.","Territory update: Existing buildings and progress are preserved. New buildings need suitable plots. Find territories and deposits under 🧭 and neighbours and campaigns under ⚔️. Deployed troops cannot defend your castle. Existing pikemen are now called Spearmen; new Pikemen need a pike and leather armor. The first 16 game days after migration are protected from attacks."):null;
+      const upgradeInfo=economyUpgrade?BI("Major Update: Mehr Startbauplätze, Gebietswechsel direkt über der Karte und fortlaufende Grenzen. Unter 🛡️ findest du Truppen, Baumeister und Belagerungsgeräte. Brot benötigt kein Holz; Bier nur Hopfen und zum Ausschank ein Wirtshaus. Bestehende Brauereien erhalten ein Wirtshaus. Viehhöfe wurden zu Milchviehhöfen, Lederwerkstätten zu Gerbereien. Gerber nutzen Kühe und konkurrieren mit Käse. Neue Pikeniere brauchen Metallrüstung. Vorhandene Truppen und Vorräte bleiben erhalten. Mühlen können jetzt drei Arbeiter beschäftigen. Prüfe die Besetzung unter 📊. 16 Spieltage Angriffsschutz.","Major update: More starting plots, territory switching above the map and continuing frontiers. Find troops, engineers and siege equipment under 🛡️. Bread needs no wood; ale needs only hops and an inn for serving. Existing breweries receive an inn. Cattle farms became dairy farms and leather workshops became tanneries. Tanners use cows and compete with cheese. New pikemen need metal armor. Existing troops and stocks are preserved. Mills can now employ three workers. Check staffing under 📊. 16 game days of attack protection."):null;
       const welcome=dual(lang=>[loc(offline||BI("Dein Lehen wartet auf dich.","Your fief awaits you."),lang),upgradeInfo?loc(upgradeInfo,lang):''].filter(Boolean).join('\n\n'));
       S.paused = true;
       UI.init();
@@ -1397,7 +1411,7 @@ const Game = {
       upgrades: {tools:0,guild:0,logistics:0,diplomacy:0},
       clicker: {combo:0,lastClick:0,total:0},
       boostUntilDay: 0,
-      meta: {savedAt:Date.now(),version:7},
+      meta: {savedAt:Date.now(),version:8},
       logs: []
     };
     // init building & worker counts
@@ -1454,7 +1468,7 @@ const Game = {
     if (Tutorial.isBlocking('build', key)) return;
 
     const b = Config.b[key];
-    if (!b) return;
+    if (!b || b.legacy) return;
     if (b.unique && (S.b[key]||0)>0) { UI.showModal(BI("Bereits errichtet","Already built"), dual(lang=>lang==='de'?`${loc(b.n,lang)} kann nur einmal gebaut werden.`:`Only one ${loc(b.n,lang)} can be built.`), BI("OK","OK")); return; }
     if (b.reqLand && (S.exp.land||0) < b.reqLand) { UI.showModal(BI("Gesperrt","Locked"), BI(`Du benötigst mindestens Landstufe ${b.reqLand}.`,`You need at least land expansion tier ${b.reqLand}.`), BI("OK","OK")); return; }
 
@@ -1467,16 +1481,17 @@ const Game = {
     S.res.iron-=iron;
     S.b[key] = (S.b[key]||0) + 1;
     region.buildings[key]=(region.buildings[key]||0)+1;
+    if(key==='dairy')Kingdom.syncHerds();
 
     // auto worker assign
     if (isProdBuilding(b)) {
       const cw = countWorkers();
-      if (cw.idle > 0 && (S.w[key]||0) < S.b[key]) S.w[key] = (S.w[key]||0) + 1;
+      if (cw.idle > 0) S.w[key] = (S.w[key]||0) + Math.min(cw.idle,b.workers||1);
       S.staffing.targets[key]=Math.max(S.staffing.targets[key]||0,S.w[key]||0);
     }
 
     recalcPopMax();
-    UI.addMapIcon(key);
+    UI.renderMap();
     UI.renderBuild();
     UI.update();
     UI.log(dual(lang=>lang==='de'?`${loc(b.n,lang)} gebaut.`:`${loc(b.n,lang)} built.`), "prod");
@@ -1493,7 +1508,7 @@ const Game = {
 
     const cw = countWorkers();
     if (dir > 0) {
-      if (cw.idle > 0 && (S.w[key]||0) < (S.b[key]||0)) S.w[key] = (S.w[key]||0) + 1;
+      if (cw.idle > 0 && (S.w[key]||0) < Kingdom.staffCapacity(key)) S.w[key] = (S.w[key]||0) + 1;
       else if (cw.idle <= 0) UI.showFloatingText('gold', loc(BI("Keine freie Bevölkerung!","No idle population!")), "neg");
     } else {
       if ((S.w[key]||0) > 0) S.w[key] = (S.w[key]||0) - 1;
@@ -1518,7 +1533,8 @@ const Game = {
       if(cw.idle<1) return;
       if ((S.res.gold||0) >= u.cost) { S.res.gold -= u.cost; S.units.merc++; UI.log(BI("Söldner angeheuert.","Mercenary hired."), "prod"); }
     } else {
-      if ((S.b.barrack||0) < 1) return UI.showModal(BI("Keine Kaserne","No barracks"), BI("Baue zuerst eine Kaserne.","Build barracks first."), BI("OK","OK"));
+      if(u.guild&&!(S.b.engineerGuild>0))return UI.showModal(Config.b.engineerGuild.n,I18N.strings.need_guild,BI('OK','OK'));
+      if (!u.guild && (S.b.barrack||0) < 1) return UI.showModal(BI("Keine Kaserne","No barracks"), BI("Baue zuerst eine Kaserne.","Build barracks first."), BI("OK","OK"));
       if (cw.idle < 1) return UI.showModal(BI("Keine Rekruten","No recruits"), BI("Du benötigst freie Bevölkerung. Ziehe Arbeiter ab oder baue mehr Wohnraum.","You need idle population. Unassign workers or build more housing."), BI("OK","OK"));
 
       if ((S.res.gold||0) < u.cost) return;
@@ -1978,7 +1994,7 @@ const UI = {
     });
 
     const cw = countWorkers();
-    const weps = (S.res.bow||0)+(S.res.spear||0)+(S.res.sword||0)+(S.res.armor||0)+(S.res.leatherArmor||0)+(S.res.crossbow||0)+(S.res.pike||0);
+    const weps = (S.res.bow||0)+(S.res.spear||0)+(S.res.sword||0)+(S.res.armor||0)+(S.res.leatherArmor||0)+(S.res.crossbow||0)+(S.res.pike||0)+(S.res.mace||0);
     document.getElementById('s-sold').innerText = cw.sold;
     document.getElementById('s-wep').innerText = numberText(weps);
     document.getElementById('s-land').innerText = S.exp.land||0;
@@ -2073,7 +2089,8 @@ const UI = {
       if (b.cost.w) txt.push(`<span class="${(S.res.wood||0)<b.cost.w?'missing-res':''}">${b.cost.w}🌲</span>`);
       if (b.cost.s) txt.push(`<span class="${(S.res.stone||0)<b.cost.s?'missing-res':''}">${b.cost.s}🧱</span>`);
       if (b.cost.i) txt.push(`<span class="${(S.res.iron||0)<b.cost.i?'missing-res':''}">${b.cost.i}⛓️</span>`);
-      if(!World.buildTarget(key,S)) txt.push('<span class="missing-res">'+loc(BI('📍 voll','📍 full'))+'</span>');
+      if(!World.buildTarget(key,S)) txt.push('<span class="missing-res">'+loc(BI('📍 Kein nutzbarer Platz','📍 No usable plot'))+'</span>');
+      const pd=card.querySelector('.plot-disp');if(pd)pd.innerText=Kingdom.free(World.plotKind(key))+' '+tr('free_plots');
       const cd = card.querySelector('.cost-disp');
       if (cd) cd.innerHTML = txt.join(' ');
     });
@@ -2093,7 +2110,7 @@ const UI = {
     World.renderBuildLocation(d);
     for (let k in Config.b) {
       const b = Config.b[k];
-      if (b.c !== this.cat) continue;
+      if (b.c !== this.cat || b.legacy) continue;
 
       const el = document.createElement('div');
       el.className = "b-card";
@@ -2103,12 +2120,12 @@ const UI = {
       let workerHtml = "";
       if ((S.b[k]||0) > 0 && isProdBuilding(b)) {
         const w = S.w[k]||0;
-        const max = S.b[k]||0;
+        const max = Kingdom.staffCapacity(k);
         const wClass = w < max ? 'w-empty':'w-full';
         workerHtml = `
           <div class="b-worker-box">
             <div class="w-btn" onclick="Game.assign('${k}', -1)">-</div>
-            <div class="w-disp ${wClass}">${w}/${max}</div>
+            <div class="w-disp ${wClass}" title="${loc(BI('Arbeiter in allen Gebieten','Workers across all territories'))}">${w}/${max}</div>
             <div class="w-btn" onclick="Game.assign('${k}', 1)">+</div>
           </div>`;
       }
@@ -2117,11 +2134,12 @@ const UI = {
       if(isProdBuilding(b)) el.title=recipeText(b);
 
       el.innerHTML = `
-        ${(S.b[k]||0)>0 ? `<div class="b-count">${S.b[k]}</div>`:''}
+        ${(S.b[k]||0)>0 ? `<div class="b-count" title="${loc(BI('Im Gebiet / insgesamt','In territory / total'))}">${Kingdom.visibleCount(k)}/${S.b[k]}</div>`:''}
         <div style="font-size:2rem">${b.i}</div>
         <div style="font-size:0.72rem;font-weight:900;text-align:center;padding:0 4px">${loc(b.n)}</div>
         ${extra}
         <div class="cost-disp" style="font-size:0.62rem;color:#666;margin-top:2px"></div>
+        <div class="plot-disp">${Kingdom.free(World.plotKind(k))} ${tr('free_plots')}</div>
         ${workerHtml}
       `;
       d.appendChild(el);
@@ -2135,9 +2153,8 @@ const UI = {
       const nodes = Array.from(el.querySelectorAll('.map-b'));
       nodes.forEach(n=>n.remove());
     });
-    for (let k in S.b) {
-      for (let i=0;i<(S.b[k]||0);i++) this.addMapIcon(k);
-    }
+    for (let k in Config.b) if(Kingdom.visibleCount(k)>0&&!Config.b[k].legacy)this.addMapIcon(k);
+    Kingdom.refreshMap();
   },
 
   renderMapTitles() {
@@ -2154,11 +2171,12 @@ const UI = {
       const d = document.createElement('div');
       d.className='map-b';
       d.dataset.building=k;
-      d.innerText = b.i;
-      d.title = loc(b.n);
-      d.style.left = (10 + Math.random()*70) + '%';
-      d.style.top  = (10 + Math.random()*70) + '%';
-      zone.appendChild(d);
+      d.innerText = b.i+' '+Kingdom.visibleCount(k);
+      d.title = loc(b.n)+' × '+Kingdom.visibleCount(k);
+      const keys=Object.keys(Config.b).filter(key=>Config.b[key].z===b.z&&Kingdom.visibleCount(key)>0&&!Config.b[key].legacy),at=keys.indexOf(k);
+      d.style.left = (5+(at%4)*24)+'%';
+      d.style.top = (28+Math.floor(at/4)*13)+'%';
+      (zone.querySelector('.zone-icons')||zone).appendChild(d);
     }
   },
 
@@ -2293,7 +2311,7 @@ const UI = {
       html+='<div class="muted">'+tr('food_balance',{value:(r.foodBalance>0?'+':'')+numberText(r.foodBalance)})+'</div>';
     }
     html+='<p class="muted">'+tr('food_explain')+'</p><p class="muted">'+tr('material_stock',{used:numberText(sumGoods(S.res,Rules.storeTypes)),cap:caps.store})+' · '+tr('drink_stock',{used:numberText(S.res.beer),cap:caps.drink})+'</p>';
-    const chains=[['bread_chain',['wheat','mill','bake']],['beer_chain',['wheat','hops','brew']],['leather_chain',['cattle','tannery','leatherwork']],['weapon_chain',['crosswork','pikesmith']]];
+    const chains=[['bread_chain',['wheat','mill','bake']],['beer_chain',['hops','brew','inn']],['leather_chain',['dairy','tannery']],['weapon_chain',['fletch','crosswork','pole','pikesmith','smith','macesmith','armor']]];
     html+='<p class="muted">'+tr('recipe_base')+'</p>';
     chains.forEach(([title,keys])=>{
       html+='<div class="chain-card"><b>'+tr(title)+'</b><div class="chain-path">'+keys.map(key=>'<span>'+Config.b[key].i+' '+loc(Config.b[key].n)+': '+recipeText(Config.b[key])+'</span>').join('')+'</div></div>';
@@ -2301,7 +2319,7 @@ const UI = {
     html+='<p class="muted">'+tr('beer_explain')+'</p><p class="muted">'+tr('dairy_explain')+'</p>';
     if(r){
       html+='<h3>'+tr('resource_ledger')+'</h3><div class="ledger-grid">';
-      const keys=['gold','wood','stone','iron','wheat','flour','bread','hops','beer','apple','meat','cheese','hides','leather','leatherArmor','crossbow','pike'];
+      const keys=['gold',...Rules.marketTypes];
       keys.forEach(key=>{
         const flows=[['gross_produced',r.produced[key]||0],[key==='gold'?'upkeep':'processing_used',-(r.inputs[key]||0)],['people_used',-(r.consumed[key]||0)],['trade_flow',r.trade[key]||0],['overflow_loss',-(r.lost[key]||0)]];
         if(key==='gold')flows.splice(1,0,['taxes',r.taxes||0]);
@@ -2312,14 +2330,14 @@ const UI = {
     html+='<h3>'+tr('businesses')+'</h3><p class="muted">'+tr('staffing_help')+'</p>';
     Object.entries(Config.b).filter(([key,b])=>isProdBuilding(b)&&(S.b[key]||0)>0).forEach(([key,b])=>{
       const row=r&&r.buildings[key];
-      const staff=tr('staff_count',{actual:S.w[key]||0,built:S.b[key],target:S.staffing.targets[key]||0});
+      const staff=tr('staff_count',{actual:S.w[key]||0,built:Kingdom.staffCapacity(key),target:S.staffing.targets[key]||0});
       html+='<div class="production-row"><div class="production-row-head"><strong>'+b.i+' '+loc(b.n)+'</strong><span class="worker-controls"><button onclick="Game.assign(\''+key+'\',-1)" aria-label="'+loc(b.n)+' −">−</button><span>'+staff+'</span><button onclick="Game.assign(\''+key+'\',1)" aria-label="'+loc(b.n)+' +">+</button></span></div><div>'+recipeText(b)+'</div>';
       if(row){
         html+='<div class="production-status '+(row.status==='running'?'':'warn')+'">'+tr(row.status)+(row.missing.length?' · '+tr('missing_inputs',{goods:row.missing.map(k=>SafeT(k)).join(', ')}):'')+'</div><div class="muted">'+tr('output_last',{goods:goodsText(row.output)})+'</div>';
       }
       html+='</div>';
     });
-    document.getElementById('production-body').innerHTML=html+World.productionHTML();
+    document.getElementById('production-body').innerHTML=html+Kingdom.productionHTML()+World.productionHTML();
   },
 
   showRaidInfo() { World.raidInfo(); },
@@ -2331,13 +2349,16 @@ const UI = {
   },
   renderRecruit() {
     const l = document.getElementById('recruit-list'); l.innerHTML="";
+    document.getElementById('recruit-roster').innerHTML=Kingdom.armyHTML();
+    document.getElementById('siege-workshop').innerHTML=Siege.render();
     for (let k in Units) {
       const u = Units[k];
       const row = document.createElement('div'); row.className='list-item';
       const cost = `${u.cost}💰` + (u.res ? ` +1 ${SafeT(u.res)}` : "") + (u.arm ? ` +1 ${SafeT(u.arm)}` : "");
       const missing=[];
       if(k==='merc'&&!(S.b.mercCamp>0)) missing.push(tr('need_camp'));
-      if(k!=='merc'&&!(S.b.barrack>0)) missing.push(tr('need_barracks'));
+      if(u.guild&&!(S.b.engineerGuild>0))missing.push(tr('need_guild'));
+      if(k!=='merc'&&!u.guild&&!(S.b.barrack>0)) missing.push(tr('need_barracks'));
       if(countWorkers().idle<1) missing.push(tr('need_worker'));
       if(S.res.gold<u.cost) missing.push(SafeT('gold'));
       if(u.res&&(S.res[u.res]||0)<1) missing.push(SafeT(u.res));
@@ -2537,8 +2558,9 @@ UI.showHappy = function(){ _showHappy(); Tutorial.onAction('ui','happy'); };
 
 /* Start game */
 </script>
-<script src="world.js?v=7"></script>
-<script src="events.js?v=7"></script>
+<script src="world.js?v=8"></script>
+<script src="kingdom.js?v=8"></script>
+<script src="events.js?v=8"></script>
 <script>Game.init();</script>
 
 </body>

@@ -1,0 +1,23 @@
+/* v8 additions: keep the existing app shell and mobile navigation. */
+#map-area{grid-template-rows:44px minmax(0,1fr) minmax(0,1fr)}
+#territory-nav{grid-column:1/-1;display:flex;align-items:center;gap:6px;min-width:0;color:#f2e8cc;z-index:12}
+#territory-nav label{display:flex;align-items:center;gap:5px;min-width:0;flex:1}
+#territory-nav select{width:100%;min-width:0;background:#24362a;border:1px solid #677858;border-radius:9px;color:#fff3d5;padding:9px 5px;font:inherit;font-size:.8rem}
+#territory-nav button{min-width:42px;min-height:42px;border:1px solid #677858;border-radius:9px;background:#24362a;color:#fff3d5;font-size:1rem;cursor:pointer;touch-action:manipulation}
+.zone-plots{position:absolute;top:6px;left:6px;right:6px;z-index:11;width:fit-content;max-width:calc(100% - 12px);background:rgba(12,24,17,.88);border:1px solid #78956c;color:#fff5d8;border-radius:7px;padding:4px 7px;font:700 .75rem/1.25 system-ui;pointer-events:none}
+.zone-icons{position:absolute;inset:39px 7px 30px;display:flex;align-content:flex-start;flex-wrap:wrap;gap:4px;overflow:hidden;pointer-events:none}
+.zone-icons .map-b{position:static;font:700 clamp(.65rem,1.5vw,.9rem)/1.3 system-ui;background:rgba(20,24,18,.68);border-radius:5px;padding:3px 5px;filter:none;color:#fff4d5;animation:none;white-space:nowrap}
+.plot-disp{font-size:.62rem;font-weight:750;color:#28532b;text-align:center;padding:3px 4px}
+.b-count{font-size:.62rem}
+.army-roster{margin:12px 0;padding:12px;background:#fff8eb;border:1px solid #c4b293;border-radius:12px;color:#433923}
+.army-roster h3{margin:0 0 10px}.army-roster p{font-size:.8rem;margin:10px 0 0}
+.army-totals{display:grid;grid-template-columns:repeat(auto-fit,minmax(70px,1fr));gap:6px;margin:8px 0 12px}
+.army-totals span{display:flex;flex-direction:column;text-align:center;font-size:.67rem;padding:8px 3px;border-radius:8px;background:#ece3cf;color:#51452e}
+.army-totals b{font-size:1.3rem;color:#26482f;font-variant-numeric:tabular-nums}
+.roster-scroll{overflow:auto}.army-roster table{width:100%;border-collapse:collapse;font-size:.8rem}
+.army-roster td,.army-roster th{padding:8px 5px;border-bottom:1px solid #e0d3b9;text-align:right;font-variant-numeric:tabular-nums}
+.army-roster th:first-child{text-align:left}.army-roster tbody th{font-weight:600}.army-roster th small{display:block;font-size:.65rem;font-weight:400}
+.army-roster .empty-unit{color:#8a816f}.world-pagination{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:10px 0}.world-pagination .btn{width:auto;margin:0}
+#siege-workshop .territory-card h3{font-size:.95rem}#siege-workshop .territory-card p{font-size:.78rem}
+@media(max-width:600px){#map-area{grid-template-rows:44px minmax(0,1fr) minmax(0,1fr)}#territory-nav{gap:4px}#territory-nav select{font-size:16px}.zone-plots{font-size:.66rem;padding:4px}.army-roster{padding:8px}.army-roster table{font-size:.72rem}.army-roster th,.army-roster td{padding:8px 3px}.zone-icons{inset:36px 5px 25px}.army-totals b{font-size:1.15rem}}
+@media(max-height:500px) and (orientation:landscape){#map-area{grid-template-rows:44px minmax(60px,1fr) minmax(60px,1fr);overflow:auto}.zone-icons{inset:31px 5px 24px}.zone-plots{font-size:.62rem}}
